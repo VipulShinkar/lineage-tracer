@@ -1,0 +1,14 @@
+<?xml version="1.0"?>
+<mappings>
+  <mapping name="load_customers">
+    <source table="raw.customers" />
+    <target table="stg.customers" />
+  </mapping>
+  <mapping name="load_orders">
+    <sources>
+      <source table="raw.orders" />
+      <source table="raw.order_items" />
+    </sources>
+    <target table="mart.order_summary" />
+  </mapping>
+</mappings>

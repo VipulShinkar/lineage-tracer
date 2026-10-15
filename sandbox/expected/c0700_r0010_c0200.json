@@ -1,0 +1,25 @@
+{
+  "report": "corep_2026-06-30_v1.xbrl",
+  "data_point": {"template": "C 07.00", "sheet": "Corporates", "row": "0010", "column": "0200", "value": "1240.5", "unit": "EUR m"},
+  "report_source": {
+    "type": "postgresql", "host": "127.0.0.1:5432", "database": "reporting_db", "user": "lineage_ro",
+    "object": "rpt.c0700_facts (also Superset chart 'C 07.00 Corporates')"
+  },
+  "credentials_needed_during_trace": ["loans_db (loans_ro/loans_ro)"],
+  "demo_pause": "exactly one pause: loans_db requires loans_ro / loans_ro (lineage_ro cannot connect there); all other systems accept lineage_ro / lineage_ro",
+  "note": "status values: proven | code_derived | unresolved. Hop numbers follow POC screen 3 (hop 10 is the extra SQLite FX hop). Hop 8 reconciles only if the collateral input (dw_collateral_alloc) is held at its stored state; the stored calc was computed before the late collateral reload.",
+  "hops": [
+    {"n": 1, "from": "loans_db.los.facility", "to": "staging.public.stg_facilities", "status": "proven", "via": "procedure etl.sp_load_stg_facilities + foreign table fdw_los.facility"},
+    {"n": 2, "from": "collateral_db.col.collateral", "to": "staging.public.stg_collateral", "status": "proven", "via": "procedure etl.sp_load_stg_collateral + foreign table fdw_col.collateral"},
+    {"n": 3, "from": "staging.public.stg_facilities", "to": "dwh.public.dw_exposure", "status": "proven", "via": "procedure etl.sp_load_exposure; EUR conversion, intragroup_flag = FALSE (251 facilities excluded)"},
+    {"n": 4, "from": "staging.public.ref_fx_rates", "to": "dwh.public.dw_exposure", "status": "proven", "via": "same INSERT ... SELECT, rate_date = 2026-06-30"},
+    {"n": 5, "from": "staging.public.stg_collateral", "to": "dwh.public.dw_collateral_alloc", "status": "code_derived", "via": "procedure etl.sp_load_collateral_alloc; recompute from current stg_collateral differs (late reload)"},
+    {"n": 6, "from": "dwh.public.dw_exposure", "to": "dwh.public.mart_sa_exposure", "status": "proven", "via": "procedure etl.sp_load_mart_sa_exposure (exposure class CASE)"},
+    {"n": 7, "from": "dwh.public.dw_collateral_alloc", "to": "sa_engine.public.calc_sa_exposure", "status": "code_derived", "via": "procedure etl.sp_calc_sa_exposure + foreign table fdw_dwh.dw_collateral_alloc; recompute from current alloc differs"},
+    {"n": 8, "from": "dwh.public.mart_sa_exposure", "to": "sa_engine.public.calc_sa_exposure", "status": "proven", "via": "same INSERT ... SELECT + foreign table fdw_dwh.mart_sa_exposure"},
+    {"n": 9, "from": "sa_engine.public.calc_sa_exposure", "to": "reporting_db.rpt.c0700_facts", "status": "proven", "via": "procedure etl.sp_load_c0700_facts + foreign table fdw_sa.calc_sa_exposure"},
+    {"n": 10, "from": "sqlite:market_data.db.fx_rates", "to": "staging.public.ref_fx_rates", "status": "code_derived", "via": "OpenLineage event job load_fx_rates"}
+  ],
+  "systems_of_record": ["loans_db.los.facility", "collateral_db.col.collateral", "sqlite:market_data.db.fx_rates"],
+  "summary": {"hops": 10, "proven": 7, "code_derived": 3, "unresolved": 0}
+}

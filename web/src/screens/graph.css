@@ -1,0 +1,38 @@
+.hopgraph { display: grid; grid-template-columns: 320px minmax(0, 1fr); gap: 24px; align-items: start; }
+.leftcol { display: flex; flex-direction: column; gap: 16px; }
+.summary dl { display: grid; grid-template-columns: 1fr auto; row-gap: 9px; margin: 14px 0 0; }
+.summary dt { color: var(--muted); font-size: 15px; }
+.summary dd { margin: 0; text-align: right; font-weight: 500; font-size: 15px; }
+.summary dd.neg { color: var(--orange); }
+.gapcard { border: 1.5px dashed #c9584c; background: #fff; }
+.gapcard h3 { color: var(--red); font-weight: 600; margin-bottom: 8px; }
+.gapcard p { font-size: 14px; }
+.gapcard small { display: block; color: var(--muted); margin-top: 10px; font-size: 12.5px; }
+.depline { color: var(--muted); margin-top: 8px; font-size: 14px; }
+.canvas { padding: 22px 24px 18px; }
+.chead { display: flex; justify-content: space-between; align-items: center; }
+.chead h2 { font: 600 17px var(--sans); }
+.seg { display: inline-flex; border: 1px solid var(--line-strong); border-radius: 6px; overflow: hidden; }
+.seg button { border: 0; background: #fff; padding: 7px 18px; font-size: 14px; }
+.seg button + button { border-left: 1px solid var(--line-strong); }
+.seg button.on { background: var(--navy); color: #fff; }
+.flowwrap { margin-top: 12px; }
+.gnode { width: 134px; height: 58px; background: #fff; border: 1.5px solid #2d3542; border-radius: 6px; padding: 6px 8px; font-size: 12px; line-height: 1.2; overflow: hidden; }
+.gnode .k { font: 400 9.5px var(--mono); letter-spacing: .04em; color: var(--muted); margin-bottom: 3px; }
+.gnode .l { font-weight: 600; font-size: 12px; overflow-wrap: anywhere; }
+.gnode .s { font-size: 11.5px; color: var(--muted); }
+.gnode.dataset, .gnode.field, .gnode.calc { background: #f3f6fb; border-color: #9bb0ca; border-width: 1px; }
+.gnode.reference { border-color: #b8b6ac; border-width: 1px; }
+.gnode.manual { background: var(--orange-soft); border-color: var(--orange); }
+.gnode.manual .k, .gnode.manual .l { color: #7a3a14; }
+.gnode.gap { border: 1.5px dashed var(--red); background: #fff; }
+.gnode.gap .k, .gnode.gap .l { color: var(--red); }
+.gnode.anchor { background: var(--navy); border-color: var(--navy); color: #fff; }
+.gnode.anchor .k { color: #b5bcc8; } .gnode.anchor .l { color: #fff; }
+.gnode .react-flow__handle { opacity: 0; }
+.lanelabel { font: 600 12px var(--sans); letter-spacing: .06em; color: var(--muted); white-space: nowrap; }
+.hopbadge { width: 24px; height: 24px; border-radius: 50%; background: var(--primary); color: #fff; border: 2px solid #fff; font: 600 12px var(--sans); display: grid; place-items: center; padding: 0; position: absolute; pointer-events: all; }
+.hopbadge:hover { background: var(--navy); }
+.glegend { display: flex; gap: 26px; color: var(--muted); font-size: 13.5px; margin-top: 8px; }
+.glegend .o { color: var(--orange); } .glegend .r { color: var(--red); }
+.react-flow__pane { cursor: default !important; }

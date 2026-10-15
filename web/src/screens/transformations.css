@@ -1,0 +1,33 @@
+.tx { display: grid; grid-template-columns: minmax(0, 1fr) 460px; gap: 20px; align-items: start; }
+.txhead { display: flex; justify-content: space-between; align-items: baseline; margin-bottom: 14px; }
+.txhead h2 { font: 600 17px var(--sans); }
+.txhead span { color: var(--muted); font-size: 13.5px; }
+.txgrid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+.txcard { padding: 16px 18px 14px; display: flex; flex-direction: column; min-height: 148px; border-radius: 10px; }
+.txcard header { display: flex; align-items: center; gap: 8px; margin-bottom: 10px; }
+.tid { font: 500 14px var(--mono); }
+.ttype { background: var(--navy); color: #fff; font: 600 11px var(--sans); letter-spacing: .03em; padding: 3px 8px; border-radius: 4px; }
+.thop { color: var(--muted); font-size: 13.5px; }
+.amt { margin-left: auto; font-size: 14px; color: var(--muted); }
+.txcard p { flex: 1; font-size: 15.5px; }
+.txcard footer { display: flex; flex-wrap: wrap; gap: 4px 14px; margin-top: 16px; color: var(--muted); font-size: 13.5px; }
+.txcard footer a { font-weight: 500; } .ref { color: var(--primary); }
+.txcard.manual { background: var(--orange-soft); border-color: #e0a983; border-width: 1.5px; }
+.txcard.manual .ttype { background: var(--navy); }
+.tx aside { display: flex; flex-direction: column; gap: 16px; }
+.mhead { padding: 16px 20px 12px; }
+.mhead h3 { font: 600 16px var(--sans); }
+.mhead small { color: var(--muted); font-size: 13px; }
+.maptable { width: 100%; border-collapse: collapse; }
+.maptable td { padding: 11px 20px; border-top: 1px solid var(--line); font-size: 14.5px; }
+.maptable td.mono { font-size: 13.5px; width: 110px; }
+.maptable .tgt { font-weight: 600; color: var(--green); text-align: right; white-space: nowrap; }
+.maptable tr.changed { background: var(--amber-soft); }
+.chg { color: var(--amber); font-size: 12.5px; font-weight: 600; }
+.mfoot { padding: 12px 20px; border-top: 1px solid var(--line); color: var(--muted); font-size: 13.5px; }
+.linkbtn { background: none; border: 0; padding: 0; color: var(--primary); text-decoration: underline; font-size: 13.5px; }
+.dep { padding: 16px 20px; }
+.dep h3 { font: 600 16px var(--sans); margin-bottom: 10px; }
+.dep p { color: var(--muted); font-size: 14.5px; }
+.dep p b { color: var(--ink); }
+.formula { margin-top: 14px; background: #efeee8; border-radius: 6px; padding: 10px 14px; font-size: 13.5px; }

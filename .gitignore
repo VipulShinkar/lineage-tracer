@@ -1,0 +1,14 @@
+.venv/
+__pycache__/
+*.pyc
+*.egg-info/
+.pytest_cache/
+web/node_modules/
+web/dist/
+web/tsconfig.tsbuildinfo
+output/
+.vault.key
+sandbox/data/
+sandbox/openlineage/
+.env
+.claude/

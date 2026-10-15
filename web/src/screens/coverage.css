@@ -1,0 +1,36 @@
+.covpage h1 { font: 500 32px/1.2 var(--serif); }
+.covpage .sub { color: var(--muted); margin-top: 6px; font-size: 15px; }
+.ctop { display: flex; justify-content: space-between; align-items: flex-end; margin: 4px 0 20px; }
+.kpis { display: grid; grid-template-columns: repeat(6, 1fr); gap: 16px; margin-bottom: 20px; }
+.kpi { padding: 16px 18px; display: flex; flex-direction: column; gap: 6px; }
+.kpi span { color: var(--muted); font-size: 13.5px; }
+.kpi b { font: 500 34px/1.1 var(--serif); }
+.kpi b.ok, .st.ok { color: var(--green); } .kpi b.bad, .st.bad { color: var(--red); }
+.kpi small { color: var(--muted); font-size: 13px; }
+.covbody { display: grid; grid-template-columns: minmax(0, 1fr) 500px; gap: 20px; align-items: stretch; }
+.leftstack { display: flex; flex-direction: column; gap: 16px; }
+.leftstack .card:last-child { flex: 1; }
+.ctab { width: 100%; border-collapse: collapse; }
+.ctab th { background: #efeee8; font-size: 13px; font-weight: 600; color: var(--muted); text-align: left; padding: 10px 20px; }
+.ctab td { padding: 0 20px; height: 46px; border-top: 1px solid var(--line); font-size: 14.5px; }
+.ctab .r, .ctab th.r { text-align: right; }
+.st { font-weight: 600; font-size: 13.5px; }
+.st.warn { color: var(--amber); }
+.cert { list-style: none; margin: 0; padding: 0; }
+.cert li { display: grid; grid-template-columns: minmax(0, 1fr) 90px 130px 44px 110px; align-items: center; gap: 14px; padding: 0 20px; height: 47px; border-top: 1px solid var(--line); font-size: 14.5px; }
+.cert .nodes { font-size: 13.5px; }
+.cert .pct { font-size: 13.5px; text-align: right; }
+.track { height: 8px; background: #e4e2da; border-radius: 4px; overflow: hidden; }
+.track i { display: block; height: 100%; background: var(--green); border-radius: 4px; }
+.cert .st { text-align: right; }
+.auditcard { min-height: 100%; }
+.audhead { display: flex; justify-content: space-between; align-items: baseline; padding: 18px 20px 12px; border-bottom: 1px solid var(--line); }
+.audhead h3 { font: 600 16px var(--sans); }
+.audhead span { color: var(--muted); font-size: 13px; }
+.chain.ok { color: var(--green); } .chain.bad { color: var(--red); }
+.audit { list-style: none; margin: 0; padding: 0; }
+.audit li { display: grid; grid-template-columns: 76px 1fr; gap: 16px; padding: 12px 20px; border-bottom: 1px solid var(--line); }
+.audit time { color: var(--muted); font-size: 12.5px; line-height: 1.35; }
+.audit span { font-size: 15px; display: block; }
+.audit small { color: var(--muted); font-size: 13px; }
+@media (max-width: 1300px) { .kpis { grid-template-columns: repeat(3, 1fr); } .covbody { grid-template-columns: 1fr; } }

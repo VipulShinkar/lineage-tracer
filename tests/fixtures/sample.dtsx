@@ -1,0 +1,44 @@
+<?xml version="1.0"?>
+<DTS:Executable xmlns:DTS="www.microsoft.com/SqlServer/Dts" DTS:ObjectName="Package">
+  <DTS:Executables>
+    <DTS:Executable DTS:ObjectName="Load Customers">
+      <DTS:ObjectData>
+        <pipeline>
+          <components>
+            <component name="OLE DB Source" componentClassID="Microsoft.OLEDBSource">
+              <properties>
+                <property name="OpenRowset">raw.customers</property>
+              </properties>
+              <outputs>
+                <output refId="Package\Load Customers.Outputs[OLE DB Source Output]" name="OLE DB Source Output" />
+              </outputs>
+            </component>
+            <component name="Derived Column" componentClassID="Microsoft.DerivedColumn">
+              <properties>
+                <property name="Expression">UPPER(customer_name)</property>
+              </properties>
+              <inputs>
+                <input refId="Package\Load Customers.Components[Derived Column].Inputs[Derived Column Input]" name="Derived Column Input" />
+              </inputs>
+              <outputs>
+                <output refId="Package\Load Customers.Components[Derived Column].Outputs[Derived Column Output]" name="Derived Column Output" />
+              </outputs>
+            </component>
+            <component name="OLE DB Destination" componentClassID="Microsoft.OLEDBDestination">
+              <properties>
+                <property name="OpenRowset">stg.customers</property>
+              </properties>
+              <inputs>
+                <input refId="Package\Load Customers.Components[OLE DB Destination].Inputs[OLE DB Destination Input]" name="OLE DB Destination Input" />
+              </inputs>
+            </component>
+          </components>
+          <paths>
+            <path startId="Package\Load Customers.Outputs[OLE DB Source Output]" endId="Package\Load Customers.Components[Derived Column].Inputs[Derived Column Input]" />
+            <path startId="Package\Load Customers.Components[Derived Column].Outputs[Derived Column Output]" endId="Package\Load Customers.Components[OLE DB Destination].Inputs[OLE DB Destination Input]" />
+          </paths>
+        </pipeline>
+      </DTS:ObjectData>
+    </DTS:Executable>
+  </DTS:Executables>
+</DTS:Executable>

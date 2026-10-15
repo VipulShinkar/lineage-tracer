@@ -1,0 +1,156 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- COREP C 07.00 (Credit risk SA) - Corporates - reference date 2026-06-30 - submission version v1 - consolidation Solo -->
+<xbrli:xbrl xmlns:xbrli="http://www.xbrl.org/2003/instance" xmlns:xbrldi="http://xbrl.org/2006/xbrldi"
+            xmlns:corep="urn:sandbox:corep" xmlns:dim="urn:sandbox:dim" xmlns:tpl="urn:sandbox:tpl"
+            xmlns:sheet="urn:sandbox:sheet" xmlns:row="urn:sandbox:row" xmlns:col="urn:sandbox:col"
+            xmlns:iso4217="http://www.xbrl.org/2003/iso4217">
+  <corep:ReportingEntity>[LEGAL ENTITY]</corep:ReportingEntity>
+  <corep:ReportingReferenceDate>2026-06-30</corep:ReportingReferenceDate>
+  <corep:SubmissionVersion>v1</corep:SubmissionVersion>
+  <corep:ConsolidationBasis>Solo</corep:ConsolidationBasis>
+  <xbrli:unit id="EURm"><xbrli:measure>iso4217:EUR</xbrli:measure></xbrli:unit>
+  <xbrli:context id="c_C0700_Corporates_r0010_c0010">
+    <xbrli:entity><xbrli:identifier scheme="urn:sandbox:placeholder">[LEGAL ENTITY]</xbrli:identifier>
+      <xbrli:segment>
+        <xbrldi:explicitMember dimension="dim:Template">tpl:C0700</xbrldi:explicitMember>
+        <xbrldi:explicitMember dimension="dim:Sheet">sheet:Corporates</xbrldi:explicitMember>
+        <xbrldi:explicitMember dimension="dim:Row">row:r0010</xbrldi:explicitMember>
+        <xbrldi:explicitMember dimension="dim:Column">col:c0010</xbrldi:explicitMember>
+      </xbrli:segment>
+    </xbrli:entity>
+    <xbrli:period><xbrli:instant>2026-06-30</xbrli:instant></xbrli:period>
+  </xbrli:context>
+  <xbrli:context id="c_C0700_Corporates_r0010_c0040">
+    <xbrli:entity><xbrli:identifier scheme="urn:sandbox:placeholder">[LEGAL ENTITY]</xbrli:identifier>
+      <xbrli:segment>
+        <xbrldi:explicitMember dimension="dim:Template">tpl:C0700</xbrldi:explicitMember>
+        <xbrldi:explicitMember dimension="dim:Sheet">sheet:Corporates</xbrldi:explicitMember>
+        <xbrldi:explicitMember dimension="dim:Row">row:r0010</xbrldi:explicitMember>
+        <xbrldi:explicitMember dimension="dim:Column">col:c0040</xbrldi:explicitMember>
+      </xbrli:segment>
+    </xbrli:entity>
+    <xbrli:period><xbrli:instant>2026-06-30</xbrli:instant></xbrli:period>
+  </xbrli:context>
+  <xbrli:context id="c_C0700_Corporates_r0010_c0200">
+    <xbrli:entity><xbrli:identifier scheme="urn:sandbox:placeholder">[LEGAL ENTITY]</xbrli:identifier>
+      <xbrli:segment>
+        <xbrldi:explicitMember dimension="dim:Template">tpl:C0700</xbrldi:explicitMember>
+        <xbrldi:explicitMember dimension="dim:Sheet">sheet:Corporates</xbrldi:explicitMember>
+        <xbrldi:explicitMember dimension="dim:Row">row:r0010</xbrldi:explicitMember>
+        <xbrldi:explicitMember dimension="dim:Column">col:c0200</xbrldi:explicitMember>
+      </xbrli:segment>
+    </xbrli:entity>
+    <xbrli:period><xbrli:instant>2026-06-30</xbrli:instant></xbrli:period>
+  </xbrli:context>
+  <xbrli:context id="c_C0700_Corporates_r0010_c0220">
+    <xbrli:entity><xbrli:identifier scheme="urn:sandbox:placeholder">[LEGAL ENTITY]</xbrli:identifier>
+      <xbrli:segment>
+        <xbrldi:explicitMember dimension="dim:Template">tpl:C0700</xbrldi:explicitMember>
+        <xbrldi:explicitMember dimension="dim:Sheet">sheet:Corporates</xbrldi:explicitMember>
+        <xbrldi:explicitMember dimension="dim:Row">row:r0010</xbrldi:explicitMember>
+        <xbrldi:explicitMember dimension="dim:Column">col:c0220</xbrldi:explicitMember>
+      </xbrli:segment>
+    </xbrli:entity>
+    <xbrli:period><xbrli:instant>2026-06-30</xbrli:instant></xbrli:period>
+  </xbrli:context>
+  <xbrli:context id="c_C0700_Corporates_r0040_c0010">
+    <xbrli:entity><xbrli:identifier scheme="urn:sandbox:placeholder">[LEGAL ENTITY]</xbrli:identifier>
+      <xbrli:segment>
+        <xbrldi:explicitMember dimension="dim:Template">tpl:C0700</xbrldi:explicitMember>
+        <xbrldi:explicitMember dimension="dim:Sheet">sheet:Corporates</xbrldi:explicitMember>
+        <xbrldi:explicitMember dimension="dim:Row">row:r0040</xbrldi:explicitMember>
+        <xbrldi:explicitMember dimension="dim:Column">col:c0010</xbrldi:explicitMember>
+      </xbrli:segment>
+    </xbrli:entity>
+    <xbrli:period><xbrli:instant>2026-06-30</xbrli:instant></xbrli:period>
+  </xbrli:context>
+  <xbrli:context id="c_C0700_Corporates_r0040_c0040">
+    <xbrli:entity><xbrli:identifier scheme="urn:sandbox:placeholder">[LEGAL ENTITY]</xbrli:identifier>
+      <xbrli:segment>
+        <xbrldi:explicitMember dimension="dim:Template">tpl:C0700</xbrldi:explicitMember>
+        <xbrldi:explicitMember dimension="dim:Sheet">sheet:Corporates</xbrldi:explicitMember>
+        <xbrldi:explicitMember dimension="dim:Row">row:r0040</xbrldi:explicitMember>
+        <xbrldi:explicitMember dimension="dim:Column">col:c0040</xbrldi:explicitMember>
+      </xbrli:segment>
+    </xbrli:entity>
+    <xbrli:period><xbrli:instant>2026-06-30</xbrli:instant></xbrli:period>
+  </xbrli:context>
+  <xbrli:context id="c_C0700_Corporates_r0040_c0200">
+    <xbrli:entity><xbrli:identifier scheme="urn:sandbox:placeholder">[LEGAL ENTITY]</xbrli:identifier>
+      <xbrli:segment>
+        <xbrldi:explicitMember dimension="dim:Template">tpl:C0700</xbrldi:explicitMember>
+        <xbrldi:explicitMember dimension="dim:Sheet">sheet:Corporates</xbrldi:explicitMember>
+        <xbrldi:explicitMember dimension="dim:Row">row:r0040</xbrldi:explicitMember>
+        <xbrldi:explicitMember dimension="dim:Column">col:c0200</xbrldi:explicitMember>
+      </xbrli:segment>
+    </xbrli:entity>
+    <xbrli:period><xbrli:instant>2026-06-30</xbrli:instant></xbrli:period>
+  </xbrli:context>
+  <xbrli:context id="c_C0700_Corporates_r0040_c0220">
+    <xbrli:entity><xbrli:identifier scheme="urn:sandbox:placeholder">[LEGAL ENTITY]</xbrli:identifier>
+      <xbrli:segment>
+        <xbrldi:explicitMember dimension="dim:Template">tpl:C0700</xbrldi:explicitMember>
+        <xbrldi:explicitMember dimension="dim:Sheet">sheet:Corporates</xbrldi:explicitMember>
+        <xbrldi:explicitMember dimension="dim:Row">row:r0040</xbrldi:explicitMember>
+        <xbrldi:explicitMember dimension="dim:Column">col:c0220</xbrldi:explicitMember>
+      </xbrli:segment>
+    </xbrli:entity>
+    <xbrli:period><xbrli:instant>2026-06-30</xbrli:instant></xbrli:period>
+  </xbrli:context>
+  <xbrli:context id="c_C0700_Corporates_r0050_c0010">
+    <xbrli:entity><xbrli:identifier scheme="urn:sandbox:placeholder">[LEGAL ENTITY]</xbrli:identifier>
+      <xbrli:segment>
+        <xbrldi:explicitMember dimension="dim:Template">tpl:C0700</xbrldi:explicitMember>
+        <xbrldi:explicitMember dimension="dim:Sheet">sheet:Corporates</xbrldi:explicitMember>
+        <xbrldi:explicitMember dimension="dim:Row">row:r0050</xbrldi:explicitMember>
+        <xbrldi:explicitMember dimension="dim:Column">col:c0010</xbrldi:explicitMember>
+      </xbrli:segment>
+    </xbrli:entity>
+    <xbrli:period><xbrli:instant>2026-06-30</xbrli:instant></xbrli:period>
+  </xbrli:context>
+  <xbrli:context id="c_C0700_Corporates_r0050_c0040">
+    <xbrli:entity><xbrli:identifier scheme="urn:sandbox:placeholder">[LEGAL ENTITY]</xbrli:identifier>
+      <xbrli:segment>
+        <xbrldi:explicitMember dimension="dim:Template">tpl:C0700</xbrldi:explicitMember>
+        <xbrldi:explicitMember dimension="dim:Sheet">sheet:Corporates</xbrldi:explicitMember>
+        <xbrldi:explicitMember dimension="dim:Row">row:r0050</xbrldi:explicitMember>
+        <xbrldi:explicitMember dimension="dim:Column">col:c0040</xbrldi:explicitMember>
+      </xbrli:segment>
+    </xbrli:entity>
+    <xbrli:period><xbrli:instant>2026-06-30</xbrli:instant></xbrli:period>
+  </xbrli:context>
+  <xbrli:context id="c_C0700_Corporates_r0050_c0200">
+    <xbrli:entity><xbrli:identifier scheme="urn:sandbox:placeholder">[LEGAL ENTITY]</xbrli:identifier>
+      <xbrli:segment>
+        <xbrldi:explicitMember dimension="dim:Template">tpl:C0700</xbrldi:explicitMember>
+        <xbrldi:explicitMember dimension="dim:Sheet">sheet:Corporates</xbrldi:explicitMember>
+        <xbrldi:explicitMember dimension="dim:Row">row:r0050</xbrldi:explicitMember>
+        <xbrldi:explicitMember dimension="dim:Column">col:c0200</xbrldi:explicitMember>
+      </xbrli:segment>
+    </xbrli:entity>
+    <xbrli:period><xbrli:instant>2026-06-30</xbrli:instant></xbrli:period>
+  </xbrli:context>
+  <xbrli:context id="c_C0700_Corporates_r0050_c0220">
+    <xbrli:entity><xbrli:identifier scheme="urn:sandbox:placeholder">[LEGAL ENTITY]</xbrli:identifier>
+      <xbrli:segment>
+        <xbrldi:explicitMember dimension="dim:Template">tpl:C0700</xbrldi:explicitMember>
+        <xbrldi:explicitMember dimension="dim:Sheet">sheet:Corporates</xbrldi:explicitMember>
+        <xbrldi:explicitMember dimension="dim:Row">row:r0050</xbrldi:explicitMember>
+        <xbrldi:explicitMember dimension="dim:Column">col:c0220</xbrldi:explicitMember>
+      </xbrli:segment>
+    </xbrli:entity>
+    <xbrli:period><xbrli:instant>2026-06-30</xbrli:instant></xbrli:period>
+  </xbrli:context>
+  <corep:ExposureValue contextRef="c_C0700_Corporates_r0010_c0010" unitRef="EURm" decimals="1">1265.4</corep:ExposureValue>
+  <corep:ExposureValue contextRef="c_C0700_Corporates_r0010_c0040" unitRef="EURm" decimals="1">1243.8</corep:ExposureValue>
+  <corep:ExposureValue contextRef="c_C0700_Corporates_r0010_c0200" unitRef="EURm" decimals="1">1240.5</corep:ExposureValue>
+  <corep:ExposureValue contextRef="c_C0700_Corporates_r0010_c0220" unitRef="EURm" decimals="1">1118.9</corep:ExposureValue>
+  <corep:ExposureValue contextRef="c_C0700_Corporates_r0040_c0010" unitRef="EURm" decimals="1">1061.9</corep:ExposureValue>
+  <corep:ExposureValue contextRef="c_C0700_Corporates_r0040_c0040" unitRef="EURm" decimals="1">1042.0</corep:ExposureValue>
+  <corep:ExposureValue contextRef="c_C0700_Corporates_r0040_c0200" unitRef="EURm" decimals="1">1041.4</corep:ExposureValue>
+  <corep:ExposureValue contextRef="c_C0700_Corporates_r0040_c0220" unitRef="EURm" decimals="1">962.0</corep:ExposureValue>
+  <corep:ExposureValue contextRef="c_C0700_Corporates_r0050_c0010" unitRef="EURm" decimals="1">203.5</corep:ExposureValue>
+  <corep:ExposureValue contextRef="c_C0700_Corporates_r0050_c0040" unitRef="EURm" decimals="1">201.8</corep:ExposureValue>
+  <corep:ExposureValue contextRef="c_C0700_Corporates_r0050_c0200" unitRef="EURm" decimals="1">199.1</corep:ExposureValue>
+  <corep:ExposureValue contextRef="c_C0700_Corporates_r0050_c0220" unitRef="EURm" decimals="1">156.9</corep:ExposureValue>
+</xbrli:xbrl>

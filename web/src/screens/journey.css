@@ -1,0 +1,30 @@
+.journey { padding: 40px 56px 56px; }
+.jtop { display: flex; justify-content: space-between; gap: 40px; margin-bottom: 30px; }
+.jeyebrow { color: var(--orange); letter-spacing: .1em; }
+.journey h1 { font: 500 44px/1.15 var(--serif); margin: 22px 0 16px; max-width: 1000px; letter-spacing: -.01em; }
+.lede { color: var(--muted); font-size: 16.5px; max-width: 800px; }
+.personas { padding-top: 62px; width: 320px; flex: none; font-size: 14px; color: var(--muted); }
+.personas b { color: var(--ink); display: block; margin-bottom: 8px; }
+.personas p { margin-bottom: 8px; }
+.stage { font: 500 22px var(--serif); display: flex; align-items: baseline; gap: 12px; margin: 26px 0 16px; }
+.stage small { font: 400 13.5px var(--sans); color: var(--muted); }
+.stagetag { font: 600 13px var(--sans); color: #fff; padding: 4px 9px; border-radius: 4px; align-self: center; }
+.stagetag.s1 { background: var(--primary); }
+.stagetag.s2 { background: var(--green); }
+.jgrid { display: grid; grid-template-columns: repeat(5, 1fr); gap: 20px; }
+.jcard { background: var(--card); border: 1px solid var(--line); border-radius: 10px; padding: 18px 18px 16px; display: flex; flex-direction: column; min-height: 156px; }
+.jcard h3 { display: flex; align-items: center; gap: 12px; font: 600 16px var(--sans); margin-bottom: 10px; }
+.jnum { width: 28px; height: 28px; border-radius: 50%; display: inline-grid; place-items: center; font: 400 14px var(--mono); flex: none; }
+.jnum.s1 { background: #e3ecf5; color: var(--primary); }
+.jnum.s2 { background: #dfeee1; color: var(--green); }
+.jcard p { color: var(--muted); font-size: 14px; flex: 1; }
+.tags { display: flex; align-items: center; gap: 6px; margin-top: 14px; }
+.tag { background: var(--navy); color: #fff; font: 500 13px var(--mono); padding: 3px 9px; border-radius: 4px; }
+.tag:hover { text-decoration: none; background: var(--primary); }
+.arrow { color: var(--muted); font-size: 12px; }
+.jcount { border: 1.5px dashed var(--line-strong); border-radius: 10px; padding: 18px 22px; grid-column: span 2; font-size: 14px; }
+.jcount h3 { font: 600 16px var(--sans); margin-bottom: 10px; }
+.jcount p { color: var(--muted); margin-bottom: 8px; }
+.jcount b { color: var(--ink); }
+.jfoot { color: var(--muted); font-size: 13px; margin-top: 30px; }
+@media (max-width: 1200px) { .jgrid { grid-template-columns: repeat(3, 1fr); } .jtop { flex-direction: column; } .personas { padding-top: 0; } }

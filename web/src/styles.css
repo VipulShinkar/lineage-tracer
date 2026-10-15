@@ -1,0 +1,105 @@
+:root {
+  --navy: #17202f;
+  --ink: #1d2531;
+  --muted: #5d6673;
+  --faint: #8b929c;
+  --primary: #1f4e78;
+  --primary-soft: #e3ecf5;
+  --bg: #f3f2ed;
+  --card: #ffffff;
+  --line: #e4e2da;
+  --line-strong: #d3d1c8;
+  --green: #2c6a3e;
+  --green-soft: #dfeee1;
+  --amber: #8a6410;
+  --amber-soft: #fbecc5;
+  --orange: #b4501c;
+  --orange-soft: #f7e6d8;
+  --red: #9b2c22;
+  --red-soft: #f7dcda;
+  --grey-dot: #c9c7bd;
+  --serif: 'Source Serif 4', Georgia, serif;
+  --sans: 'IBM Plex Sans', system-ui, sans-serif;
+  --mono: 'IBM Plex Mono', ui-monospace, monospace;
+}
+* { box-sizing: border-box; }
+html, body, #root { margin: 0; min-height: 100%; }
+body { background: var(--bg); color: var(--ink); font: 14px/1.5 var(--sans); }
+h1, h2, h3, h4, p { margin: 0; }
+a { color: var(--primary); text-decoration: none; }
+a:hover { text-decoration: underline; }
+button, select, input { font: inherit; color: inherit; }
+button { cursor: pointer; }
+:focus-visible { outline: 2px solid #4a90d9; outline-offset: 2px; }
+.mono { font-family: var(--mono); }
+.serif { font-family: var(--serif); }
+.eyebrow { font: 500 11.5px/1 var(--mono); letter-spacing: .08em; text-transform: uppercase; color: var(--muted); }
+
+/* header */
+.app { min-height: 100vh; display: flex; flex-direction: column; }
+.hdr { background: var(--navy); color: #fff; height: 56px; display: flex; align-items: center; gap: 8px; padding: 0 20px; flex: none; white-space: nowrap; }
+.hdr .logo { display: flex; align-items: center; gap: 10px; font: 600 20px var(--serif); color: #fff; margin-right: 6px; }
+.hdr .logo:hover { text-decoration: none; }
+.chip { background: #232e40; border-radius: 5px; padding: 5px 10px; font-size: 13px; color: #e8ecf1; }
+.hdr .sp { flex: 1; }
+.nav { display: flex; align-items: center; gap: 6px; }
+.nav a { color: #e8ecf1; padding: 6px 12px; border-radius: 5px; font-size: 14px; }
+.nav a:hover { text-decoration: none; background: #232e40; }
+.nav a.active { background: var(--primary); }
+.rolepill { position: relative; border: 1px solid #6b7686; border-radius: 999px; padding: 4px 14px; font-size: 13px; background: transparent; color: #fff; display: inline-flex; align-items: center; gap: 4px; }
+.rolepill select { field-sizing: content; appearance: none; background: transparent; border: 0; color: #fff; font-size: 13px; cursor: pointer; padding-right: 2px; }
+.rolepill select option { color: #111; }
+.screenpill { background: var(--orange); color: #fff; font: 500 13px var(--mono); padding: 5px 12px; border-radius: 5px; }
+
+/* footer */
+.ftr { border-top: 1px solid var(--line-strong); background: var(--bg); display: flex; align-items: center; justify-content: space-between; padding: 12px 32px; font-size: 13px; color: var(--muted); flex: none; margin-top: auto; }
+.ftr a { font-weight: 500; }
+.ftr .next { font-weight: 600; }
+.main { padding: 32px; flex: 1; }
+.main.tight { padding: 0; }
+
+/* generic */
+.card { background: var(--card); border: 1px solid var(--line); border-radius: 10px; padding: 18px 20px; }
+.card h3 { font: 600 15px var(--sans); }
+.btn { background: var(--primary); color: #fff; border: 0; border-radius: 6px; padding: 9px 22px; font-weight: 600; }
+.btn:hover { background: #17415f; text-decoration: none; }
+.btn.block { display: block; width: 100%; padding: 15px; font-size: 16px; text-align: center; border-radius: 8px; }
+.pill { display: inline-block; padding: 3px 10px; border-radius: 5px; font-size: 12.5px; font-weight: 500; }
+.pill.complete { background: var(--green-soft); color: var(--green); }
+.pill.partial { background: var(--amber-soft); color: var(--amber); font-weight: 600; }
+.pill.gap { background: var(--red-soft); color: var(--red); }
+.pill.not_in_scope { background: #e9e8e1; color: var(--muted); }
+.state { padding: 40px; color: var(--muted); }
+.state.err { color: var(--red); }
+.badge { display: inline-block; font: 600 11.5px var(--sans); letter-spacing: .04em; padding: 2px 10px; border-radius: 4px; min-width: 56px; text-align: center; }
+.badge.pass { background: var(--green-soft); color: var(--green); }
+.badge.waived { background: var(--amber-soft); color: var(--amber); }
+.badge.fail { background: var(--red-soft); color: var(--red); }
+.neg { color: var(--orange); }
+.dot { display: inline-block; width: 9px; height: 9px; border-radius: 2px; margin-right: 8px; background: var(--grey-dot); }
+.dot.complete { background: var(--green); } .dot.partial { background: #c98b0b; } .dot.gap { background: var(--red); }
+
+/* cell shell */
+.cellhead { background: var(--bg); border-bottom: 1px solid var(--line); padding: 0 24px; }
+.cellhead .top { display: flex; justify-content: space-between; align-items: center; padding-top: 18px; }
+.crumb { color: var(--muted); font-size: 14px; }
+.crumb a { color: var(--primary); }
+.bigval { display: flex; align-items: baseline; gap: 8px; }
+.bigval b { font: 500 24px var(--serif); }
+.bigval span { color: var(--muted); font-size: 13px; margin-right: 12px; }
+.tabs { display: flex; gap: 6px; margin-top: 14px; }
+.tabs a { color: var(--muted); padding: 10px 16px; font-size: 15px; border-bottom: 3px solid transparent; }
+.tabs a:hover { text-decoration: none; color: var(--ink); }
+.tabs a.active { color: var(--ink); font-weight: 600; border-bottom-color: var(--primary); }
+.cellbody { padding: 24px; }
+
+/* shared across lazily loaded screens */
+.flush { padding: 0; }
+.ptitle { padding: 18px 20px; font: 600 16px var(--sans); }
+.linkbtn { background: none; border: 0; padding: 0; color: var(--primary); text-decoration: underline; font-size: 13.5px; }
+.btn:disabled { opacity: .55; cursor: default; }
+.app.fwd .nav a.active, .app.fwd .btn { background: var(--green); }
+.app.fwd .btn:hover { background: #22552f; }
+.rolepill.ro { background: #fff; color: var(--navy); border-color: #fff; font-weight: 600; }
+.rolepill.ro select { color: var(--navy); }
+.toast { position: fixed; left: 50%; bottom: 72px; transform: translateX(-50%); background: var(--navy); color: #fff; padding: 10px 18px; border-radius: 8px; font-size: 14px; box-shadow: 0 6px 24px rgba(0,0,0,.25); z-index: 20; }

@@ -1,0 +1,39 @@
+[project]
+name = "lineage-tracer"
+version = "0.1.0"
+description = "Discovers column-level regulatory data lineage from BI reports down to systems of record, with reconciliation evidence (BCBS 239)."
+requires-python = ">=3.10"
+license = { text = "MIT" }
+dependencies = [
+    "sqlglot>=25.0.0",
+    "lxml>=5.0.0",
+    "openpyxl>=3.1.0",
+    "fastapi>=0.142.0",
+    "uvicorn[standard]>=0.54.0",
+    "psycopg[binary]>=3.3.6",
+    "reportlab>=5.0.1",
+    "python-docx>=1.2.0",
+    "httpx>=0.28.1",
+    "python-multipart>=0.0.9",
+    "pymupdf>=1.28.2",
+    "cryptography>=50.0.1",
+]
+
+[project.optional-dependencies]
+dev = [
+    "pytest>=8.0.0",
+]
+
+[build-system]
+requires = ["setuptools>=68.0"]
+build-backend = "setuptools.build_meta"
+
+[tool.setuptools.packages.find]
+where = ["src"]
+
+[tool.setuptools.package-data]
+lineage_store = ["schema.sql"]
+lineage_tracer = ["schema.sql"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]

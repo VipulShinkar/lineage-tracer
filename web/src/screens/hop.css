@@ -1,0 +1,35 @@
+.hopdetail { display: flex; flex-direction: column; gap: 20px; }
+.pathbar { display: flex; align-items: center; gap: 14px; padding: 12px 18px; }
+.plabel { color: var(--muted); font-size: 14px; font-weight: 500; }
+.chips { display: flex; gap: 10px; flex: 1; flex-wrap: wrap; }
+.pchip { background: #efeee8; border: 1px solid var(--line); border-radius: 6px; padding: 7px 12px; font-size: 14px; }
+.pchip b { font-weight: 600; }
+.pchip.manual { background: var(--orange-soft); border-color: #eed2bd; }
+.pchip.cur { background: var(--primary); border-color: var(--primary); color: #fff; }
+.pchip.dim:not(.cur) { opacity: .85; }
+.only { display: flex; align-items: center; gap: 8px; font-size: 14px; }
+.only input { width: 16px; height: 16px; accent-color: var(--primary); }
+.row3 { display: grid; grid-template-columns: 1.15fr 1.15fr .95fr; gap: 20px; }
+.row3 .card { min-height: 226px; }
+.hopttl { font: 600 20px var(--sans); margin: 16px 0 12px; }
+.kv { display: grid; grid-template-columns: 150px 1fr; row-gap: 5px; margin: 12px 0 0; font-size: 15px; }
+.kv dt { color: var(--muted); } .kv dd { margin: 0; }
+.own { grid-template-columns: 130px 1fr; row-gap: 7px; }
+.inout { display: flex; align-items: center; gap: 22px; margin: 12px 0; }
+.inout span { display: block; color: var(--muted); font-size: 14px; }
+.inout b { font: 500 32px var(--serif); }
+.inout .arr { font-size: 26px; color: var(--muted); margin-top: 18px; }
+.note { color: var(--muted); font-size: 14.5px; }
+.wflink { display: inline-block; margin-top: 14px; font-size: 14.5px; }
+.row2 { display: grid; grid-template-columns: 1.6fr 1fr; gap: 20px; align-items: stretch; }
+.flush { padding: 0; }
+.ptitle { padding: 18px 20px; font: 600 16px var(--sans); }
+.mtable { width: 100%; border-collapse: collapse; }
+.mtable th { background: #efeee8; text-align: left; font-size: 13.5px; font-weight: 600; padding: 10px 20px; color: var(--muted); }
+.mtable td { padding: 12px 20px; border-top: 1px solid var(--line); font-size: 14.5px; }
+.mtable td.mono { font-size: 14px; }
+.ctl { list-style: none; margin: 0; padding: 0; border-top: 1px solid var(--line); }
+.ctl li { display: flex; gap: 14px; padding: 11px 20px; border-bottom: 1px solid var(--line); align-items: flex-start; }
+.ctl li .badge { margin-top: 2px; }
+.ctl b { display: block; font-weight: 600; font-size: 15px; }
+.ctl small { color: var(--muted); font-size: 13.5px; }
