@@ -3,11 +3,13 @@ import { Suspense, lazy } from 'react'
 import Layout, { AppProvider } from './Layout'
 import { api, useApi } from './api'
 import { covWord, cellVal, sheetName } from './format'
+import { DEMO } from './tracer/demo'
 import { cellPath } from './nav'
 const TracerLayout = lazy(() => import('./tracer/TracerLayout'))
 const Initiate = lazy(() => import('./tracer/Initiate'))
 const Progress = lazy(() => import('./tracer/Progress'))
 const TraceLineage = lazy(() => import('./tracer/Lineage'))
+const DemoHome = lazy(() => import('./tracer/DemoHome'))
 const Journey = lazy(() => import('./screens/Journey'))
 const Reports = lazy(() => import('./screens/Reports'))
 const TemplateGrid = lazy(() => import('./screens/TemplateGrid'))
@@ -62,7 +64,8 @@ export default function App() {
       <Suspense fallback={<div className="state">Loading…</div>}>
       <Routes>
         <Route element={<TracerLayout />}>
-          <Route index element={<Initiate />} />
+          <Route index element={DEMO ? <DemoHome /> : <Initiate />} />
+          {DEMO && <Route path="initiate" element={<fieldset disabled className="t-ro"><Initiate /></fieldset>} />}
           <Route path="trace/:id" element={<Progress />} />
           <Route path="trace/:id/lineage" element={<TraceLineage />} />
         </Route>

@@ -201,13 +201,14 @@ export default function LineageGraph(p: {
   async function fit() {
     const inst = rf.current, box = wrap.current
     if (!inst || !box) return
-    await inst.fitView({ padding: 0.05 })
+    await inst.fitView({ padding: 0.05, minZoom: box.clientWidth < 500 ? 0.2 : undefined })
     const z = inst.getViewport().zoom
-    if (z >= MIN_ZOOM) return
+    const mz = box.clientWidth < 500 ? 0.4 : MIN_ZOOM
+    if (z >= mz) return
     const a = visNodes.find(v => v.node.kind === 'anchor') ?? visNodes[visNodes.length - 1]
     const ap = a && pos.get(a.id)
     if (!ap) return
-    inst.setViewport({ zoom: MIN_ZOOM, x: box.clientWidth - (ap.x + W) * MIN_ZOOM - 24, y: box.clientHeight / 2 - (ap.y + 80) * MIN_ZOOM })
+    inst.setViewport({ zoom: mz, x: box.clientWidth - (ap.x + W) * mz - 24, y: box.clientHeight / 2 - (ap.y + 80) * mz })
   }
 
   useEffect(() => {

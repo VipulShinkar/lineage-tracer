@@ -1,5 +1,6 @@
 import { Link, Outlet, useMatch } from 'react-router-dom'
 import './tracer.css'
+import { DEMO, DemoBanner } from './demo'
 
 const STEPS = ['Initiate trace', 'Trace progress', 'Lineage and evidence']
 
@@ -23,6 +24,7 @@ export default function TracerLayout() {
         </nav>
         <Link to="/explorer" className="t-repo" title="Lineage repository (Explorer)">Repository</Link>
       </header>
+      {DEMO && <DemoBanner />}
       <Outlet key={m?.params.id ?? 'new'} />
     </div>
   )

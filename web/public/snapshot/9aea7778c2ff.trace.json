@@ -1,0 +1,393 @@
+{
+ "trace_id": "9aea7778c2ff",
+ "status": "complete",
+ "header": {
+  "mode": "data_point",
+  "unit": null,
+  "label": "EFR Credit Risk Summary \u00b7 ENT-UK \u00b7 CREDIT \u00b7 Corporates exposure_ead",
+  "value": 1277.32,
+  "ref_date": "2026-06-30",
+  "template": null,
+  "direction": "reverse"
+ },
+ "stats": {
+  "systems_connected": 1,
+  "sor_reached": 7,
+  "sor_known": 7,
+  "branches_outstanding": 0
+ },
+ "steps": [
+  {
+   "n": 1,
+   "status": "identified",
+   "system": "superset",
+   "consumed_by": [
+    "Report EFR Credit Risk Summary"
+   ],
+   "system_type": "superset",
+   "sourced_from": [
+    "fin_lake.efr_credit_risk_summary"
+   ],
+   "attribute_held_in": [
+    "EFR Credit Risk Summary \u00b7 exposure_ead"
+   ]
+  },
+  {
+   "n": 2,
+   "status": "identified",
+   "system": "fin_lake",
+   "consumed_by": [
+    "EFR Credit Risk Summary"
+   ],
+   "system_type": "postgresql",
+   "sourced_from": [
+    "fin_lake.rpt.efr_credit_risk_summary"
+   ],
+   "attribute_held_in": [
+    "v_efr_credit_risk_summary.exposure_ead"
+   ]
+  },
+  {
+   "n": 3,
+   "status": "identified",
+   "system": "fin_lake",
+   "consumed_by": [
+    "rpt.v_efr_credit_risk_summary"
+   ],
+   "system_type": "postgresql",
+   "sourced_from": [
+    "fin_lake.core.fact_exposure",
+    "fin_lake.core.dim_entity",
+    "fin_lake.core.dim_counterparty",
+    "fin_lake.core.fact_limit"
+   ],
+   "attribute_held_in": [
+    "efr_credit_risk_summary.exposure_ead"
+   ]
+  },
+  {
+   "n": 4,
+   "status": "identified",
+   "system": "fin_lake",
+   "consumed_by": [
+    "rpt.efr_credit_risk_summary"
+   ],
+   "system_type": "postgresql",
+   "sourced_from": [
+    "fin_lake.stg.loan",
+    "fin_lake.stg.fx_rate",
+    "fin_lake.core.dim_product",
+    "fin_lake.stg.collateral",
+    "fin_lake.core.dim_entity",
+    "fin_lake.core.dim_counterparty",
+    "fin_lake.stg.rating",
+    "fin_lake.core.dim_rating"
+   ],
+   "attribute_held_in": [
+    "fact_exposure.ead_usd"
+   ]
+  },
+  {
+   "n": 5,
+   "status": "identified",
+   "system": "fin_lake",
+   "consumed_by": [
+    "rpt.efr_credit_risk_summary"
+   ],
+   "system_type": "postgresql",
+   "sourced_from": [
+    "fin_lake.stg.entity"
+   ],
+   "attribute_held_in": [
+    "dim_entity.entity_code",
+    "dim_entity.entity_key"
+   ]
+  },
+  {
+   "n": 6,
+   "status": "identified",
+   "system": "fin_lake",
+   "consumed_by": [
+    "rpt.efr_credit_risk_summary"
+   ],
+   "system_type": "postgresql",
+   "sourced_from": [
+    "fin_lake.stg.counterparty"
+   ],
+   "attribute_held_in": [
+    "dim_counterparty.portfolio",
+    "dim_counterparty.cpty_id"
+   ]
+  },
+  {
+   "n": 7,
+   "status": "identified",
+   "system": "fin_lake",
+   "consumed_by": [
+    "rpt.efr_credit_risk_summary"
+   ],
+   "system_type": "postgresql",
+   "sourced_from": [
+    "fin_lake.core.dim_entity",
+    "fin_lake.stg.credit_limit",
+    "fin_lake.stg.fx_rate"
+   ],
+   "attribute_held_in": [
+    "fact_limit.entity_key"
+   ]
+  },
+  {
+   "n": 8,
+   "status": "identified",
+   "system": "fin_lake",
+   "consumed_by": [
+    "core.fact_exposure"
+   ],
+   "system_type": "postgresql",
+   "sourced_from": [
+    "fin_lake.raw.loan_contract"
+   ],
+   "attribute_held_in": [
+    "loan.undrawn_amt",
+    "loan.product_code"
+   ]
+  },
+  {
+   "n": 9,
+   "status": "identified",
+   "system": "fin_lake",
+   "consumed_by": [
+    "core.fact_exposure"
+   ],
+   "system_type": "postgresql",
+   "sourced_from": [
+    "fin_lake.raw.fx_rate"
+   ],
+   "attribute_held_in": [
+    "fx_rate.rate_to_usd",
+    "fx_rate.ccy"
+   ]
+  },
+  {
+   "n": 10,
+   "status": "identified",
+   "system": "fin_lake",
+   "consumed_by": [
+    "core.fact_exposure"
+   ],
+   "system_type": "postgresql",
+   "sourced_from": [
+    "fin_lake.stg.loan"
+   ],
+   "attribute_held_in": [
+    "dim_product.ccf"
+   ]
+  },
+  {
+   "n": 11,
+   "status": "identified",
+   "system": "fin_lake",
+   "consumed_by": [
+    "core.fact_exposure"
+   ],
+   "system_type": "postgresql",
+   "sourced_from": [
+    "fin_lake.raw.collateral"
+   ],
+   "attribute_held_in": [
+    "collateral.contract_id"
+   ]
+  },
+  {
+   "n": 12,
+   "status": "identified",
+   "system": "fin_lake",
+   "consumed_by": [
+    "core.fact_exposure"
+   ],
+   "system_type": "postgresql",
+   "sourced_from": [
+    "fin_lake.raw.rating"
+   ],
+   "attribute_held_in": [
+    "rating.cpty_id",
+    "rating.rating_grade"
+   ]
+  },
+  {
+   "n": 13,
+   "status": "identified",
+   "system": "fin_lake",
+   "consumed_by": [
+    "core.fact_exposure"
+   ],
+   "system_type": "postgresql",
+   "sourced_from": [
+    "fin_lake.stg.rating"
+   ],
+   "attribute_held_in": [
+    "dim_rating.rating_grade"
+   ]
+  },
+  {
+   "n": 14,
+   "status": "identified",
+   "system": "fin_lake",
+   "consumed_by": [
+    "core.dim_entity",
+    "rpt.v_efr_credit_risk_summary"
+   ],
+   "system_type": "postgresql",
+   "sourced_from": [
+    "fin_lake.raw.entity"
+   ],
+   "attribute_held_in": [
+    "entity.entity_code"
+   ]
+  },
+  {
+   "n": 15,
+   "status": "identified",
+   "system": "fin_lake",
+   "consumed_by": [
+    "core.dim_counterparty"
+   ],
+   "system_type": "postgresql",
+   "sourced_from": [
+    "fin_lake.raw.counterparty"
+   ],
+   "attribute_held_in": [
+    "counterparty.sector_code"
+   ]
+  },
+  {
+   "n": 16,
+   "status": "identified",
+   "system": "fin_lake",
+   "consumed_by": [
+    "core.fact_limit"
+   ],
+   "system_type": "postgresql",
+   "sourced_from": [
+    "fin_lake.raw.credit_limit"
+   ],
+   "attribute_held_in": [
+    "credit_limit.entity_code"
+   ]
+  },
+  {
+   "n": 17,
+   "status": "identified",
+   "system": "fin_lake",
+   "consumed_by": [
+    "stg.loan",
+    "rpt.v_gl_completeness"
+   ],
+   "system_type": "postgresql",
+   "sourced_from": [
+    "System of record"
+   ],
+   "attribute_held_in": [
+    "loan_contract.undrawn_limit"
+   ],
+   "sourced_from_is_sor": true
+  },
+  {
+   "n": 18,
+   "status": "identified",
+   "system": "fin_lake",
+   "consumed_by": [
+    "stg.fx_rate"
+   ],
+   "system_type": "postgresql",
+   "sourced_from": [
+    "System of record"
+   ],
+   "attribute_held_in": [
+    "fx_rate.rate_to_usd"
+   ],
+   "sourced_from_is_sor": true
+  },
+  {
+   "n": 19,
+   "status": "identified",
+   "system": "fin_lake",
+   "consumed_by": [
+    "stg.collateral"
+   ],
+   "system_type": "postgresql",
+   "sourced_from": [
+    "System of record"
+   ],
+   "attribute_held_in": [
+    "collateral.contract_id"
+   ],
+   "sourced_from_is_sor": true
+  },
+  {
+   "n": 20,
+   "status": "identified",
+   "system": "fin_lake",
+   "consumed_by": [
+    "stg.rating"
+   ],
+   "system_type": "postgresql",
+   "sourced_from": [
+    "System of record"
+   ],
+   "attribute_held_in": [
+    "rating.cpty_id"
+   ],
+   "sourced_from_is_sor": true
+  },
+  {
+   "n": 21,
+   "status": "identified",
+   "system": "fin_lake",
+   "consumed_by": [
+    "stg.entity",
+    "rpt.v_efr_credit_risk_summary"
+   ],
+   "system_type": "postgresql",
+   "sourced_from": [
+    "System of record"
+   ],
+   "attribute_held_in": [
+    "entity.entity_code"
+   ],
+   "sourced_from_is_sor": true
+  },
+  {
+   "n": 22,
+   "status": "identified",
+   "system": "fin_lake",
+   "consumed_by": [
+    "stg.counterparty"
+   ],
+   "system_type": "postgresql",
+   "sourced_from": [
+    "System of record"
+   ],
+   "attribute_held_in": [
+    "counterparty.sector_code"
+   ],
+   "sourced_from_is_sor": true
+  },
+  {
+   "n": 23,
+   "status": "identified",
+   "system": "fin_lake",
+   "consumed_by": [
+    "stg.credit_limit"
+   ],
+   "system_type": "postgresql",
+   "sourced_from": [
+    "System of record"
+   ],
+   "attribute_held_in": [
+    "credit_limit.entity_code"
+   ],
+   "sourced_from_is_sor": true
+  }
+ ]
+}

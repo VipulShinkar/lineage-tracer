@@ -19,7 +19,7 @@ def blocks(lin: dict, ref: str, viewer: str, ts: str) -> list[tuple]:
     return [
         ("summary", [("h", "Lineage trace evidence pack"),
                      ("table", ["Item", "Value"], [["Reference", ref], ["Data point", h["label"]],
-                                                   ["Reported value", f"{h['value']:,} {h.get('unit') or ''}".strip()],
+                                                   ["Reported value", (f"{h['value']:,} {h.get('unit') or ''}".strip() if h.get("value") is not None else "Whole report")],
                                                    ["Reference date", h.get("ref_date") or ""], ["Result", s["title"]],
                                                    ["Hops", f"{s['hops']} ({s['proven']} proven, {s['code_derived']} code-derived, "
                                                             f"{s['unresolved']} unresolved)"],

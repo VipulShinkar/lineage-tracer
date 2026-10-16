@@ -1,0 +1,1474 @@
+{
+ "header": {
+  "mode": "data_point",
+  "unit": "USD",
+  "label": "C90 \u00b7 GROUP-01 \u00b7 FX \u00b7 DELTA",
+  "value": 3867.06,
+  "ref_date": "2026-06-30",
+  "template": "C90",
+  "direction": "reverse"
+ },
+ "summary": {
+  "hops": 9,
+  "proven": 4,
+  "code_derived": 5,
+  "unresolved": 0,
+  "systems_of_record": 3,
+  "title": "USD 3,867.06 traced to 3 systems of record"
+ },
+ "lanes": [
+  "system_of_record",
+  "staging",
+  "warehouse",
+  "calc_engine",
+  "reporting_layer",
+  "report_tool"
+ ],
+ "nodes": [
+  {
+   "id": "market_data.db.fx_rates",
+   "kind": "sor",
+   "lane": "system_of_record",
+   "name": "fx_rates",
+   "object": "fx_rates",
+   "schema": null,
+   "system": "market_data.db",
+   "columns": [
+    {
+     "name": "ccy",
+     "data_type": "TEXT",
+     "in_path": true
+    },
+    {
+     "name": "rate_date",
+     "data_type": "TEXT",
+     "in_path": true
+    },
+    {
+     "name": "rate_to_eur",
+     "data_type": "REAL",
+     "in_path": false
+    },
+    {
+     "name": "rate_to_usd",
+     "data_type": "REAL",
+     "in_path": true
+    }
+   ],
+   "service": "sqlite",
+   "database": null,
+   "description": null,
+   "entity_type": "table",
+   "on_value_path": true
+  },
+  {
+   "id": "superset.COREP C90 Report",
+   "kind": "anchor",
+   "lane": "report_tool",
+   "name": "COREP C90 Report",
+   "object": "COREP C90 Report",
+   "system": "superset",
+   "columns": [
+    {
+     "name": "consolidation_group",
+     "data_type": "STRING",
+     "in_path": false
+    },
+    {
+     "name": "risk_class",
+     "data_type": "STRING",
+     "in_path": false
+    },
+    {
+     "name": "sensitivity_type",
+     "data_type": "STRING",
+     "in_path": false
+    },
+    {
+     "name": "reported_value_usd",
+     "data_type": "DECIMAL",
+     "in_path": true
+    }
+   ],
+   "service": "superset",
+   "description": null,
+   "entity_type": "chart",
+   "schema": null,
+   "on_value_path": true
+  },
+  {
+   "id": "reporting_db.rpt.c90_facts",
+   "kind": "intermediate",
+   "lane": "reporting_layer",
+   "name": "c90_facts",
+   "object": "rpt.c90_facts",
+   "schema": "rpt",
+   "system": "reporting_db",
+   "columns": [
+    {
+     "name": "consolidation_group",
+     "data_type": "text",
+     "in_path": true
+    },
+    {
+     "name": "risk_class",
+     "data_type": "text",
+     "in_path": true
+    },
+    {
+     "name": "sensitivity_type",
+     "data_type": "text",
+     "in_path": true
+    },
+    {
+     "name": "reported_value_usd",
+     "data_type": "numeric(18,2)",
+     "description": "Reported charge (USD): Reported SBM charge in USD.",
+     "in_path": true
+    },
+    {
+     "name": "as_of_date",
+     "data_type": "date",
+     "in_path": false
+    }
+   ],
+   "service": "postgresql",
+   "database": "reporting_db",
+   "description": "COREP C90 sensitivities-based charge per consolidation group, risk class and sensitivity type, in USD.",
+   "entity_type": "table",
+   "on_value_path": true
+  },
+  {
+   "id": "staging.public.ref_fx_rates",
+   "kind": "intermediate",
+   "lane": "staging",
+   "name": "ref_fx_rates",
+   "object": "public.ref_fx_rates",
+   "schema": "public",
+   "system": "staging",
+   "columns": [
+    {
+     "name": "ccy",
+     "data_type": "character(3)",
+     "in_path": true
+    },
+    {
+     "name": "rate_date",
+     "data_type": "date",
+     "in_path": true
+    },
+    {
+     "name": "rate_to_eur",
+     "data_type": "numeric(18,8)",
+     "description": "FX rate to EUR: EUR per one unit of the currency on the rate date.",
+     "in_path": false
+    },
+    {
+     "name": "rate_to_usd",
+     "data_type": "numeric(18,8)",
+     "description": "FX rate to USD: USD per one unit of the currency on the rate date.",
+     "in_path": true
+    },
+    {
+     "name": "loaded_at",
+     "data_type": "timestamp with time zone",
+     "in_path": false
+    }
+   ],
+   "service": "postgresql",
+   "database": "staging",
+   "description": "FX rates feed loaded from the market data SQLite file; used for EUR and USD conversion.",
+   "entity_type": "table",
+   "on_value_path": true
+  },
+  {
+   "id": "reporting_db.rpt.v_corep_c90",
+   "kind": "intermediate",
+   "lane": "reporting_layer",
+   "name": "v_corep_c90",
+   "object": "rpt.v_corep_c90",
+   "schema": "rpt",
+   "system": "reporting_db",
+   "columns": [
+    {
+     "name": "consolidation_group",
+     "data_type": "text",
+     "in_path": true
+    },
+    {
+     "name": "risk_class",
+     "data_type": "text",
+     "in_path": true
+    },
+    {
+     "name": "sensitivity_type",
+     "data_type": "text",
+     "in_path": true
+    },
+    {
+     "name": "reported_value_usd",
+     "data_type": "numeric",
+     "description": "Reported charge (USD): Reported SBM charge in USD; the ALL / ALL row is the sum of all rows.",
+     "in_path": true
+    }
+   ],
+   "service": "postgresql",
+   "database": "reporting_db",
+   "description": "COREP C90 report as published: charge rows plus the ALL / ALL total row.",
+   "entity_type": "view",
+   "on_value_path": true
+  },
+  {
+   "id": "dwh.public.dw_sensitivity_usd",
+   "kind": "intermediate",
+   "lane": "warehouse",
+   "name": "dw_sensitivity_usd",
+   "object": "public.dw_sensitivity_usd",
+   "schema": "public",
+   "system": "dwh",
+   "columns": [
+    {
+     "name": "trade_id",
+     "data_type": "text",
+     "in_path": false
+    },
+    {
+     "name": "consolidation_group",
+     "data_type": "text",
+     "in_path": true
+    },
+    {
+     "name": "risk_class",
+     "data_type": "text",
+     "in_path": true
+    },
+    {
+     "name": "sensitivity_type",
+     "data_type": "text",
+     "in_path": true
+    },
+    {
+     "name": "risk_factor",
+     "data_type": "text",
+     "in_path": false
+    },
+    {
+     "name": "currency",
+     "data_type": "character(3)",
+     "in_path": false
+    },
+    {
+     "name": "sensitivity_amount",
+     "data_type": "numeric(20,4)",
+     "in_path": false
+    },
+    {
+     "name": "fx_rate_to_usd",
+     "data_type": "numeric(18,8)",
+     "in_path": false
+    },
+    {
+     "name": "sensitivity_usd",
+     "data_type": "numeric(20,6)",
+     "description": "Sensitivity (USD): Sensitivity in USD: native amount multiplied by the USD rate.",
+     "in_path": true
+    },
+    {
+     "name": "as_of_date",
+     "data_type": "date",
+     "in_path": false
+    }
+   ],
+   "service": "postgresql",
+   "database": "dwh",
+   "description": "Trade sensitivities converted to USD at the as-of-date rate.",
+   "entity_type": "table",
+   "on_value_path": true
+  },
+  {
+   "id": "staging.public.stg_sensitivity",
+   "kind": "intermediate",
+   "lane": "staging",
+   "name": "stg_sensitivity",
+   "object": "public.stg_sensitivity",
+   "schema": "public",
+   "system": "staging",
+   "columns": [
+    {
+     "name": "trade_id",
+     "data_type": "text",
+     "in_path": false
+    },
+    {
+     "name": "book",
+     "data_type": "text",
+     "in_path": false
+    },
+    {
+     "name": "desk",
+     "data_type": "text",
+     "in_path": false
+    },
+    {
+     "name": "consolidation_group",
+     "data_type": "text",
+     "in_path": true
+    },
+    {
+     "name": "risk_class",
+     "data_type": "text",
+     "in_path": true
+    },
+    {
+     "name": "sensitivity_type",
+     "data_type": "text",
+     "in_path": true
+    },
+    {
+     "name": "risk_factor",
+     "data_type": "text",
+     "in_path": false
+    },
+    {
+     "name": "currency",
+     "data_type": "character(3)",
+     "in_path": true
+    },
+    {
+     "name": "sensitivity_amount",
+     "data_type": "numeric(20,4)",
+     "in_path": true
+    },
+    {
+     "name": "as_of_date",
+     "data_type": "date",
+     "in_path": true
+    },
+    {
+     "name": "loaded_at",
+     "data_type": "timestamp with time zone",
+     "in_path": false
+    }
+   ],
+   "service": "postgresql",
+   "database": "staging",
+   "description": "Landed copy of trade sensitivities from the trading risk system.",
+   "entity_type": "table",
+   "on_value_path": true
+  },
+  {
+   "id": "trading_db.trd.trade_sensitivity",
+   "kind": "sor",
+   "lane": "system_of_record",
+   "name": "trade_sensitivity",
+   "object": "trd.trade_sensitivity",
+   "schema": "trd",
+   "system": "trading_db",
+   "columns": [
+    {
+     "name": "trade_id",
+     "data_type": "text",
+     "in_path": false
+    },
+    {
+     "name": "book",
+     "data_type": "text",
+     "in_path": false
+    },
+    {
+     "name": "desk",
+     "data_type": "text",
+     "in_path": false
+    },
+    {
+     "name": "consolidation_group",
+     "data_type": "text",
+     "in_path": true
+    },
+    {
+     "name": "risk_class",
+     "data_type": "text",
+     "description": "Risk class: FRTB risk class: GIRR, FX, EQ, COM, CSR_NS.",
+     "in_path": true
+    },
+    {
+     "name": "sensitivity_type",
+     "data_type": "text",
+     "description": "Sensitivity type: FRTB sensitivity type: DELTA, VEGA or CURVATURE.",
+     "in_path": true
+    },
+    {
+     "name": "risk_factor",
+     "data_type": "text",
+     "in_path": false
+    },
+    {
+     "name": "currency",
+     "data_type": "character(3)",
+     "in_path": true
+    },
+    {
+     "name": "sensitivity_amount",
+     "data_type": "numeric(20,4)",
+     "description": "Sensitivity: Sensitivity of the trade to the risk factor, in the trade currency.",
+     "in_path": true
+    },
+    {
+     "name": "as_of_date",
+     "data_type": "date",
+     "in_path": true
+    }
+   ],
+   "service": "postgresql",
+   "database": "trading_db",
+   "description": "Trade-level FRTB sensitivities in native currency; system of record for market risk inputs (C90).",
+   "entity_type": "table",
+   "on_value_path": true
+  },
+  {
+   "id": "frtb_engine.public.calc_sbm_charge",
+   "kind": "intermediate",
+   "lane": "calc_engine",
+   "name": "calc_sbm_charge",
+   "object": "public.calc_sbm_charge",
+   "schema": "public",
+   "system": "frtb_engine",
+   "columns": [
+    {
+     "name": "consolidation_group",
+     "data_type": "text",
+     "in_path": true
+    },
+    {
+     "name": "risk_class",
+     "data_type": "text",
+     "in_path": true
+    },
+    {
+     "name": "sensitivity_type",
+     "data_type": "text",
+     "in_path": true
+    },
+    {
+     "name": "sensitivity_usd_total",
+     "data_type": "numeric(20,6)",
+     "in_path": false
+    },
+    {
+     "name": "risk_weight",
+     "data_type": "numeric(9,6)",
+     "in_path": false
+    },
+    {
+     "name": "sbm_charge_usd",
+     "data_type": "numeric(20,2)",
+     "description": "SBM charge (USD): Capital charge in USD: sum of USD sensitivities multiplied by the risk weight.",
+     "in_path": true
+    },
+    {
+     "name": "as_of_date",
+     "data_type": "date",
+     "in_path": false
+    }
+   ],
+   "service": "postgresql",
+   "database": "frtb_engine",
+   "description": "FRTB sensitivities-based-method charge per group, risk class and sensitivity type.",
+   "entity_type": "table",
+   "on_value_path": true
+  },
+  {
+   "id": "frtb_engine.public.ref_risk_weight",
+   "kind": "sor",
+   "lane": "system_of_record",
+   "name": "ref_risk_weight",
+   "object": "public.ref_risk_weight",
+   "schema": "public",
+   "system": "frtb_engine",
+   "columns": [
+    {
+     "name": "risk_class",
+     "data_type": "text",
+     "in_path": true
+    },
+    {
+     "name": "sensitivity_type",
+     "data_type": "text",
+     "in_path": true
+    },
+    {
+     "name": "risk_weight",
+     "data_type": "numeric(9,6)",
+     "description": "Risk weight: Supervisory risk weight for the risk class and sensitivity type.",
+     "in_path": true
+    }
+   ],
+   "service": "postgresql",
+   "database": "frtb_engine",
+   "description": "Supervisory risk weights per FRTB risk class and sensitivity type.",
+   "entity_type": "table",
+   "on_value_path": true
+  }
+ ],
+ "edges": [
+  {
+   "from": "market_data.db.fx_rates",
+   "to": "staging.public.ref_fx_rates",
+   "hop": 1,
+   "status": "code_derived"
+  },
+  {
+   "from": "trading_db.trd.trade_sensitivity",
+   "to": "staging.public.stg_sensitivity",
+   "hop": 2,
+   "status": "proven"
+  },
+  {
+   "from": "staging.public.ref_fx_rates",
+   "to": "dwh.public.dw_sensitivity_usd",
+   "hop": 3,
+   "status": "code_derived"
+  },
+  {
+   "from": "staging.public.stg_sensitivity",
+   "to": "dwh.public.dw_sensitivity_usd",
+   "hop": 4,
+   "status": "code_derived"
+  },
+  {
+   "from": "dwh.public.dw_sensitivity_usd",
+   "to": "frtb_engine.public.calc_sbm_charge",
+   "hop": 5,
+   "status": "code_derived"
+  },
+  {
+   "from": "frtb_engine.public.ref_risk_weight",
+   "to": "frtb_engine.public.calc_sbm_charge",
+   "hop": 6,
+   "status": "code_derived"
+  },
+  {
+   "from": "frtb_engine.public.calc_sbm_charge",
+   "to": "reporting_db.rpt.c90_facts",
+   "hop": 7,
+   "status": "proven"
+  },
+  {
+   "from": "reporting_db.rpt.c90_facts",
+   "to": "reporting_db.rpt.v_corep_c90",
+   "hop": 8,
+   "status": "proven"
+  },
+  {
+   "from": "reporting_db.rpt.v_corep_c90",
+   "to": "superset.COREP C90 Report",
+   "hop": 9,
+   "status": "proven"
+  }
+ ],
+ "hops": [
+  {
+   "n": 1,
+   "to": "staging.public.ref_fx_rates",
+   "from": "market_data.db.fx_rates",
+   "status": "code_derived",
+   "evidence": {
+    "log": "OpenLineage job load_fx_rates \u00b7 16-Oct 08:43:01 \u00b7 app - \u00b7 user etl_owner \u00b7 INSERT INTO public.ref_fx_rates (ccy, rate_date, rate_to_eur, rate_to_usd) VALUES ('USD','2026-07-01','0.92469",
+    "code": "OpenLineage job load_fx_rates",
+    "reconciliation": "Not reconciled: no numeric stored value for this attribute"
+   },
+   "consumed_by": "public.ref_fx_rates",
+   "sourced_from": [
+    "fx_rates.rate_to_usd",
+    "fx_rates.ccy",
+    "fx_rates.rate_date"
+   ],
+   "pipeline_type": "openlineage",
+   "business_rules": [
+    "Loaded by ETL job load_fx_rates; the transformation is only known from its lineage metadata"
+   ],
+   "transformation": "Loaded by ETL job load_fx_rates from fx_rates: rate_to_usd = rate_to_usd (copied unchanged).",
+   "statement_rules": [
+    "Loaded by ETL job load_fx_rates; the transformation is only known from its lineage metadata"
+   ],
+   "attribute_held_in": [
+    "public.ref_fx_rates.rate_to_usd"
+   ],
+   "on_value_path": true
+  },
+  {
+   "n": 2,
+   "to": "staging.public.stg_sensitivity",
+   "from": "trading_db.trd.trade_sensitivity",
+   "status": "proven",
+   "evidence": {
+    "log": "16-Oct 08:43:59 \u00b7 app pmdtm \u00b7 user etl_owner \u00b7 INSERT INTO public.stg_sensitivity (trade_id, book, desk, consolidation_group, risk_class, sensitivity_type, r \u00b7 trading_db: connected using credentials of staging",
+    "code": "pipelines/informatica/m_C90_stg_sensitivity.xml \u00b7 mapping m_C90_stg_sensitivity",
+    "reconciliation": "Recalculated 472,057.91 agrees to stored value 472,057.91 (tolerance \u00b10.01) \u00b7 reconciled by totals (identity); pipeline logic not re-executable"
+   },
+   "consumed_by": "public.stg_sensitivity",
+   "sourced_from": [
+    "trd.trade_sensitivity.sensitivity_amount",
+    "trd.trade_sensitivity.risk_class",
+    "trd.trade_sensitivity.sensitivity_type",
+    "trd.trade_sensitivity.consolidation_group"
+   ],
+   "pipeline_type": "informatica",
+   "business_rules": [
+    "Loaded by Informatica mapping m_C90_stg_sensitivity; the transformation is only known from its lineage metadata"
+   ],
+   "transformation": "Loaded by Informatica mapping m_C90_stg_sensitivity from trading_db.trd.trade_sensitivity: sensitivity_amount = sensitivity_amount (copied unchanged).",
+   "statement_rules": [
+    "Loaded by Informatica mapping m_C90_stg_sensitivity; the transformation is only known from its lineage metadata"
+   ],
+   "attribute_held_in": [
+    "public.stg_sensitivity.sensitivity_amount"
+   ],
+   "on_value_path": true
+  },
+  {
+   "n": 3,
+   "to": "dwh.public.dw_sensitivity_usd",
+   "from": "staging.public.ref_fx_rates",
+   "status": "code_derived",
+   "evidence": {
+    "log": "16-Oct 08:43:59 \u00b7 app pmdtm \u00b7 user etl_owner \u00b7 INSERT INTO public.dw_sensitivity_usd (trade_id, consolidation_group, risk_class, sensitivity_type, risk_facto \u00b7 staging: connected using credentials of dwh",
+    "code": "pipelines/informatica/m_C90_dw_sensitivity_usd.xml \u00b7 mapping m_C90_dw_sensitivity_usd \u00b7 transformations FIL_FX_FOUND, EXP_SENSITIVITY_USD, LKP_FX_RATE",
+    "reconciliation": "Not reconciled: pipeline logic not re-executable (the column logic is not an identity, SUM or linear scaling)"
+   },
+   "consumed_by": "public.dw_sensitivity_usd",
+   "sourced_from": [
+    "public.ref_fx_rates.rate_to_usd",
+    "public.ref_fx_rates.ccy",
+    "public.ref_fx_rates.rate_date"
+   ],
+   "pipeline_type": "informatica",
+   "business_rules": [
+    "Used to filter / match / group rows: filter / join / group by",
+    "Calculated as ROUND(sensitivity_amount * rate_to_usd, 6)"
+   ],
+   "transformation": "Loaded by Informatica mapping m_C90_dw_sensitivity_usd from staging.public.ref_fx_rates: sensitivity_usd = ROUND(sensitivity_amount * rate_to_usd, 6).",
+   "statement_rules": [
+    "Used to filter / match / group rows: filter / join / group by",
+    "Calculated as ROUND(sensitivity_amount * rate_to_usd, 6)"
+   ],
+   "attribute_held_in": [
+    "public.dw_sensitivity_usd.sensitivity_usd"
+   ],
+   "on_value_path": true
+  },
+  {
+   "n": 4,
+   "to": "dwh.public.dw_sensitivity_usd",
+   "from": "staging.public.stg_sensitivity",
+   "status": "code_derived",
+   "evidence": {
+    "log": "16-Oct 08:43:59 \u00b7 app pmdtm \u00b7 user etl_owner \u00b7 INSERT INTO public.dw_sensitivity_usd (trade_id, consolidation_group, risk_class, sensitivity_type, risk_facto \u00b7 staging: connected using credentials of dwh",
+    "code": "pipelines/informatica/m_C90_dw_sensitivity_usd.xml \u00b7 mapping m_C90_dw_sensitivity_usd \u00b7 transformations FIL_FX_FOUND, EXP_SENSITIVITY_USD, LKP_FX_RATE",
+    "reconciliation": "Not reconciled: pipeline logic not re-executable (the column logic is not an identity, SUM or linear scaling)"
+   },
+   "consumed_by": "public.dw_sensitivity_usd",
+   "sourced_from": [
+    "public.stg_sensitivity.sensitivity_amount",
+    "public.stg_sensitivity.risk_class",
+    "public.stg_sensitivity.sensitivity_type",
+    "public.stg_sensitivity.consolidation_group"
+   ],
+   "pipeline_type": "informatica",
+   "business_rules": [
+    "Used to filter / match / group rows: filter / join / group by",
+    "Calculated as ROUND(sensitivity_amount * rate_to_usd, 6)"
+   ],
+   "transformation": "Loaded by Informatica mapping m_C90_dw_sensitivity_usd from staging.public.stg_sensitivity: sensitivity_usd = ROUND(sensitivity_amount * rate_to_usd, 6).",
+   "statement_rules": [
+    "Used to filter / match / group rows: filter / join / group by",
+    "Calculated as ROUND(sensitivity_amount * rate_to_usd, 6)"
+   ],
+   "attribute_held_in": [
+    "public.dw_sensitivity_usd.sensitivity_usd"
+   ],
+   "on_value_path": true
+  },
+  {
+   "n": 5,
+   "to": "frtb_engine.public.calc_sbm_charge",
+   "from": "dwh.public.dw_sensitivity_usd",
+   "status": "code_derived",
+   "evidence": {
+    "log": "16-Oct 08:44:00 \u00b7 app pmdtm \u00b7 user etl_owner \u00b7 INSERT INTO public.calc_sbm_charge (consolidation_group, risk_class, sensitivity_type, sensitivity_usd_total,  \u00b7 dwh: connected using credentials of frtb_engine",
+    "code": "pipelines/informatica/m_C90_calc_sbm_charge.xml \u00b7 mapping m_C90_calc_sbm_charge \u00b7 transformations FIL_RW_FOUND, AGG_SBM, EXP_WEIGHTED, LKP_RISK_WEIGHT",
+    "reconciliation": "Not reconciled: pipeline logic not re-executable (the column logic is not an identity, SUM or linear scaling)"
+   },
+   "consumed_by": "public.calc_sbm_charge",
+   "sourced_from": [
+    "public.dw_sensitivity_usd.sensitivity_usd",
+    "public.dw_sensitivity_usd.risk_class",
+    "public.dw_sensitivity_usd.sensitivity_type",
+    "public.dw_sensitivity_usd.consolidation_group"
+   ],
+   "pipeline_type": "informatica",
+   "business_rules": [
+    "Used to filter / match / group rows: group by",
+    "Aggregated (SUM) per group"
+   ],
+   "transformation": "Loaded by Informatica mapping m_C90_calc_sbm_charge from dwh.public.dw_sensitivity_usd: sbm_charge_usd = ROUND(SUM((sensitivity_usd * risk_weight)), 2).",
+   "statement_rules": [
+    "Used to filter / match / group rows: group by",
+    "Aggregated (SUM) per group"
+   ],
+   "attribute_held_in": [
+    "public.calc_sbm_charge.sbm_charge_usd"
+   ],
+   "on_value_path": true
+  },
+  {
+   "n": 6,
+   "to": "frtb_engine.public.calc_sbm_charge",
+   "from": "frtb_engine.public.ref_risk_weight",
+   "status": "code_derived",
+   "evidence": {
+    "log": "16-Oct 08:44:00 \u00b7 app pmdtm \u00b7 user etl_owner \u00b7 INSERT INTO public.calc_sbm_charge (consolidation_group, risk_class, sensitivity_type, sensitivity_usd_total,  \u00b7 frtb_engine: connected using credentials of reporting_db",
+    "code": "pipelines/informatica/m_C90_calc_sbm_charge.xml \u00b7 mapping m_C90_calc_sbm_charge \u00b7 transformations FIL_RW_FOUND, AGG_SBM, EXP_WEIGHTED, LKP_RISK_WEIGHT",
+    "reconciliation": "Not reconciled: pipeline logic not re-executable (the column logic is not an identity, SUM or linear scaling)"
+   },
+   "consumed_by": "public.calc_sbm_charge",
+   "sourced_from": [
+    "public.ref_risk_weight.risk_weight",
+    "public.ref_risk_weight.risk_class",
+    "public.ref_risk_weight.sensitivity_type"
+   ],
+   "pipeline_type": "informatica",
+   "business_rules": [
+    "Used to filter / match / group rows: group by",
+    "Aggregated (SUM) per group"
+   ],
+   "transformation": "Loaded by Informatica mapping m_C90_calc_sbm_charge from frtb_engine.public.ref_risk_weight: sbm_charge_usd = ROUND(SUM((sensitivity_usd * risk_weight)), 2).",
+   "statement_rules": [
+    "Used to filter / match / group rows: group by",
+    "Aggregated (SUM) per group"
+   ],
+   "attribute_held_in": [
+    "public.calc_sbm_charge.sbm_charge_usd"
+   ],
+   "on_value_path": true
+  },
+  {
+   "n": 7,
+   "to": "reporting_db.rpt.c90_facts",
+   "from": "frtb_engine.public.calc_sbm_charge",
+   "status": "proven",
+   "evidence": {
+    "log": "16-Oct 08:44:01 \u00b7 app pmdtm \u00b7 user etl_owner \u00b7 INSERT INTO rpt.c90_facts (consolidation_group, risk_class, sensitivity_type, reported_value_usd, as_of_date)  \u00b7 frtb_engine: connected using credentials of reporting_db",
+    "code": "pipelines/informatica/m_C90_rpt_c90_facts.xml \u00b7 mapping m_C90_rpt_c90_facts \u00b7 transformations EXP_REPORTED_VALUE",
+    "reconciliation": "Recalculated 3,867.06 agrees to stored value 3,867.06 (tolerance \u00b10.01) \u00b7 reconciled by totals (identity); pipeline logic not re-executable"
+   },
+   "consumed_by": "rpt.c90_facts",
+   "sourced_from": [
+    "public.calc_sbm_charge.sbm_charge_usd",
+    "public.calc_sbm_charge.risk_class",
+    "public.calc_sbm_charge.sensitivity_type",
+    "public.calc_sbm_charge.consolidation_group"
+   ],
+   "pipeline_type": "informatica",
+   "business_rules": [
+    "Loaded by Informatica mapping m_C90_rpt_c90_facts; the transformation is only known from its lineage metadata"
+   ],
+   "transformation": "Loaded by Informatica mapping m_C90_rpt_c90_facts from frtb_engine.public.calc_sbm_charge: reported_value_usd = sbm_charge_usd (copied unchanged).",
+   "statement_rules": [
+    "Loaded by Informatica mapping m_C90_rpt_c90_facts; the transformation is only known from its lineage metadata"
+   ],
+   "attribute_held_in": [
+    "rpt.c90_facts.reported_value_usd"
+   ],
+   "on_value_path": true
+  },
+  {
+   "n": 8,
+   "to": "reporting_db.rpt.v_corep_c90",
+   "from": "reporting_db.rpt.c90_facts",
+   "status": "proven",
+   "purpose": "COREP C90 report as published: charge rows plus the ALL / ALL total row.",
+   "evidence": {
+    "log": null,
+    "sql": "CREATE VIEW \"rpt\".\"v_corep_c90\" AS SELECT consolidation_group,\n    risk_class,\n    sensitivity_type,\n    reported_value_usd\n   FROM ( SELECT f.consolidation_group,\n            f.risk_class,\n            f.sensitivity_type,\n            f.reported_value_usd\n           FROM rpt.c90_facts f\n        UNION ALL\n         SELECT f.consolidation_group,\n            'ALL'::text AS risk_class,\n            'ALL'::text AS sensitivity_type,\n            sum(f.reported_value_usd) AS reported_value_usd\n           FROM rpt.c90_facts f\n          GROUP BY f.consolidation_group) u\n  ORDER BY consolidation_group, (risk_class = 'ALL'::text), risk_class, sensitivity_type",
+    "code": "reporting_db: view rpt.v_corep_c90",
+    "version": "definition sha256 9c560591ac6e\u2026 \u00b7 captured 2026-10-16",
+    "reconciliation": "Recalculated 3,867.06 agrees to stored value 3,867.06 (tolerance \u00b10.01) [v_corep_c90.reported_value_usd]"
+   },
+   "consumed_by": "rpt.v_corep_c90",
+   "sourced_from": [
+    "rpt.c90_facts.reported_value_usd",
+    "rpt.c90_facts.risk_class",
+    "rpt.c90_facts.sensitivity_type",
+    "rpt.c90_facts.consolidation_group"
+   ],
+   "pipeline_type": "view",
+   "business_rules": [
+    "Summed by consolidation_group",
+    "Total row ALL = sum of the detail rows"
+   ],
+   "transformation": "Copied from reported_value_usd.",
+   "statement_rules": [
+    "Summed by consolidation_group",
+    "Total row ALL = sum of the detail rows"
+   ],
+   "attribute_held_in": [
+    "rpt.v_corep_c90.reported_value_usd"
+   ],
+   "on_value_path": true
+  },
+  {
+   "n": 9,
+   "to": "superset.COREP C90 Report",
+   "from": "reporting_db.rpt.v_corep_c90",
+   "status": "proven",
+   "evidence": {
+    "sql": "SELECT consolidation_group AS consolidation_group, risk_class AS risk_class, sensitivity_type AS sensitivity_type, reported_value_usd AS reported_value_usd FROM rpt.v_corep_c90 ORDER BY (risk_class = 'ALL'), risk_class, sensitivity_type LIMIT 1000",
+    "code": "Superset chart 21 'COREP C90 Report' \u2192 dataset corep_c90_report",
+    "reconciliation": "Superset chart data re-run returned 3,867.06 for the selected keys; rpt.v_corep_c90.reported_value_usd sums to 3867.06"
+   },
+   "consumed_by": "Report COREP C90 Report",
+   "sourced_from": [
+    "rpt.v_corep_c90.reported_value_usd"
+   ],
+   "pipeline_type": "bi_tool",
+   "business_rules": [
+    "Displayed as a table in Superset chart 'COREP C90 Report'"
+   ],
+   "transformation": "Superset dataset 'corep_c90_report' is a virtual dataset over SQL; the chart displays it as a table.",
+   "attribute_held_in": [
+    "COREP C90 Report"
+   ],
+   "on_value_path": true
+  }
+ ],
+ "default_hop": 9,
+ "column_edges": [
+  {
+   "from_node": "market_data.db.fx_rates",
+   "from_column": "ccy",
+   "to_node": "staging.public.ref_fx_rates",
+   "to_column": "ccy",
+   "hop": 1,
+   "transformation": "pass-through",
+   "kind": "value"
+  },
+  {
+   "from_node": "market_data.db.fx_rates",
+   "from_column": "rate_date",
+   "to_node": "staging.public.ref_fx_rates",
+   "to_column": "rate_date",
+   "hop": 1,
+   "transformation": "pass-through",
+   "kind": "value"
+  },
+  {
+   "from_node": "market_data.db.fx_rates",
+   "from_column": "rate_to_usd",
+   "to_node": "staging.public.ref_fx_rates",
+   "to_column": "rate_to_usd",
+   "hop": 1,
+   "transformation": "pass-through",
+   "kind": "value"
+  },
+  {
+   "from_node": "trading_db.trd.trade_sensitivity",
+   "from_column": "consolidation_group",
+   "to_node": "staging.public.stg_sensitivity",
+   "to_column": "consolidation_group",
+   "hop": 2,
+   "transformation": "pass-through",
+   "kind": "value"
+  },
+  {
+   "from_node": "trading_db.trd.trade_sensitivity",
+   "from_column": "risk_class",
+   "to_node": "staging.public.stg_sensitivity",
+   "to_column": "risk_class",
+   "hop": 2,
+   "transformation": "pass-through",
+   "kind": "value"
+  },
+  {
+   "from_node": "trading_db.trd.trade_sensitivity",
+   "from_column": "sensitivity_type",
+   "to_node": "staging.public.stg_sensitivity",
+   "to_column": "sensitivity_type",
+   "hop": 2,
+   "transformation": "pass-through",
+   "kind": "value"
+  },
+  {
+   "from_node": "trading_db.trd.trade_sensitivity",
+   "from_column": "currency",
+   "to_node": "staging.public.stg_sensitivity",
+   "to_column": "currency",
+   "hop": 2,
+   "transformation": "pass-through",
+   "kind": "value"
+  },
+  {
+   "from_node": "trading_db.trd.trade_sensitivity",
+   "from_column": "as_of_date",
+   "to_node": "staging.public.stg_sensitivity",
+   "to_column": "as_of_date",
+   "hop": 2,
+   "transformation": "pass-through",
+   "kind": "value"
+  },
+  {
+   "from_node": "trading_db.trd.trade_sensitivity",
+   "from_column": "sensitivity_amount",
+   "to_node": "staging.public.stg_sensitivity",
+   "to_column": "sensitivity_amount",
+   "hop": 2,
+   "transformation": "pass-through",
+   "kind": "value"
+  },
+  {
+   "from_node": "staging.public.ref_fx_rates",
+   "from_column": "ccy",
+   "to_node": "dwh.public.dw_sensitivity_usd",
+   "to_column": "consolidation_group",
+   "hop": 3,
+   "transformation": "filter / join / group by",
+   "kind": "filter",
+   "business_rule": "Used to filter / match / group rows: filter / join / group by"
+  },
+  {
+   "from_node": "staging.public.ref_fx_rates",
+   "from_column": "rate_date",
+   "to_node": "dwh.public.dw_sensitivity_usd",
+   "to_column": "consolidation_group",
+   "hop": 3,
+   "transformation": "filter / join / group by",
+   "kind": "filter",
+   "business_rule": "Used to filter / match / group rows: filter / join / group by"
+  },
+  {
+   "from_node": "staging.public.ref_fx_rates",
+   "from_column": "rate_to_usd",
+   "to_node": "dwh.public.dw_sensitivity_usd",
+   "to_column": "risk_class",
+   "hop": 3,
+   "transformation": "filter / join / group by",
+   "kind": "filter",
+   "business_rule": "Used to filter / match / group rows: filter / join / group by"
+  },
+  {
+   "from_node": "staging.public.ref_fx_rates",
+   "from_column": "ccy",
+   "to_node": "dwh.public.dw_sensitivity_usd",
+   "to_column": "risk_class",
+   "hop": 3,
+   "transformation": "filter / join / group by",
+   "kind": "filter",
+   "business_rule": "Used to filter / match / group rows: filter / join / group by"
+  },
+  {
+   "from_node": "staging.public.ref_fx_rates",
+   "from_column": "rate_to_usd",
+   "to_node": "dwh.public.dw_sensitivity_usd",
+   "to_column": "sensitivity_type",
+   "hop": 3,
+   "transformation": "filter / join / group by",
+   "kind": "filter",
+   "business_rule": "Used to filter / match / group rows: filter / join / group by"
+  },
+  {
+   "from_node": "staging.public.ref_fx_rates",
+   "from_column": "ccy",
+   "to_node": "dwh.public.dw_sensitivity_usd",
+   "to_column": "sensitivity_type",
+   "hop": 3,
+   "transformation": "filter / join / group by",
+   "kind": "filter",
+   "business_rule": "Used to filter / match / group rows: filter / join / group by"
+  },
+  {
+   "from_node": "staging.public.ref_fx_rates",
+   "from_column": "rate_date",
+   "to_node": "dwh.public.dw_sensitivity_usd",
+   "to_column": "sensitivity_type",
+   "hop": 3,
+   "transformation": "filter / join / group by",
+   "kind": "filter",
+   "business_rule": "Used to filter / match / group rows: filter / join / group by"
+  },
+  {
+   "from_node": "staging.public.ref_fx_rates",
+   "from_column": "rate_date",
+   "to_node": "dwh.public.dw_sensitivity_usd",
+   "to_column": "risk_class",
+   "hop": 3,
+   "transformation": "filter / join / group by",
+   "kind": "filter",
+   "business_rule": "Used to filter / match / group rows: filter / join / group by"
+  },
+  {
+   "from_node": "staging.public.ref_fx_rates",
+   "from_column": "ccy",
+   "to_node": "dwh.public.dw_sensitivity_usd",
+   "to_column": "sensitivity_usd",
+   "hop": 3,
+   "transformation": "filter / join / group by",
+   "kind": "filter",
+   "business_rule": "Used to filter / match / group rows: filter / join / group by"
+  },
+  {
+   "from_node": "staging.public.ref_fx_rates",
+   "from_column": "rate_to_usd",
+   "to_node": "dwh.public.dw_sensitivity_usd",
+   "to_column": "consolidation_group",
+   "hop": 3,
+   "transformation": "filter / join / group by",
+   "kind": "filter",
+   "business_rule": "Used to filter / match / group rows: filter / join / group by"
+  },
+  {
+   "from_node": "staging.public.ref_fx_rates",
+   "from_column": "rate_to_usd",
+   "to_node": "dwh.public.dw_sensitivity_usd",
+   "to_column": "sensitivity_usd",
+   "hop": 3,
+   "transformation": "ROUND(sensitivity_amount * rate_to_usd, 6)",
+   "kind": "value",
+   "business_rule": "Calculated as ROUND(sensitivity_amount * rate_to_usd, 6)"
+  },
+  {
+   "from_node": "staging.public.ref_fx_rates",
+   "from_column": "rate_date",
+   "to_node": "dwh.public.dw_sensitivity_usd",
+   "to_column": "sensitivity_usd",
+   "hop": 3,
+   "transformation": "filter / join / group by",
+   "kind": "filter",
+   "business_rule": "Used to filter / match / group rows: filter / join / group by"
+  },
+  {
+   "from_node": "staging.public.stg_sensitivity",
+   "from_column": "currency",
+   "to_node": "dwh.public.dw_sensitivity_usd",
+   "to_column": "consolidation_group",
+   "hop": 4,
+   "transformation": "filter / join / group by",
+   "kind": "filter",
+   "business_rule": "Used to filter / match / group rows: filter / join / group by"
+  },
+  {
+   "from_node": "staging.public.stg_sensitivity",
+   "from_column": "as_of_date",
+   "to_node": "dwh.public.dw_sensitivity_usd",
+   "to_column": "consolidation_group",
+   "hop": 4,
+   "transformation": "filter / join / group by",
+   "kind": "filter",
+   "business_rule": "Used to filter / match / group rows: filter / join / group by"
+  },
+  {
+   "from_node": "staging.public.stg_sensitivity",
+   "from_column": "as_of_date",
+   "to_node": "dwh.public.dw_sensitivity_usd",
+   "to_column": "risk_class",
+   "hop": 4,
+   "transformation": "filter / join / group by",
+   "kind": "filter",
+   "business_rule": "Used to filter / match / group rows: filter / join / group by"
+  },
+  {
+   "from_node": "staging.public.stg_sensitivity",
+   "from_column": "currency",
+   "to_node": "dwh.public.dw_sensitivity_usd",
+   "to_column": "sensitivity_type",
+   "hop": 4,
+   "transformation": "filter / join / group by",
+   "kind": "filter",
+   "business_rule": "Used to filter / match / group rows: filter / join / group by"
+  },
+  {
+   "from_node": "staging.public.stg_sensitivity",
+   "from_column": "as_of_date",
+   "to_node": "dwh.public.dw_sensitivity_usd",
+   "to_column": "sensitivity_type",
+   "hop": 4,
+   "transformation": "filter / join / group by",
+   "kind": "filter",
+   "business_rule": "Used to filter / match / group rows: filter / join / group by"
+  },
+  {
+   "from_node": "staging.public.stg_sensitivity",
+   "from_column": "currency",
+   "to_node": "dwh.public.dw_sensitivity_usd",
+   "to_column": "sensitivity_usd",
+   "hop": 4,
+   "transformation": "filter / join / group by",
+   "kind": "filter",
+   "business_rule": "Used to filter / match / group rows: filter / join / group by"
+  },
+  {
+   "from_node": "staging.public.stg_sensitivity",
+   "from_column": "as_of_date",
+   "to_node": "dwh.public.dw_sensitivity_usd",
+   "to_column": "sensitivity_usd",
+   "hop": 4,
+   "transformation": "filter / join / group by",
+   "kind": "filter",
+   "business_rule": "Used to filter / match / group rows: filter / join / group by"
+  },
+  {
+   "from_node": "staging.public.stg_sensitivity",
+   "from_column": "risk_class",
+   "to_node": "dwh.public.dw_sensitivity_usd",
+   "to_column": "risk_class",
+   "hop": 4,
+   "transformation": "pass-through",
+   "kind": "value"
+  },
+  {
+   "from_node": "staging.public.stg_sensitivity",
+   "from_column": "sensitivity_type",
+   "to_node": "dwh.public.dw_sensitivity_usd",
+   "to_column": "sensitivity_type",
+   "hop": 4,
+   "transformation": "pass-through",
+   "kind": "value"
+  },
+  {
+   "from_node": "staging.public.stg_sensitivity",
+   "from_column": "sensitivity_amount",
+   "to_node": "dwh.public.dw_sensitivity_usd",
+   "to_column": "sensitivity_usd",
+   "hop": 4,
+   "transformation": "ROUND(sensitivity_amount * rate_to_usd, 6)",
+   "kind": "value",
+   "business_rule": "Calculated as ROUND(sensitivity_amount * rate_to_usd, 6)"
+  },
+  {
+   "from_node": "staging.public.stg_sensitivity",
+   "from_column": "currency",
+   "to_node": "dwh.public.dw_sensitivity_usd",
+   "to_column": "risk_class",
+   "hop": 4,
+   "transformation": "filter / join / group by",
+   "kind": "filter",
+   "business_rule": "Used to filter / match / group rows: filter / join / group by"
+  },
+  {
+   "from_node": "staging.public.stg_sensitivity",
+   "from_column": "consolidation_group",
+   "to_node": "dwh.public.dw_sensitivity_usd",
+   "to_column": "consolidation_group",
+   "hop": 4,
+   "transformation": "pass-through",
+   "kind": "value"
+  },
+  {
+   "from_node": "dwh.public.dw_sensitivity_usd",
+   "from_column": "risk_class",
+   "to_node": "frtb_engine.public.calc_sbm_charge",
+   "to_column": "consolidation_group",
+   "hop": 5,
+   "transformation": "group by",
+   "kind": "filter",
+   "business_rule": "Used to filter / match / group rows: group by"
+  },
+  {
+   "from_node": "dwh.public.dw_sensitivity_usd",
+   "from_column": "sensitivity_type",
+   "to_node": "frtb_engine.public.calc_sbm_charge",
+   "to_column": "risk_class",
+   "hop": 5,
+   "transformation": "group by",
+   "kind": "filter",
+   "business_rule": "Used to filter / match / group rows: group by"
+  },
+  {
+   "from_node": "dwh.public.dw_sensitivity_usd",
+   "from_column": "risk_class",
+   "to_node": "frtb_engine.public.calc_sbm_charge",
+   "to_column": "sensitivity_type",
+   "hop": 5,
+   "transformation": "group by",
+   "kind": "filter",
+   "business_rule": "Used to filter / match / group rows: group by"
+  },
+  {
+   "from_node": "dwh.public.dw_sensitivity_usd",
+   "from_column": "consolidation_group",
+   "to_node": "frtb_engine.public.calc_sbm_charge",
+   "to_column": "sbm_charge_usd",
+   "hop": 5,
+   "transformation": "group by",
+   "kind": "filter",
+   "business_rule": "Used to filter / match / group rows: group by"
+  },
+  {
+   "from_node": "dwh.public.dw_sensitivity_usd",
+   "from_column": "sensitivity_type",
+   "to_node": "frtb_engine.public.calc_sbm_charge",
+   "to_column": "sbm_charge_usd",
+   "hop": 5,
+   "transformation": "group by",
+   "kind": "filter",
+   "business_rule": "Used to filter / match / group rows: group by"
+  },
+  {
+   "from_node": "dwh.public.dw_sensitivity_usd",
+   "from_column": "risk_class",
+   "to_node": "frtb_engine.public.calc_sbm_charge",
+   "to_column": "sbm_charge_usd",
+   "hop": 5,
+   "transformation": "group by",
+   "kind": "filter",
+   "business_rule": "Used to filter / match / group rows: group by"
+  },
+  {
+   "from_node": "dwh.public.dw_sensitivity_usd",
+   "from_column": "sensitivity_type",
+   "to_node": "frtb_engine.public.calc_sbm_charge",
+   "to_column": "consolidation_group",
+   "hop": 5,
+   "transformation": "group by",
+   "kind": "filter",
+   "business_rule": "Used to filter / match / group rows: group by"
+  },
+  {
+   "from_node": "dwh.public.dw_sensitivity_usd",
+   "from_column": "risk_class",
+   "to_node": "frtb_engine.public.calc_sbm_charge",
+   "to_column": "risk_class",
+   "hop": 5,
+   "transformation": "pass-through",
+   "kind": "value"
+  },
+  {
+   "from_node": "dwh.public.dw_sensitivity_usd",
+   "from_column": "sensitivity_type",
+   "to_node": "frtb_engine.public.calc_sbm_charge",
+   "to_column": "sensitivity_type",
+   "hop": 5,
+   "transformation": "pass-through",
+   "kind": "value"
+  },
+  {
+   "from_node": "dwh.public.dw_sensitivity_usd",
+   "from_column": "sensitivity_usd",
+   "to_node": "frtb_engine.public.calc_sbm_charge",
+   "to_column": "sbm_charge_usd",
+   "hop": 5,
+   "transformation": "ROUND(SUM((sensitivity_usd * risk_weight)), 2)",
+   "kind": "value",
+   "business_rule": "Aggregated (SUM) per group"
+  },
+  {
+   "from_node": "dwh.public.dw_sensitivity_usd",
+   "from_column": "consolidation_group",
+   "to_node": "frtb_engine.public.calc_sbm_charge",
+   "to_column": "consolidation_group",
+   "hop": 5,
+   "transformation": "pass-through",
+   "kind": "value"
+  },
+  {
+   "from_node": "frtb_engine.public.ref_risk_weight",
+   "from_column": "risk_class",
+   "to_node": "frtb_engine.public.calc_sbm_charge",
+   "to_column": "consolidation_group",
+   "hop": 6,
+   "transformation": "group by",
+   "kind": "filter",
+   "business_rule": "Used to filter / match / group rows: group by"
+  },
+  {
+   "from_node": "frtb_engine.public.ref_risk_weight",
+   "from_column": "sensitivity_type",
+   "to_node": "frtb_engine.public.calc_sbm_charge",
+   "to_column": "consolidation_group",
+   "hop": 6,
+   "transformation": "group by",
+   "kind": "filter",
+   "business_rule": "Used to filter / match / group rows: group by"
+  },
+  {
+   "from_node": "frtb_engine.public.ref_risk_weight",
+   "from_column": "risk_class",
+   "to_node": "frtb_engine.public.calc_sbm_charge",
+   "to_column": "risk_class",
+   "hop": 6,
+   "transformation": "group by",
+   "kind": "filter",
+   "business_rule": "Used to filter / match / group rows: group by"
+  },
+  {
+   "from_node": "frtb_engine.public.ref_risk_weight",
+   "from_column": "sensitivity_type",
+   "to_node": "frtb_engine.public.calc_sbm_charge",
+   "to_column": "risk_class",
+   "hop": 6,
+   "transformation": "group by",
+   "kind": "filter",
+   "business_rule": "Used to filter / match / group rows: group by"
+  },
+  {
+   "from_node": "frtb_engine.public.ref_risk_weight",
+   "from_column": "risk_weight",
+   "to_node": "frtb_engine.public.calc_sbm_charge",
+   "to_column": "sensitivity_type",
+   "hop": 6,
+   "transformation": "group by",
+   "kind": "filter",
+   "business_rule": "Used to filter / match / group rows: group by"
+  },
+  {
+   "from_node": "frtb_engine.public.ref_risk_weight",
+   "from_column": "risk_class",
+   "to_node": "frtb_engine.public.calc_sbm_charge",
+   "to_column": "sensitivity_type",
+   "hop": 6,
+   "transformation": "group by",
+   "kind": "filter",
+   "business_rule": "Used to filter / match / group rows: group by"
+  },
+  {
+   "from_node": "frtb_engine.public.ref_risk_weight",
+   "from_column": "sensitivity_type",
+   "to_node": "frtb_engine.public.calc_sbm_charge",
+   "to_column": "sensitivity_type",
+   "hop": 6,
+   "transformation": "group by",
+   "kind": "filter",
+   "business_rule": "Used to filter / match / group rows: group by"
+  },
+  {
+   "from_node": "frtb_engine.public.ref_risk_weight",
+   "from_column": "risk_weight",
+   "to_node": "frtb_engine.public.calc_sbm_charge",
+   "to_column": "risk_class",
+   "hop": 6,
+   "transformation": "group by",
+   "kind": "filter",
+   "business_rule": "Used to filter / match / group rows: group by"
+  },
+  {
+   "from_node": "frtb_engine.public.ref_risk_weight",
+   "from_column": "risk_class",
+   "to_node": "frtb_engine.public.calc_sbm_charge",
+   "to_column": "sbm_charge_usd",
+   "hop": 6,
+   "transformation": "group by",
+   "kind": "filter",
+   "business_rule": "Used to filter / match / group rows: group by"
+  },
+  {
+   "from_node": "frtb_engine.public.ref_risk_weight",
+   "from_column": "sensitivity_type",
+   "to_node": "frtb_engine.public.calc_sbm_charge",
+   "to_column": "sbm_charge_usd",
+   "hop": 6,
+   "transformation": "group by",
+   "kind": "filter",
+   "business_rule": "Used to filter / match / group rows: group by"
+  },
+  {
+   "from_node": "frtb_engine.public.ref_risk_weight",
+   "from_column": "risk_weight",
+   "to_node": "frtb_engine.public.calc_sbm_charge",
+   "to_column": "consolidation_group",
+   "hop": 6,
+   "transformation": "group by",
+   "kind": "filter",
+   "business_rule": "Used to filter / match / group rows: group by"
+  },
+  {
+   "from_node": "frtb_engine.public.ref_risk_weight",
+   "from_column": "risk_weight",
+   "to_node": "frtb_engine.public.calc_sbm_charge",
+   "to_column": "sbm_charge_usd",
+   "hop": 6,
+   "transformation": "ROUND(SUM((sensitivity_usd * risk_weight)), 2)",
+   "kind": "value",
+   "business_rule": "Aggregated (SUM) per group"
+  },
+  {
+   "from_node": "frtb_engine.public.calc_sbm_charge",
+   "from_column": "risk_class",
+   "to_node": "reporting_db.rpt.c90_facts",
+   "to_column": "risk_class",
+   "hop": 7,
+   "transformation": "pass-through",
+   "kind": "value"
+  },
+  {
+   "from_node": "frtb_engine.public.calc_sbm_charge",
+   "from_column": "sensitivity_type",
+   "to_node": "reporting_db.rpt.c90_facts",
+   "to_column": "sensitivity_type",
+   "hop": 7,
+   "transformation": "pass-through",
+   "kind": "value"
+  },
+  {
+   "from_node": "frtb_engine.public.calc_sbm_charge",
+   "from_column": "sbm_charge_usd",
+   "to_node": "reporting_db.rpt.c90_facts",
+   "to_column": "reported_value_usd",
+   "hop": 7,
+   "transformation": "pass-through",
+   "kind": "value"
+  },
+  {
+   "from_node": "frtb_engine.public.calc_sbm_charge",
+   "from_column": "consolidation_group",
+   "to_node": "reporting_db.rpt.c90_facts",
+   "to_column": "consolidation_group",
+   "hop": 7,
+   "transformation": "pass-through",
+   "kind": "value"
+  },
+  {
+   "from_node": "reporting_db.rpt.c90_facts",
+   "from_column": "consolidation_group",
+   "to_node": "reporting_db.rpt.v_corep_c90",
+   "to_column": "consolidation_group",
+   "hop": 8,
+   "transformation": "pass-through",
+   "kind": "value"
+  },
+  {
+   "from_node": "reporting_db.rpt.c90_facts",
+   "from_column": "risk_class",
+   "to_node": "reporting_db.rpt.v_corep_c90",
+   "to_column": "risk_class",
+   "hop": 8,
+   "transformation": "pass-through",
+   "kind": "value"
+  },
+  {
+   "from_node": "reporting_db.rpt.c90_facts",
+   "from_column": "sensitivity_type",
+   "to_node": "reporting_db.rpt.v_corep_c90",
+   "to_column": "sensitivity_type",
+   "hop": 8,
+   "transformation": "pass-through",
+   "kind": "value"
+  },
+  {
+   "from_node": "reporting_db.rpt.c90_facts",
+   "from_column": "reported_value_usd",
+   "to_node": "reporting_db.rpt.v_corep_c90",
+   "to_column": "reported_value_usd",
+   "hop": 8,
+   "transformation": "pass-through",
+   "kind": "value"
+  },
+  {
+   "from_node": "reporting_db.rpt.v_corep_c90",
+   "from_column": "reported_value_usd",
+   "to_node": "superset.COREP C90 Report",
+   "to_column": "reported_value_usd",
+   "hop": 9,
+   "transformation": "pass-through",
+   "kind": "value"
+  }
+ ]
+}

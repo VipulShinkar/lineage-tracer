@@ -1,6 +1,7 @@
 // Client for docs/spec/tracer-api.md (base /api/tracer). VITE_USE_FIXTURES=true serves ./fixtures instead.
 import { getRole } from '../api'
 import { tracerFixture } from './fixtures'
+import { DEMO, snapshotGet } from './demo'
 
 export type SystemType = 'superset' | 'postgresql' | 'sqlite'
 export type HopStatus = 'proven' | 'code_derived' | 'unresolved'
@@ -59,6 +60,12 @@ const USE_FIXTURES = import.meta.env.VITE_USE_FIXTURES === 'true'
 const BASE = '/api/tracer'
 
 async function call<T>(method: string, path: string, body?: unknown): Promise<T> {
+  if (DEMO) {
+    const m = /^\/traces\/(\w+)(\/lineage)?$/.exec(path)
+    if (method === 'GET' && m) return snapshotGet<T>(`${m[1]}.${m[2] ? 'lineage' : 'trace'}.json`)
+    if (method === 'POST' && /\/evidence-pack$/.test(path)) { const id = path.split('/')[2]; return { ref: id, sha256: '', download_url: `/snapshot/packs/${id}.pdf` } as T }
+    throw new Error('Read-only demo snapshot: this action is disabled')
+  }
   if (USE_FIXTURES) return tracerFixture(method, path, body) as Promise<T>
   const isForm = body instanceof FormData
   const res = await fetch(BASE + path, {

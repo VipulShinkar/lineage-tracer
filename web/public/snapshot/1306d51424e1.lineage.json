@@ -1,0 +1,1733 @@
+{
+ "header": {
+  "mode": "data_point",
+  "unit": "EUR m",
+  "label": "C 07.00 \u00b7 Corporates \u00b7 r0010 c0200",
+  "value": 1240.5,
+  "ref_date": "2026-06-30",
+  "template": "C 07.00",
+  "direction": "reverse"
+ },
+ "summary": {
+  "hops": 10,
+  "proven": 7,
+  "code_derived": 3,
+  "unresolved": 0,
+  "systems_of_record": 3,
+  "title": "EUR 1,240.5m traced to 3 systems of record"
+ },
+ "lanes": [
+  "system_of_record",
+  "staging",
+  "warehouse",
+  "data_mart",
+  "calc_engine",
+  "reporting_layer"
+ ],
+ "nodes": [
+  {
+   "id": "loans_db.los.facility",
+   "kind": "sor",
+   "lane": "system_of_record",
+   "name": "facility",
+   "object": "los.facility",
+   "schema": "los",
+   "system": "loans_db",
+   "columns": [
+    {
+     "name": "facility_id",
+     "data_type": "text",
+     "in_path": false
+    },
+    {
+     "name": "counterparty_id",
+     "data_type": "text",
+     "in_path": false
+    },
+    {
+     "name": "counterparty_type",
+     "data_type": "text",
+     "in_path": false
+    },
+    {
+     "name": "product_code",
+     "data_type": "text",
+     "in_path": false
+    },
+    {
+     "name": "currency",
+     "data_type": "character(3)",
+     "in_path": false
+    },
+    {
+     "name": "drawn_balance",
+     "data_type": "numeric(20,2)",
+     "description": "Drawn balance: Amount drawn by the borrower, in facility currency.",
+     "in_path": true
+    },
+    {
+     "name": "undrawn_limit",
+     "data_type": "numeric(20,2)",
+     "description": "Undrawn limit: Committed amount not yet drawn, in facility currency.",
+     "in_path": true
+    },
+    {
+     "name": "provision_pct",
+     "data_type": "numeric(9,6)",
+     "description": "Provision rate: Value adjustments (provisions) as a fraction of the exposure.",
+     "in_path": true
+    },
+    {
+     "name": "rating_status",
+     "data_type": "text",
+     "description": "Rating status: RATED when an external rating exists, otherwise UNRATED.",
+     "in_path": false
+    },
+    {
+     "name": "intragroup_flag",
+     "data_type": "boolean",
+     "description": "Intragroup flag: TRUE when the counterparty is a group company; excluded from regulatory exposure.",
+     "in_path": false
+    },
+    {
+     "name": "origination_date",
+     "data_type": "date",
+     "in_path": false
+    },
+    {
+     "name": "maturity_date",
+     "data_type": "date",
+     "in_path": false
+    }
+   ],
+   "service": "postgresql",
+   "database": "loans_db",
+   "description": "Credit facilities booked in the loan origination system; system of record for drawn balances, undrawn limits and intragroup status.",
+   "entity_type": "table",
+   "on_value_path": true
+  },
+  {
+   "id": "dwh.public.dw_exposure",
+   "kind": "intermediate",
+   "lane": "warehouse",
+   "name": "dw_exposure",
+   "object": "public.dw_exposure",
+   "schema": "public",
+   "system": "dwh",
+   "columns": [
+    {
+     "name": "facility_id",
+     "data_type": "text",
+     "in_path": false
+    },
+    {
+     "name": "counterparty_id",
+     "data_type": "text",
+     "in_path": false
+    },
+    {
+     "name": "counterparty_type",
+     "data_type": "text",
+     "in_path": true
+    },
+    {
+     "name": "product_code",
+     "data_type": "text",
+     "in_path": false
+    },
+    {
+     "name": "currency",
+     "data_type": "character(3)",
+     "in_path": false
+    },
+    {
+     "name": "fx_rate_to_eur",
+     "data_type": "numeric(18,8)",
+     "in_path": false
+    },
+    {
+     "name": "drawn_eur",
+     "data_type": "numeric(20,2)",
+     "description": "Drawn (EUR): Drawn balance converted to EUR at the reporting-date rate.",
+     "in_path": true
+    },
+    {
+     "name": "undrawn_eur",
+     "data_type": "numeric(20,2)",
+     "description": "Undrawn (EUR): Undrawn limit converted to EUR at the reporting-date rate.",
+     "in_path": true
+    },
+    {
+     "name": "provision_pct",
+     "data_type": "numeric(9,6)",
+     "in_path": true
+    },
+    {
+     "name": "rating_status",
+     "data_type": "text",
+     "in_path": false
+    },
+    {
+     "name": "as_of_date",
+     "data_type": "date",
+     "in_path": true
+    }
+   ],
+   "service": "postgresql",
+   "database": "dwh",
+   "description": "Facility exposure in EUR at the 30-Jun-2026 FX rate; intragroup facilities excluded.",
+   "entity_type": "table",
+   "on_value_path": true
+  },
+  {
+   "id": "market_data.db.fx_rates",
+   "kind": "sor",
+   "lane": "system_of_record",
+   "name": "fx_rates",
+   "object": "fx_rates",
+   "schema": null,
+   "system": "market_data.db",
+   "columns": [
+    {
+     "name": "ccy",
+     "data_type": "TEXT",
+     "in_path": false
+    },
+    {
+     "name": "rate_date",
+     "data_type": "TEXT",
+     "in_path": false
+    },
+    {
+     "name": "rate_to_eur",
+     "data_type": "REAL",
+     "in_path": true
+    },
+    {
+     "name": "rate_to_usd",
+     "data_type": "REAL",
+     "in_path": false
+    }
+   ],
+   "service": "sqlite",
+   "database": null,
+   "description": null,
+   "entity_type": "table",
+   "on_value_path": true
+  },
+  {
+   "id": "dwh.public.mart_sa_exposure",
+   "kind": "intermediate",
+   "lane": "data_mart",
+   "name": "mart_sa_exposure",
+   "object": "public.mart_sa_exposure",
+   "schema": "public",
+   "system": "dwh",
+   "columns": [
+    {
+     "name": "facility_id",
+     "data_type": "text",
+     "in_path": false
+    },
+    {
+     "name": "exposure_class",
+     "data_type": "text",
+     "description": "Exposure class: Standardised-approach exposure class derived from the counterparty type.",
+     "in_path": true
+    },
+    {
+     "name": "product_code",
+     "data_type": "text",
+     "in_path": true
+    },
+    {
+     "name": "rating_status",
+     "data_type": "text",
+     "in_path": false
+    },
+    {
+     "name": "provision_pct",
+     "data_type": "numeric(9,6)",
+     "in_path": true
+    },
+    {
+     "name": "on_bal_eur",
+     "data_type": "numeric(20,2)",
+     "description": "On-balance exposure (EUR): On-balance-sheet exposure in EUR.",
+     "in_path": true
+    },
+    {
+     "name": "off_bal_eur",
+     "data_type": "numeric(20,2)",
+     "description": "Off-balance exposure (EUR): Off-balance-sheet exposure (undrawn commitments) in EUR.",
+     "in_path": true
+    },
+    {
+     "name": "as_of_date",
+     "data_type": "date",
+     "in_path": true
+    }
+   ],
+   "service": "postgresql",
+   "database": "dwh",
+   "description": "Standardised-approach data mart: on- and off-balance exposure per facility with its exposure class.",
+   "entity_type": "table",
+   "on_value_path": true
+  },
+  {
+   "id": "staging.public.ref_fx_rates",
+   "kind": "intermediate",
+   "lane": "staging",
+   "name": "ref_fx_rates",
+   "object": "public.ref_fx_rates",
+   "schema": "public",
+   "system": "staging",
+   "columns": [
+    {
+     "name": "ccy",
+     "data_type": "character(3)",
+     "in_path": false
+    },
+    {
+     "name": "rate_date",
+     "data_type": "date",
+     "in_path": false
+    },
+    {
+     "name": "rate_to_eur",
+     "data_type": "numeric(18,8)",
+     "description": "FX rate to EUR: EUR per one unit of the currency on the rate date.",
+     "in_path": true
+    },
+    {
+     "name": "rate_to_usd",
+     "data_type": "numeric(18,8)",
+     "description": "FX rate to USD: USD per one unit of the currency on the rate date.",
+     "in_path": false
+    },
+    {
+     "name": "loaded_at",
+     "data_type": "timestamp with time zone",
+     "in_path": false
+    }
+   ],
+   "service": "postgresql",
+   "database": "staging",
+   "description": "FX rates feed loaded from the market data SQLite file; used for EUR and USD conversion.",
+   "entity_type": "table",
+   "on_value_path": true
+  },
+  {
+   "id": "collateral_db.col.collateral",
+   "kind": "sor",
+   "lane": "system_of_record",
+   "name": "collateral",
+   "object": "col.collateral",
+   "schema": "col",
+   "system": "collateral_db",
+   "columns": [
+    {
+     "name": "collateral_id",
+     "data_type": "text",
+     "in_path": false
+    },
+    {
+     "name": "facility_id",
+     "data_type": "text",
+     "in_path": false
+    },
+    {
+     "name": "collateral_type",
+     "data_type": "text",
+     "in_path": false
+    },
+    {
+     "name": "currency",
+     "data_type": "character(3)",
+     "in_path": false
+    },
+    {
+     "name": "market_value",
+     "data_type": "numeric(20,2)",
+     "description": "Market value: Current market value of the collateral in EUR.",
+     "in_path": true
+    },
+    {
+     "name": "haircut_pct",
+     "data_type": "numeric(6,4)",
+     "description": "Haircut: Supervisory haircut applied to the market value (fraction).",
+     "in_path": true
+    },
+    {
+     "name": "valuation_date",
+     "data_type": "date",
+     "in_path": false
+    }
+   ],
+   "service": "postgresql",
+   "database": "collateral_db",
+   "description": "Collateral pledged against facilities; system of record for collateral values.",
+   "entity_type": "table",
+   "on_value_path": true
+  },
+  {
+   "id": "reporting_db.rpt.c0700_facts",
+   "kind": "anchor",
+   "lane": "reporting_layer",
+   "name": "c0700_facts",
+   "object": "rpt.c0700_facts",
+   "schema": "rpt",
+   "system": "reporting_db",
+   "columns": [
+    {
+     "name": "template",
+     "data_type": "text",
+     "in_path": true
+    },
+    {
+     "name": "sheet",
+     "data_type": "text",
+     "in_path": true
+    },
+    {
+     "name": "row_code",
+     "data_type": "text",
+     "in_path": true
+    },
+    {
+     "name": "col_code",
+     "data_type": "text",
+     "description": "C 07.00 column: C 07.00 column: 0010 original exposure, 0040 net of value adjustments, 0200 exposure value, 0220 of which rated.",
+     "in_path": true
+    },
+    {
+     "name": "value",
+     "data_type": "numeric(18,1)",
+     "description": "Reported value: Reported cell value in EUR millions, one decimal.",
+     "in_path": true
+    },
+    {
+     "name": "unit",
+     "data_type": "text",
+     "in_path": false
+    },
+    {
+     "name": "as_of_date",
+     "data_type": "date",
+     "in_path": true
+    }
+   ],
+   "service": "postgresql",
+   "database": "reporting_db",
+   "description": "COREP C 07.00 credit risk SA cells per exposure class sheet, row and column, in EUR millions.",
+   "entity_type": "table",
+   "on_value_path": true
+  },
+  {
+   "id": "staging.public.stg_collateral",
+   "kind": "intermediate",
+   "lane": "staging",
+   "name": "stg_collateral",
+   "object": "public.stg_collateral",
+   "schema": "public",
+   "system": "staging",
+   "columns": [
+    {
+     "name": "collateral_id",
+     "data_type": "text",
+     "in_path": false
+    },
+    {
+     "name": "facility_id",
+     "data_type": "text",
+     "in_path": false
+    },
+    {
+     "name": "collateral_type",
+     "data_type": "text",
+     "in_path": false
+    },
+    {
+     "name": "currency",
+     "data_type": "character(3)",
+     "in_path": false
+    },
+    {
+     "name": "market_value",
+     "data_type": "numeric(20,2)",
+     "in_path": true
+    },
+    {
+     "name": "haircut_pct",
+     "data_type": "numeric(6,4)",
+     "in_path": true
+    },
+    {
+     "name": "valuation_date",
+     "data_type": "date",
+     "in_path": false
+    },
+    {
+     "name": "as_of_date",
+     "data_type": "date",
+     "in_path": false
+    },
+    {
+     "name": "loaded_at",
+     "data_type": "timestamp with time zone",
+     "in_path": false
+    }
+   ],
+   "service": "postgresql",
+   "database": "staging",
+   "description": "Landed copy of collateral from the collateral management system.",
+   "entity_type": "table",
+   "on_value_path": true
+  },
+  {
+   "id": "staging.public.stg_facilities",
+   "kind": "intermediate",
+   "lane": "staging",
+   "name": "stg_facilities",
+   "object": "public.stg_facilities",
+   "schema": "public",
+   "system": "staging",
+   "columns": [
+    {
+     "name": "facility_id",
+     "data_type": "text",
+     "in_path": false
+    },
+    {
+     "name": "counterparty_id",
+     "data_type": "text",
+     "in_path": false
+    },
+    {
+     "name": "counterparty_type",
+     "data_type": "text",
+     "in_path": false
+    },
+    {
+     "name": "product_code",
+     "data_type": "text",
+     "in_path": false
+    },
+    {
+     "name": "currency",
+     "data_type": "character(3)",
+     "in_path": false
+    },
+    {
+     "name": "drawn_balance",
+     "data_type": "numeric(20,2)",
+     "in_path": true
+    },
+    {
+     "name": "undrawn_limit",
+     "data_type": "numeric(20,2)",
+     "in_path": true
+    },
+    {
+     "name": "provision_pct",
+     "data_type": "numeric(9,6)",
+     "in_path": true
+    },
+    {
+     "name": "rating_status",
+     "data_type": "text",
+     "in_path": false
+    },
+    {
+     "name": "intragroup_flag",
+     "data_type": "boolean",
+     "in_path": false
+    },
+    {
+     "name": "as_of_date",
+     "data_type": "date",
+     "in_path": true
+    },
+    {
+     "name": "loaded_at",
+     "data_type": "timestamp with time zone",
+     "in_path": false
+    }
+   ],
+   "service": "postgresql",
+   "database": "staging",
+   "description": "Landed copy of facilities from the loan origination system.",
+   "entity_type": "table",
+   "on_value_path": true
+  },
+  {
+   "id": "dwh.public.dw_collateral_alloc",
+   "kind": "intermediate",
+   "lane": "warehouse",
+   "name": "dw_collateral_alloc",
+   "object": "public.dw_collateral_alloc",
+   "schema": "public",
+   "system": "dwh",
+   "columns": [
+    {
+     "name": "collateral_id",
+     "data_type": "text",
+     "in_path": false
+    },
+    {
+     "name": "facility_id",
+     "data_type": "text",
+     "in_path": false
+    },
+    {
+     "name": "collateral_type",
+     "data_type": "text",
+     "in_path": false
+    },
+    {
+     "name": "market_value_eur",
+     "data_type": "numeric(20,2)",
+     "in_path": false
+    },
+    {
+     "name": "haircut_pct",
+     "data_type": "numeric(6,4)",
+     "in_path": false
+    },
+    {
+     "name": "allocated_value_eur",
+     "data_type": "numeric(20,2)",
+     "description": "Allocated collateral (EUR): Market value net of haircut available as credit risk mitigation, in EUR.",
+     "in_path": true
+    },
+    {
+     "name": "as_of_date",
+     "data_type": "date",
+     "in_path": false
+    }
+   ],
+   "service": "postgresql",
+   "database": "dwh",
+   "description": "Collateral value after supervisory haircut, per collateral item, in EUR.",
+   "entity_type": "table",
+   "on_value_path": true
+  },
+  {
+   "id": "sa_engine.public.calc_sa_exposure",
+   "kind": "intermediate",
+   "lane": "calc_engine",
+   "name": "calc_sa_exposure",
+   "object": "public.calc_sa_exposure",
+   "schema": "public",
+   "system": "sa_engine",
+   "columns": [
+    {
+     "name": "facility_id",
+     "data_type": "text",
+     "in_path": false
+    },
+    {
+     "name": "exposure_class",
+     "data_type": "text",
+     "in_path": true
+    },
+    {
+     "name": "rating_status",
+     "data_type": "text",
+     "in_path": false
+    },
+    {
+     "name": "orig_on_eur",
+     "data_type": "numeric(20,2)",
+     "in_path": false
+    },
+    {
+     "name": "orig_off_eur",
+     "data_type": "numeric(20,2)",
+     "in_path": false
+    },
+    {
+     "name": "adj_on_eur",
+     "data_type": "numeric(20,2)",
+     "in_path": false
+    },
+    {
+     "name": "adj_off_eur",
+     "data_type": "numeric(20,2)",
+     "in_path": false
+    },
+    {
+     "name": "crm_eur",
+     "data_type": "numeric(20,2)",
+     "description": "CRM (EUR): Credit risk mitigation (collateral) deducted from the on-balance exposure, in EUR.",
+     "in_path": false
+    },
+    {
+     "name": "ccf",
+     "data_type": "numeric(9,6)",
+     "description": "CCF: Credit conversion factor applied to the off-balance exposure.",
+     "in_path": false
+    },
+    {
+     "name": "ev_on_eur",
+     "data_type": "numeric(20,2)",
+     "description": "On-balance exposure value (EUR): On-balance exposure value in EUR: balance less value adjustments less eligible collateral.",
+     "in_path": true
+    },
+    {
+     "name": "ev_off_eur",
+     "data_type": "numeric(20,2)",
+     "description": "Off-balance exposure value (EUR): Off-balance exposure value in EUR: undrawn limit less value adjustments, times the CCF.",
+     "in_path": true
+    },
+    {
+     "name": "as_of_date",
+     "data_type": "date",
+     "in_path": true
+    }
+   ],
+   "service": "postgresql",
+   "database": "sa_engine",
+   "description": "Standardised-approach exposure value per facility after value adjustments, credit conversion factor and collateral.",
+   "entity_type": "table",
+   "on_value_path": true
+  }
+ ],
+ "edges": [
+  {
+   "from": "market_data.db.fx_rates",
+   "to": "staging.public.ref_fx_rates",
+   "hop": 1,
+   "status": "code_derived"
+  },
+  {
+   "from": "collateral_db.col.collateral",
+   "to": "staging.public.stg_collateral",
+   "hop": 2,
+   "status": "proven"
+  },
+  {
+   "from": "loans_db.los.facility",
+   "to": "staging.public.stg_facilities",
+   "hop": 3,
+   "status": "proven"
+  },
+  {
+   "from": "staging.public.stg_collateral",
+   "to": "dwh.public.dw_collateral_alloc",
+   "hop": 4,
+   "status": "code_derived"
+  },
+  {
+   "from": "staging.public.ref_fx_rates",
+   "to": "dwh.public.dw_exposure",
+   "hop": 5,
+   "status": "proven"
+  },
+  {
+   "from": "staging.public.stg_facilities",
+   "to": "dwh.public.dw_exposure",
+   "hop": 6,
+   "status": "proven"
+  },
+  {
+   "from": "dwh.public.dw_exposure",
+   "to": "dwh.public.mart_sa_exposure",
+   "hop": 7,
+   "status": "proven"
+  },
+  {
+   "from": "dwh.public.dw_collateral_alloc",
+   "to": "sa_engine.public.calc_sa_exposure",
+   "hop": 8,
+   "status": "code_derived"
+  },
+  {
+   "from": "dwh.public.mart_sa_exposure",
+   "to": "sa_engine.public.calc_sa_exposure",
+   "hop": 9,
+   "status": "proven"
+  },
+  {
+   "from": "sa_engine.public.calc_sa_exposure",
+   "to": "reporting_db.rpt.c0700_facts",
+   "hop": 10,
+   "status": "proven"
+  }
+ ],
+ "hops": [
+  {
+   "n": 1,
+   "to": "staging.public.ref_fx_rates",
+   "from": "market_data.db.fx_rates",
+   "status": "code_derived",
+   "evidence": {
+    "log": "OpenLineage job load_fx_rates \u00b7 pg_stat_statements \u00b7 15 calls \u00b7 INSERT INTO public.ref_fx_rates (ccy, rate_date, rate_to_eur, rate_to_usd) VALUES ($1,$2,$3,$4)",
+    "code": "OpenLineage job load_fx_rates",
+    "reconciliation": "Recalculated 12.43 agrees to stored value 12.43 (tolerance \u00b10.05) (logic known from OpenLineage events only)"
+   },
+   "consumed_by": "public.ref_fx_rates",
+   "sourced_from": [
+    "fx_rates.rate_to_eur"
+   ],
+   "pipeline_type": "openlineage",
+   "business_rules": [
+    "Loaded by ETL job load_fx_rates; the transformation is only known from its lineage metadata"
+   ],
+   "transformation": "Loaded by ETL job load_fx_rates from fx_rates: rate_to_eur = rate_to_eur (copied unchanged).",
+   "statement_rules": [
+    "Loaded by ETL job load_fx_rates; the transformation is only known from its lineage metadata"
+   ],
+   "attribute_held_in": [
+    "public.ref_fx_rates.rate_to_eur"
+   ],
+   "on_value_path": true
+  },
+  {
+   "n": 2,
+   "to": "staging.public.stg_collateral",
+   "from": "collateral_db.col.collateral",
+   "status": "proven",
+   "purpose": "Lands collateral from the collateral management system.",
+   "evidence": {
+    "log": "pg_stat_statements \u00b7 2 calls \u00b7 CALL etl.sp_load_stg_collateral() \u00b7 collateral_db: connected using credentials of staging",
+    "sql": "INSERT INTO public.stg_collateral (\n        collateral_id, facility_id, collateral_type, currency,\n        market_value, haircut_pct, valuation_date, as_of_date)\n    SELECT\n        c.collateral_id,\n        c.facility_id,\n        c.collateral_type,\n        c.currency,\n        c.market_value,\n        c.haircut_pct,\n        c.valuation_date,\n        DATE '2026-06-30' AS as_of_date\n    FROM fdw_col.collateral AS c",
+    "code": "staging: function etl.sp_load_stg_collateral lines 4\u201316 \u00b7 read through foreign table fdw_col.collateral (foreign table fdw_col.collateral via server srv_collateral_db \u2192 collateral_db.col.collateral (sandbox-host:5432))",
+    "version": "definition sha256 d595ef429538\u2026 \u00b7 captured 2026-10-16",
+    "reconciliation": "Recalculated 38.18 agrees to stored value 38.18 (tolerance \u00b10.05) [stg_collateral.haircut_pct]"
+   },
+   "consumed_by": "public.stg_collateral",
+   "sourced_from": [
+    "col.collateral.haircut_pct",
+    "col.collateral.market_value"
+   ],
+   "pipeline_type": "foreign_table",
+   "business_rules": [],
+   "transformation": "Copied from c.haircut_pct.",
+   "statement_rules": [],
+   "attribute_held_in": [
+    "public.stg_collateral.haircut_pct"
+   ],
+   "on_value_path": true
+  },
+  {
+   "n": 3,
+   "to": "staging.public.stg_facilities",
+   "from": "loans_db.los.facility",
+   "status": "proven",
+   "purpose": "Lands facilities from the loan origination system.",
+   "evidence": {
+    "log": "pg_stat_statements \u00b7 1 call \u00b7 CALL etl.sp_load_stg_facilities()",
+    "sql": "INSERT INTO public.stg_facilities (\n        facility_id, counterparty_id, counterparty_type, product_code, currency,\n        drawn_balance, undrawn_limit, provision_pct, rating_status, intragroup_flag, as_of_date)\n    SELECT\n        f.facility_id,\n        f.counterparty_id,\n        f.counterparty_type,\n        f.product_code,\n        f.currency,\n        f.drawn_balance,\n        f.undrawn_limit,\n        f.provision_pct,\n        f.rating_status,\n        f.intragroup_flag,\n        DATE '2026-06-30' AS as_of_date\n    FROM fdw_los.facility AS f",
+    "code": "staging: function etl.sp_load_stg_facilities lines 4\u201319 \u00b7 read through foreign table fdw_los.facility (foreign table fdw_los.facility via server srv_loans_db \u2192 loans_db.los.facility (sandbox-host:5432))",
+    "version": "definition sha256 8e337f2cb862\u2026 \u00b7 captured 2026-10-16",
+    "reconciliation": "Recalculated 16.04 agrees to stored value 16.04 (tolerance \u00b10.05) [stg_facilities.provision_pct]"
+   },
+   "consumed_by": "public.stg_facilities",
+   "sourced_from": [
+    "los.facility.provision_pct",
+    "los.facility.drawn_balance",
+    "los.facility.undrawn_limit"
+   ],
+   "pipeline_type": "foreign_table",
+   "business_rules": [],
+   "transformation": "Copied from f.provision_pct.",
+   "statement_rules": [],
+   "attribute_held_in": [
+    "public.stg_facilities.provision_pct"
+   ],
+   "on_value_path": true
+  },
+  {
+   "n": 4,
+   "to": "dwh.public.dw_collateral_alloc",
+   "from": "staging.public.stg_collateral",
+   "status": "code_derived",
+   "purpose": "Applies supervisory haircuts to collateral.",
+   "evidence": {
+    "log": "pg_stat_statements \u00b7 1 call \u00b7 INSERT INTO public.dw_collateral_alloc ( collateral_id, facility_id, collateral_type, market_value_eur, haircu \u00b7 staging: connected using credentials of dwh",
+    "sql": "INSERT INTO public.dw_collateral_alloc (\n        collateral_id, facility_id, collateral_type, market_value_eur,\n        haircut_pct, allocated_value_eur, as_of_date)\n    SELECT\n        c.collateral_id,\n        c.facility_id,\n        c.collateral_type,\n        c.market_value                                   AS market_value_eur,\n        c.haircut_pct,\n        ROUND(c.market_value * (1 - c.haircut_pct), 2)   AS allocated_value_eur,\n        c.as_of_date\n    FROM fdw_stg.stg_collateral AS c",
+    "code": "dwh: function etl.sp_load_collateral_alloc lines 5\u201316 \u00b7 read through foreign table fdw_stg.stg_collateral (foreign table fdw_stg.stg_collateral via server srv_staging \u2192 staging.public.stg_collateral (sandbox-host:5432))",
+    "version": "definition sha256 64c9a87c920c\u2026 \u00b7 captured 2026-10-16",
+    "reconciliation": "Not reconciled: recalculated 799,965,000.48 vs stored 266,655,000.06 (tolerance \u00b10.05) [dw_collateral_alloc.allocated_value_eur]"
+   },
+   "consumed_by": "public.dw_collateral_alloc",
+   "sourced_from": [
+    "public.stg_collateral.haircut_pct",
+    "public.stg_collateral.market_value"
+   ],
+   "pipeline_type": "foreign_table",
+   "business_rules": [
+    "Allocated collateral (EUR) = market_value \u00d7 (1 - haircut_pct), rounded to 2 dp"
+   ],
+   "transformation": "Calculated as ROUND(c.market_value * (1 - c.haircut_pct), 2).",
+   "statement_rules": [
+    "Allocated collateral (EUR) = market_value \u00d7 (1 - haircut_pct), rounded to 2 dp"
+   ],
+   "attribute_held_in": [
+    "public.dw_collateral_alloc.allocated_value_eur"
+   ],
+   "on_value_path": true
+  },
+  {
+   "n": 5,
+   "to": "dwh.public.dw_exposure",
+   "from": "staging.public.ref_fx_rates",
+   "status": "proven",
+   "purpose": "Converts facilities to EUR and excludes intragroup facilities.",
+   "evidence": {
+    "log": "pg_stat_statements \u00b7 1 call \u00b7 CALL etl.sp_load_exposure() \u00b7 staging: connected using credentials of dwh",
+    "sql": "INSERT INTO public.dw_exposure (\n        facility_id, counterparty_id, counterparty_type, product_code, currency,\n        fx_rate_to_eur, drawn_eur, undrawn_eur, provision_pct, rating_status, as_of_date)\n    SELECT\n        f.facility_id,\n        f.counterparty_id,\n        f.counterparty_type,\n        f.product_code,\n        f.currency,\n        fx.rate_to_eur                              AS fx_rate_to_eur,\n        ROUND(f.drawn_balance * fx.rate_to_eur, 2)  AS drawn_eur,\n        ROUND(f.undrawn_limit * fx.rate_to_eur, 2)  AS undrawn_eur,\n        f.provision_pct,\n        f.rating_status,\n        f.as_of_date\n    FROM fdw_stg.stg_facilities AS f\n    JOIN fdw_stg.ref_fx_rates   AS fx\n      ON fx.ccy = f.currency\n     AND fx.rate_date = DATE '2026-06-30'\n    WHERE f.intragroup_flag = FALSE",
+    "code": "dwh: function etl.sp_load_exposure lines 5\u201324 \u00b7 read through foreign table fdw_stg.ref_fx_rates (foreign table fdw_stg.ref_fx_rates via server srv_staging \u2192 staging.public.ref_fx_rates (sandbox-host:5432))",
+    "version": "definition sha256 da7e5c59fed7\u2026 \u00b7 captured 2026-10-16",
+    "reconciliation": "Recalculated 839.83 agrees to stored value 839.83 (tolerance \u00b10.05) [dw_exposure.fx_rate_to_eur]"
+   },
+   "consumed_by": "public.dw_exposure",
+   "sourced_from": [
+    "public.ref_fx_rates.rate_to_eur"
+   ],
+   "pipeline_type": "foreign_table",
+   "business_rules": [],
+   "transformation": "Copied from f.provision_pct; intragroup excluded.",
+   "statement_rules": [
+    "Intragroup counterparties excluded"
+   ],
+   "attribute_held_in": [
+    "public.dw_exposure.provision_pct"
+   ],
+   "on_value_path": true
+  },
+  {
+   "n": 6,
+   "to": "dwh.public.dw_exposure",
+   "from": "staging.public.stg_facilities",
+   "status": "proven",
+   "purpose": "Converts facilities to EUR and excludes intragroup facilities.",
+   "evidence": {
+    "log": "pg_stat_statements \u00b7 1 call \u00b7 CALL etl.sp_load_exposure() \u00b7 staging: connected using credentials of dwh",
+    "sql": "INSERT INTO public.dw_exposure (\n        facility_id, counterparty_id, counterparty_type, product_code, currency,\n        fx_rate_to_eur, drawn_eur, undrawn_eur, provision_pct, rating_status, as_of_date)\n    SELECT\n        f.facility_id,\n        f.counterparty_id,\n        f.counterparty_type,\n        f.product_code,\n        f.currency,\n        fx.rate_to_eur                              AS fx_rate_to_eur,\n        ROUND(f.drawn_balance * fx.rate_to_eur, 2)  AS drawn_eur,\n        ROUND(f.undrawn_limit * fx.rate_to_eur, 2)  AS undrawn_eur,\n        f.provision_pct,\n        f.rating_status,\n        f.as_of_date\n    FROM fdw_stg.stg_facilities AS f\n    JOIN fdw_stg.ref_fx_rates   AS fx\n      ON fx.ccy = f.currency\n     AND fx.rate_date = DATE '2026-06-30'\n    WHERE f.intragroup_flag = FALSE",
+    "code": "dwh: function etl.sp_load_exposure lines 5\u201324 \u00b7 read through foreign table fdw_stg.stg_facilities (foreign table fdw_stg.stg_facilities via server srv_staging \u2192 staging.public.stg_facilities (sandbox-host:5432))",
+    "version": "definition sha256 da7e5c59fed7\u2026 \u00b7 captured 2026-10-16",
+    "reconciliation": "Recalculated 13.53 agrees to stored value 13.53 (tolerance \u00b10.05) [dw_exposure.provision_pct]"
+   },
+   "consumed_by": "public.dw_exposure",
+   "sourced_from": [
+    "public.stg_facilities.provision_pct",
+    "public.stg_facilities.drawn_balance",
+    "public.stg_facilities.undrawn_limit",
+    "public.stg_facilities.as_of_date"
+   ],
+   "pipeline_type": "foreign_table",
+   "business_rules": [
+    "Intragroup counterparties excluded"
+   ],
+   "transformation": "Copied from f.provision_pct; intragroup excluded.",
+   "statement_rules": [
+    "Intragroup counterparties excluded"
+   ],
+   "attribute_held_in": [
+    "public.dw_exposure.provision_pct"
+   ],
+   "on_value_path": true
+  },
+  {
+   "n": 7,
+   "to": "dwh.public.mart_sa_exposure",
+   "from": "dwh.public.dw_exposure",
+   "status": "proven",
+   "purpose": "Maps exposures to standardised-approach exposure classes.",
+   "evidence": {
+    "log": "pg_stat_statements \u00b7 1 call \u00b7 CALL etl.sp_load_mart_sa_exposure() \u00b7 dwh: connected using credentials of sa_engine",
+    "sql": "INSERT INTO public.mart_sa_exposure (\n        facility_id, exposure_class, product_code, rating_status, provision_pct,\n        on_bal_eur, off_bal_eur, as_of_date)\n    SELECT\n        e.facility_id,\n        CASE e.counterparty_type\n            WHEN 'CORP'   THEN 'Corporates'\n            WHEN 'RETAIL' THEN 'Retail'\n            WHEN 'INST'   THEN 'Institutions'\n            WHEN 'SOV'    THEN 'Central governments'\n            ELSE 'Other'\n        END                 AS exposure_class,\n        e.product_code,\n        e.rating_status,\n        e.provision_pct,\n        e.drawn_eur         AS on_bal_eur,\n        e.undrawn_eur       AS off_bal_eur,\n        e.as_of_date\n    FROM public.dw_exposure AS e",
+    "code": "dwh: function etl.sp_load_mart_sa_exposure lines 4\u201322",
+    "version": "definition sha256 e6cfdcf4b90c\u2026 \u00b7 captured 2026-10-16",
+    "reconciliation": "Recalculated 6.75 agrees to stored value 6.75 (tolerance \u00b10.05) [mart_sa_exposure.provision_pct]"
+   },
+   "consumed_by": "public.mart_sa_exposure",
+   "sourced_from": [
+    "public.dw_exposure.provision_pct",
+    "public.dw_exposure.drawn_eur",
+    "public.dw_exposure.undrawn_eur",
+    "public.dw_exposure.counterparty_type"
+   ],
+   "pipeline_type": "stored_procedure",
+   "business_rules": [
+    "counterparty_type mapped by lookup: 'CORP' \u2192 'Corporates', 'RETAIL' \u2192 'Retail', 'INST' \u2192 'Institutions', 'SOV' \u2192 'Central governments'"
+   ],
+   "transformation": "Copied from e.provision_pct.",
+   "statement_rules": [
+    "counterparty_type mapped by lookup: 'CORP' \u2192 'Corporates', 'RETAIL' \u2192 'Retail', 'INST' \u2192 'Institutions', 'SOV' \u2192 'Central governments'"
+   ],
+   "attribute_held_in": [
+    "public.mart_sa_exposure.provision_pct"
+   ],
+   "on_value_path": true
+  },
+  {
+   "n": 8,
+   "to": "sa_engine.public.calc_sa_exposure",
+   "from": "dwh.public.dw_collateral_alloc",
+   "status": "code_derived",
+   "purpose": "Calculates standardised-approach exposure values with CCF and collateral.",
+   "evidence": {
+    "log": "pg_stat_statements \u00b7 1 call \u00b7 CALL etl.sp_calc_sa_exposure() \u00b7 dwh: connected using credentials of sa_engine",
+    "sql": "INSERT INTO public.calc_sa_exposure (\n        facility_id, exposure_class, rating_status,\n        orig_on_eur, orig_off_eur, adj_on_eur, adj_off_eur,\n        crm_eur, ccf, ev_on_eur, ev_off_eur, as_of_date)\n    SELECT\n        m.facility_id,\n        m.exposure_class,\n        m.rating_status,\n        m.on_bal_eur                                                     AS orig_on_eur,\n        m.off_bal_eur                                                    AS orig_off_eur,\n        ROUND(m.on_bal_eur  * (1 - m.provision_pct), 2)                  AS adj_on_eur,\n        ROUND(m.off_bal_eur * (1 - m.provision_pct), 2)                  AS adj_off_eur,\n        LEAST(COALESCE(a.crm_eur, 0), ROUND(m.on_bal_eur * (1 - m.provision_pct), 2)) AS crm_eur,\n        CASE m.product_code WHEN 'COMMIT' THEN 0.939866 ELSE 1.0 END     AS ccf,\n        ROUND(m.on_bal_eur * (1 - m.provision_pct), 2)\n            - LEAST(COALESCE(a.crm_eur, 0), ROUND(m.on_bal_eur * (1 - m.provision_pct), 2)) AS ev_on_eur,\n        ROUND(m.off_bal_eur * (1 - m.provision_pct)\n            * CASE m.product_code WHEN 'COMMIT' THEN 0.939866 ELSE 1.0 END, 2) AS ev_off_eur,\n        m.as_of_date\n    FROM fdw_dwh.mart_sa_exposure AS m\n    LEFT JOIN (\n        SELECT c.facility_id, SUM(c.allocated_value_eur) AS crm_eur\n        FROM fdw_dwh.dw_collateral_alloc AS c\n        GROUP BY c.facility_id\n    ) AS a\n      ON a.facility_id = m.facility_id",
+    "code": "sa_engine: function etl.sp_calc_sa_exposure lines 6\u201331 \u00b7 read through foreign table fdw_dwh.dw_collateral_alloc (foreign table fdw_dwh.dw_collateral_alloc via server srv_dwh \u2192 dwh.public.dw_collateral_alloc (sandbox-host:5432))",
+    "version": "definition sha256 0945ebe28c9e\u2026 \u00b7 captured 2026-10-16",
+    "reconciliation": "Not reconciled: recalculated 1,041,700,029.53 vs stored 1,041,400,029.58 (tolerance \u00b10.05) [calc_sa_exposure.ev_on_eur]"
+   },
+   "consumed_by": "public.calc_sa_exposure",
+   "sourced_from": [
+    "public.dw_collateral_alloc.allocated_value_eur"
+   ],
+   "pipeline_type": "foreign_table",
+   "business_rules": [
+    "Summed by facility_id"
+   ],
+   "transformation": "Calculated as ROUND(m.on_bal_eur * (1 - m.provision_pct), 2) - LEAST(COALESCE(a.crm_eur, 0), ROUND(m.on_bal_eur * (1 - m.provision_pct), 2)).",
+   "statement_rules": [
+    "On-balance exposure value (EUR) = ROUND(on_bal_eur \u00d7 (1 - provision_pct), 2) - LEAST(COALESCE(SUM(allocated_value_eur), 0), ROUND(on_bal_eur \u00d7 (1 - provision_pct), 2))",
+    "Summed by facility_id"
+   ],
+   "attribute_held_in": [
+    "public.calc_sa_exposure.ev_on_eur"
+   ],
+   "on_value_path": true
+  },
+  {
+   "n": 9,
+   "to": "sa_engine.public.calc_sa_exposure",
+   "from": "dwh.public.mart_sa_exposure",
+   "status": "proven",
+   "purpose": "Calculates standardised-approach exposure values with CCF and collateral.",
+   "evidence": {
+    "log": "pg_stat_statements \u00b7 1 call \u00b7 CALL etl.sp_calc_sa_exposure() \u00b7 dwh: connected using credentials of sa_engine",
+    "sql": "INSERT INTO public.calc_sa_exposure (\n        facility_id, exposure_class, rating_status,\n        orig_on_eur, orig_off_eur, adj_on_eur, adj_off_eur,\n        crm_eur, ccf, ev_on_eur, ev_off_eur, as_of_date)\n    SELECT\n        m.facility_id,\n        m.exposure_class,\n        m.rating_status,\n        m.on_bal_eur                                                     AS orig_on_eur,\n        m.off_bal_eur                                                    AS orig_off_eur,\n        ROUND(m.on_bal_eur  * (1 - m.provision_pct), 2)                  AS adj_on_eur,\n        ROUND(m.off_bal_eur * (1 - m.provision_pct), 2)                  AS adj_off_eur,\n        LEAST(COALESCE(a.crm_eur, 0), ROUND(m.on_bal_eur * (1 - m.provision_pct), 2)) AS crm_eur,\n        CASE m.product_code WHEN 'COMMIT' THEN 0.939866 ELSE 1.0 END     AS ccf,\n        ROUND(m.on_bal_eur * (1 - m.provision_pct), 2)\n            - LEAST(COALESCE(a.crm_eur, 0), ROUND(m.on_bal_eur * (1 - m.provision_pct), 2)) AS ev_on_eur,\n        ROUND(m.off_bal_eur * (1 - m.provision_pct)\n            * CASE m.product_code WHEN 'COMMIT' THEN 0.939866 ELSE 1.0 END, 2) AS ev_off_eur,\n        m.as_of_date\n    FROM fdw_dwh.mart_sa_exposure AS m\n    LEFT JOIN (\n        SELECT c.facility_id, SUM(c.allocated_value_eur) AS crm_eur\n        FROM fdw_dwh.dw_collateral_alloc AS c\n        GROUP BY c.facility_id\n    ) AS a\n      ON a.facility_id = m.facility_id",
+    "code": "sa_engine: function etl.sp_calc_sa_exposure lines 6\u201331 \u00b7 read through foreign table fdw_dwh.mart_sa_exposure (foreign table fdw_dwh.mart_sa_exposure via server srv_dwh \u2192 dwh.public.mart_sa_exposure (sandbox-host:5432))",
+    "version": "definition sha256 0945ebe28c9e\u2026 \u00b7 captured 2026-10-16",
+    "reconciliation": "Recalculated 1,061,900,000.06 agrees to stored value 1,061,900,000.06 (tolerance \u00b10.05) [calc_sa_exposure.orig_on_eur] (+5 more columns agree)"
+   },
+   "consumed_by": "public.calc_sa_exposure",
+   "sourced_from": [
+    "public.mart_sa_exposure.provision_pct",
+    "public.mart_sa_exposure.on_bal_eur",
+    "public.mart_sa_exposure.off_bal_eur",
+    "public.mart_sa_exposure.product_code"
+   ],
+   "pipeline_type": "foreign_table",
+   "business_rules": [
+    "On-balance exposure value (EUR) = ROUND(on_bal_eur \u00d7 (1 - provision_pct), 2) - LEAST(COALESCE(SUM(allocated_value_eur), 0), ROUND(on_bal_eur \u00d7 (1 - provision_pct), 2))"
+   ],
+   "transformation": "Calculated as ROUND(m.on_bal_eur * (1 - m.provision_pct), 2) - LEAST(COALESCE(a.crm_eur, 0), ROUND(m.on_bal_eur * (1 - m.provision_pct), 2)).",
+   "statement_rules": [
+    "On-balance exposure value (EUR) = ROUND(on_bal_eur \u00d7 (1 - provision_pct), 2) - LEAST(COALESCE(SUM(allocated_value_eur), 0), ROUND(on_bal_eur \u00d7 (1 - provision_pct), 2))",
+    "Summed by facility_id"
+   ],
+   "attribute_held_in": [
+    "public.calc_sa_exposure.ev_on_eur"
+   ],
+   "on_value_path": true
+  },
+  {
+   "n": 10,
+   "to": "reporting_db.rpt.c0700_facts",
+   "from": "sa_engine.public.calc_sa_exposure",
+   "status": "proven",
+   "purpose": "Aggregates SA exposure values into the C 07.00 cells.",
+   "evidence": {
+    "log": "pg_stat_statements \u00b7 1 call \u00b7 CALL etl.sp_load_c0700_facts() \u00b7 sa_engine: connected using credentials of reporting_db",
+    "sql": "INSERT INTO rpt.c0700_facts (template, sheet, row_code, col_code, value, as_of_date)\n    WITH g AS (\n        SELECT\n            c.exposure_class,\n            SUM(c.orig_on_eur)  AS orig_on,\n            SUM(c.orig_off_eur) AS orig_off,\n            SUM(c.adj_on_eur)   AS adj_on,\n            SUM(c.adj_off_eur)  AS adj_off,\n            SUM(c.ev_on_eur)    AS ev_on,\n            SUM(c.ev_off_eur)   AS ev_off,\n            SUM(CASE WHEN c.rating_status = 'RATED' THEN c.ev_on_eur  ELSE 0 END) AS ev_on_rated,\n            SUM(CASE WHEN c.rating_status = 'RATED' THEN c.ev_off_eur ELSE 0 END) AS ev_off_rated,\n            MAX(c.as_of_date)   AS as_of_date\n        FROM fdw_sa.calc_sa_exposure AS c\n        GROUP BY c.exposure_class\n    )\n    SELECT 'C 07.00' AS template, g.exposure_class AS sheet, '0010' AS row_code, '0010' AS col_code,\n           ROUND((g.orig_on + g.orig_off) / 1000000, 1) AS value, g.as_of_date\n    FROM g\n    UNION ALL\n    SELECT 'C 07.00' AS template, g.exposure_class AS sheet, '0010' AS row_code, '0040' AS col_code,\n           ROUND((g.adj_on + g.adj_off) / 1000000, 1) AS value, g.as_of_date\n    FROM g\n    UNION ALL\n    SELECT 'C 07.00' AS template, g.exposure_class AS sheet, '0010' AS row_code, '0200' AS col_code,\n           ROUND((g.ev_on + g.ev_off) / 1000000, 1) AS value, g.as_of_date\n    FROM g\n    UNION ALL\n    SELECT 'C 07.00' AS template, g.exposure_class AS sheet, '0010' AS row_code, '0220' AS col_code,\n           ROUND((g.ev_on_rated + g.ev_off_rated) / 1000000, 1) AS value, g.as_of_date\n    FROM g\n    UNION ALL\n    SELECT 'C 07.00' AS template, g.exposure_class AS sheet, '0040' AS row_code, '0010' AS col_code,\n           ROUND((g.orig_on) / 1000000, 1) AS value, g.as_of_date\n    FROM g\n    UNION ALL\n    SELECT 'C 07.00' AS template, g.exposure_class AS sheet, '0040' AS row_code, '0040' AS col_code,\n           ROUND((g.adj_on) / 1000000, 1) AS value, g.as_of_date\n    FROM g\n    UNION ALL\n    SELECT 'C 07.00' AS template, g.exposure_class AS sheet, '0040' AS row_code, '0200' AS col_code,\n           ROUND((g.ev_on) / 1000000, 1) AS value, g.as_of_date\n    FROM g\n    UNION ALL\n    SELECT 'C 07.00' AS template, g.exposure_class AS sheet, '0040' AS row_code, '0220' AS col_code,\n           ROUND((g.ev_on_rated) / 1000000, 1) AS value, g.as_of_date\n    FROM g\n    UNION ALL\n    SELECT 'C 07.00' AS template, g.exposure_class AS sheet, '0050' AS row_code, '0010' AS col_code,\n           ROUND((g.orig_off) / 1000000, 1) AS value, g.as_of_date\n    FROM ",
+    "code": "reporting_db: function etl.sp_load_c0700_facts lines 4\u201367 \u00b7 read through foreign table fdw_sa.calc_sa_exposure (foreign table fdw_sa.calc_sa_exposure via server srv_sa_engine \u2192 sa_engine.public.calc_sa_exposure (sandbox-host:5432))",
+    "version": "definition sha256 1089761b68b3\u2026 \u00b7 captured 2026-10-16",
+    "reconciliation": "Recalculated 1,240.5 agrees to stored value 1,240.5 (tolerance \u00b10.05) [c0700_facts.value]"
+   },
+   "consumed_by": "rpt.c0700_facts",
+   "sourced_from": [
+    "public.calc_sa_exposure.ev_on_eur",
+    "public.calc_sa_exposure.ev_off_eur",
+    "public.calc_sa_exposure.exposure_class",
+    "public.calc_sa_exposure.as_of_date"
+   ],
+   "pipeline_type": "foreign_table",
+   "business_rules": [
+    "Reported value = SUM(ev_on_eur) + SUM(ev_off_eur), expressed in millions (\u00f71,000,000), rounded to 1 dp",
+    "Summed by exposure_class"
+   ],
+   "transformation": "Calculated as ROUND((g.ev_on + g.ev_off) / 1000000, 1).",
+   "statement_rules": [
+    "Reported value = SUM(ev_on_eur) + SUM(ev_off_eur), expressed in millions (\u00f71,000,000), rounded to 1 dp",
+    "Summed by exposure_class"
+   ],
+   "attribute_held_in": [
+    "rpt.c0700_facts.value"
+   ],
+   "on_value_path": true
+  }
+ ],
+ "default_hop": 10,
+ "column_edges": [
+  {
+   "from_node": "market_data.db.fx_rates",
+   "from_column": "rate_to_eur",
+   "to_node": "staging.public.ref_fx_rates",
+   "to_column": "rate_to_eur",
+   "hop": 1,
+   "transformation": "pass-through",
+   "kind": "value"
+  },
+  {
+   "from_node": "collateral_db.col.collateral",
+   "from_column": "collateral_id",
+   "to_node": "staging.public.stg_collateral",
+   "to_column": "collateral_id",
+   "hop": 2,
+   "transformation": "pass-through",
+   "kind": "value"
+  },
+  {
+   "from_node": "collateral_db.col.collateral",
+   "from_column": "facility_id",
+   "to_node": "staging.public.stg_collateral",
+   "to_column": "facility_id",
+   "hop": 2,
+   "transformation": "pass-through",
+   "kind": "value"
+  },
+  {
+   "from_node": "collateral_db.col.collateral",
+   "from_column": "collateral_type",
+   "to_node": "staging.public.stg_collateral",
+   "to_column": "collateral_type",
+   "hop": 2,
+   "transformation": "pass-through",
+   "kind": "value"
+  },
+  {
+   "from_node": "collateral_db.col.collateral",
+   "from_column": "currency",
+   "to_node": "staging.public.stg_collateral",
+   "to_column": "currency",
+   "hop": 2,
+   "transformation": "pass-through",
+   "kind": "value"
+  },
+  {
+   "from_node": "collateral_db.col.collateral",
+   "from_column": "market_value",
+   "to_node": "staging.public.stg_collateral",
+   "to_column": "market_value",
+   "hop": 2,
+   "transformation": "pass-through",
+   "kind": "value"
+  },
+  {
+   "from_node": "collateral_db.col.collateral",
+   "from_column": "haircut_pct",
+   "to_node": "staging.public.stg_collateral",
+   "to_column": "haircut_pct",
+   "hop": 2,
+   "transformation": "pass-through",
+   "kind": "value"
+  },
+  {
+   "from_node": "collateral_db.col.collateral",
+   "from_column": "valuation_date",
+   "to_node": "staging.public.stg_collateral",
+   "to_column": "valuation_date",
+   "hop": 2,
+   "transformation": "pass-through",
+   "kind": "value"
+  },
+  {
+   "from_node": "loans_db.los.facility",
+   "from_column": "facility_id",
+   "to_node": "staging.public.stg_facilities",
+   "to_column": "facility_id",
+   "hop": 3,
+   "transformation": "pass-through",
+   "kind": "value"
+  },
+  {
+   "from_node": "loans_db.los.facility",
+   "from_column": "counterparty_id",
+   "to_node": "staging.public.stg_facilities",
+   "to_column": "counterparty_id",
+   "hop": 3,
+   "transformation": "pass-through",
+   "kind": "value"
+  },
+  {
+   "from_node": "loans_db.los.facility",
+   "from_column": "counterparty_type",
+   "to_node": "staging.public.stg_facilities",
+   "to_column": "counterparty_type",
+   "hop": 3,
+   "transformation": "pass-through",
+   "kind": "value"
+  },
+  {
+   "from_node": "loans_db.los.facility",
+   "from_column": "product_code",
+   "to_node": "staging.public.stg_facilities",
+   "to_column": "product_code",
+   "hop": 3,
+   "transformation": "pass-through",
+   "kind": "value"
+  },
+  {
+   "from_node": "loans_db.los.facility",
+   "from_column": "currency",
+   "to_node": "staging.public.stg_facilities",
+   "to_column": "currency",
+   "hop": 3,
+   "transformation": "pass-through",
+   "kind": "value"
+  },
+  {
+   "from_node": "loans_db.los.facility",
+   "from_column": "drawn_balance",
+   "to_node": "staging.public.stg_facilities",
+   "to_column": "drawn_balance",
+   "hop": 3,
+   "transformation": "pass-through",
+   "kind": "value"
+  },
+  {
+   "from_node": "loans_db.los.facility",
+   "from_column": "undrawn_limit",
+   "to_node": "staging.public.stg_facilities",
+   "to_column": "undrawn_limit",
+   "hop": 3,
+   "transformation": "pass-through",
+   "kind": "value"
+  },
+  {
+   "from_node": "loans_db.los.facility",
+   "from_column": "provision_pct",
+   "to_node": "staging.public.stg_facilities",
+   "to_column": "provision_pct",
+   "hop": 3,
+   "transformation": "pass-through",
+   "kind": "value"
+  },
+  {
+   "from_node": "loans_db.los.facility",
+   "from_column": "rating_status",
+   "to_node": "staging.public.stg_facilities",
+   "to_column": "rating_status",
+   "hop": 3,
+   "transformation": "pass-through",
+   "kind": "value"
+  },
+  {
+   "from_node": "loans_db.los.facility",
+   "from_column": "intragroup_flag",
+   "to_node": "staging.public.stg_facilities",
+   "to_column": "intragroup_flag",
+   "hop": 3,
+   "transformation": "pass-through",
+   "kind": "value"
+  },
+  {
+   "from_node": "staging.public.stg_collateral",
+   "from_column": "collateral_id",
+   "to_node": "dwh.public.dw_collateral_alloc",
+   "to_column": "collateral_id",
+   "hop": 4,
+   "transformation": "pass-through",
+   "kind": "value"
+  },
+  {
+   "from_node": "staging.public.stg_collateral",
+   "from_column": "facility_id",
+   "to_node": "dwh.public.dw_collateral_alloc",
+   "to_column": "facility_id",
+   "hop": 4,
+   "transformation": "pass-through",
+   "kind": "value"
+  },
+  {
+   "from_node": "staging.public.stg_collateral",
+   "from_column": "collateral_type",
+   "to_node": "dwh.public.dw_collateral_alloc",
+   "to_column": "collateral_type",
+   "hop": 4,
+   "transformation": "pass-through",
+   "kind": "value"
+  },
+  {
+   "from_node": "staging.public.stg_collateral",
+   "from_column": "market_value",
+   "to_node": "dwh.public.dw_collateral_alloc",
+   "to_column": "market_value_eur",
+   "hop": 4,
+   "transformation": "pass-through",
+   "kind": "value"
+  },
+  {
+   "from_node": "staging.public.stg_collateral",
+   "from_column": "haircut_pct",
+   "to_node": "dwh.public.dw_collateral_alloc",
+   "to_column": "haircut_pct",
+   "hop": 4,
+   "transformation": "pass-through",
+   "kind": "value"
+  },
+  {
+   "from_node": "staging.public.stg_collateral",
+   "from_column": "haircut_pct",
+   "to_node": "dwh.public.dw_collateral_alloc",
+   "to_column": "allocated_value_eur",
+   "hop": 4,
+   "transformation": "ROUND(market_value * (1 - haircut_pct), 2)",
+   "kind": "value",
+   "business_rule": "Allocated collateral (EUR) = market_value \u00d7 (1 - haircut_pct), rounded to 2 dp"
+  },
+  {
+   "from_node": "staging.public.stg_collateral",
+   "from_column": "market_value",
+   "to_node": "dwh.public.dw_collateral_alloc",
+   "to_column": "allocated_value_eur",
+   "hop": 4,
+   "transformation": "ROUND(market_value * (1 - haircut_pct), 2)",
+   "kind": "value",
+   "business_rule": "Allocated collateral (EUR) = market_value \u00d7 (1 - haircut_pct), rounded to 2 dp"
+  },
+  {
+   "from_node": "staging.public.stg_collateral",
+   "from_column": "as_of_date",
+   "to_node": "dwh.public.dw_collateral_alloc",
+   "to_column": "as_of_date",
+   "hop": 4,
+   "transformation": "pass-through",
+   "kind": "value"
+  },
+  {
+   "from_node": "staging.public.ref_fx_rates",
+   "from_column": "rate_to_eur",
+   "to_node": "dwh.public.dw_exposure",
+   "to_column": "fx_rate_to_eur",
+   "hop": 5,
+   "transformation": "pass-through",
+   "kind": "value"
+  },
+  {
+   "from_node": "staging.public.ref_fx_rates",
+   "from_column": "rate_to_eur",
+   "to_node": "dwh.public.dw_exposure",
+   "to_column": "drawn_eur",
+   "hop": 5,
+   "transformation": "ROUND(drawn_balance * rate_to_eur, 2)",
+   "kind": "value",
+   "business_rule": "Drawn (EUR) = drawn_balance \u00d7 rate_to_eur, rounded to 2 dp"
+  },
+  {
+   "from_node": "staging.public.ref_fx_rates",
+   "from_column": "rate_to_eur",
+   "to_node": "dwh.public.dw_exposure",
+   "to_column": "undrawn_eur",
+   "hop": 5,
+   "transformation": "ROUND(undrawn_limit * rate_to_eur, 2)",
+   "kind": "value",
+   "business_rule": "Undrawn (EUR) = undrawn_limit \u00d7 rate_to_eur, rounded to 2 dp"
+  },
+  {
+   "from_node": "staging.public.stg_facilities",
+   "from_column": "facility_id",
+   "to_node": "dwh.public.dw_exposure",
+   "to_column": "facility_id",
+   "hop": 6,
+   "transformation": "pass-through",
+   "kind": "value"
+  },
+  {
+   "from_node": "staging.public.stg_facilities",
+   "from_column": "counterparty_id",
+   "to_node": "dwh.public.dw_exposure",
+   "to_column": "counterparty_id",
+   "hop": 6,
+   "transformation": "pass-through",
+   "kind": "value"
+  },
+  {
+   "from_node": "staging.public.stg_facilities",
+   "from_column": "counterparty_type",
+   "to_node": "dwh.public.dw_exposure",
+   "to_column": "counterparty_type",
+   "hop": 6,
+   "transformation": "pass-through",
+   "kind": "value"
+  },
+  {
+   "from_node": "staging.public.stg_facilities",
+   "from_column": "product_code",
+   "to_node": "dwh.public.dw_exposure",
+   "to_column": "product_code",
+   "hop": 6,
+   "transformation": "pass-through",
+   "kind": "value"
+  },
+  {
+   "from_node": "staging.public.stg_facilities",
+   "from_column": "currency",
+   "to_node": "dwh.public.dw_exposure",
+   "to_column": "currency",
+   "hop": 6,
+   "transformation": "pass-through",
+   "kind": "value"
+  },
+  {
+   "from_node": "staging.public.stg_facilities",
+   "from_column": "drawn_balance",
+   "to_node": "dwh.public.dw_exposure",
+   "to_column": "drawn_eur",
+   "hop": 6,
+   "transformation": "ROUND(drawn_balance * rate_to_eur, 2)",
+   "kind": "value",
+   "business_rule": "Drawn (EUR) = drawn_balance \u00d7 rate_to_eur, rounded to 2 dp"
+  },
+  {
+   "from_node": "staging.public.stg_facilities",
+   "from_column": "undrawn_limit",
+   "to_node": "dwh.public.dw_exposure",
+   "to_column": "undrawn_eur",
+   "hop": 6,
+   "transformation": "ROUND(undrawn_limit * rate_to_eur, 2)",
+   "kind": "value",
+   "business_rule": "Undrawn (EUR) = undrawn_limit \u00d7 rate_to_eur, rounded to 2 dp"
+  },
+  {
+   "from_node": "staging.public.stg_facilities",
+   "from_column": "provision_pct",
+   "to_node": "dwh.public.dw_exposure",
+   "to_column": "provision_pct",
+   "hop": 6,
+   "transformation": "pass-through",
+   "kind": "value"
+  },
+  {
+   "from_node": "staging.public.stg_facilities",
+   "from_column": "rating_status",
+   "to_node": "dwh.public.dw_exposure",
+   "to_column": "rating_status",
+   "hop": 6,
+   "transformation": "pass-through",
+   "kind": "value"
+  },
+  {
+   "from_node": "staging.public.stg_facilities",
+   "from_column": "as_of_date",
+   "to_node": "dwh.public.dw_exposure",
+   "to_column": "as_of_date",
+   "hop": 6,
+   "transformation": "pass-through",
+   "kind": "value"
+  },
+  {
+   "from_node": "dwh.public.dw_exposure",
+   "from_column": "facility_id",
+   "to_node": "dwh.public.mart_sa_exposure",
+   "to_column": "facility_id",
+   "hop": 7,
+   "transformation": "pass-through",
+   "kind": "value"
+  },
+  {
+   "from_node": "dwh.public.dw_exposure",
+   "from_column": "counterparty_type",
+   "to_node": "dwh.public.mart_sa_exposure",
+   "to_column": "exposure_class",
+   "hop": 7,
+   "transformation": "CASE counterparty_type WHEN 'CORP' THEN 'Corporates' WHEN 'RETAIL' THEN 'Retail' WHEN 'INST' THEN 'Institutions' WHEN 'SOV' THEN 'Central governments' ELSE 'Oth",
+   "kind": "value",
+   "business_rule": "counterparty_type mapped by lookup: 'CORP' \u2192 'Corporates', 'RETAIL' \u2192 'Retail', 'INST' \u2192 'Institutions', 'SOV' \u2192 'Central governments'"
+  },
+  {
+   "from_node": "dwh.public.dw_exposure",
+   "from_column": "product_code",
+   "to_node": "dwh.public.mart_sa_exposure",
+   "to_column": "product_code",
+   "hop": 7,
+   "transformation": "pass-through",
+   "kind": "value"
+  },
+  {
+   "from_node": "dwh.public.dw_exposure",
+   "from_column": "rating_status",
+   "to_node": "dwh.public.mart_sa_exposure",
+   "to_column": "rating_status",
+   "hop": 7,
+   "transformation": "pass-through",
+   "kind": "value"
+  },
+  {
+   "from_node": "dwh.public.dw_exposure",
+   "from_column": "provision_pct",
+   "to_node": "dwh.public.mart_sa_exposure",
+   "to_column": "provision_pct",
+   "hop": 7,
+   "transformation": "pass-through",
+   "kind": "value"
+  },
+  {
+   "from_node": "dwh.public.dw_exposure",
+   "from_column": "drawn_eur",
+   "to_node": "dwh.public.mart_sa_exposure",
+   "to_column": "on_bal_eur",
+   "hop": 7,
+   "transformation": "pass-through",
+   "kind": "value"
+  },
+  {
+   "from_node": "dwh.public.dw_exposure",
+   "from_column": "undrawn_eur",
+   "to_node": "dwh.public.mart_sa_exposure",
+   "to_column": "off_bal_eur",
+   "hop": 7,
+   "transformation": "pass-through",
+   "kind": "value"
+  },
+  {
+   "from_node": "dwh.public.dw_exposure",
+   "from_column": "as_of_date",
+   "to_node": "dwh.public.mart_sa_exposure",
+   "to_column": "as_of_date",
+   "hop": 7,
+   "transformation": "pass-through",
+   "kind": "value"
+  },
+  {
+   "from_node": "dwh.public.dw_collateral_alloc",
+   "from_column": "allocated_value_eur",
+   "to_node": "sa_engine.public.calc_sa_exposure",
+   "to_column": "crm_eur",
+   "hop": 8,
+   "transformation": "LEAST(COALESCE(SUM(allocated_value_eur), 0), ROUND(on_bal_eur * (1 - provision_pct), 2))",
+   "kind": "value",
+   "business_rule": "LEAST(COALESCE(SUM(allocated_value_eur), 0), ROUND(on_bal_eur \u00d7 (1 - provision_pct), 2))"
+  },
+  {
+   "from_node": "dwh.public.dw_collateral_alloc",
+   "from_column": "allocated_value_eur",
+   "to_node": "sa_engine.public.calc_sa_exposure",
+   "to_column": "ev_on_eur",
+   "hop": 8,
+   "transformation": "ROUND(on_bal_eur * (1 - provision_pct), 2) - LEAST(COALESCE(SUM(allocated_value_eur), 0), ROUND(on_bal_eur * (1 - provision_pct), 2))",
+   "kind": "value",
+   "business_rule": "On-balance exposure value (EUR) = ROUND(on_bal_eur \u00d7 (1 - provision_pct), 2) - LEAST(COALESCE(SUM(allocated_value_eur), 0), ROUND(on_bal_eur \u00d7 (1 - provision_pct), 2))"
+  },
+  {
+   "from_node": "dwh.public.mart_sa_exposure",
+   "from_column": "facility_id",
+   "to_node": "sa_engine.public.calc_sa_exposure",
+   "to_column": "facility_id",
+   "hop": 9,
+   "transformation": "pass-through",
+   "kind": "value"
+  },
+  {
+   "from_node": "dwh.public.mart_sa_exposure",
+   "from_column": "exposure_class",
+   "to_node": "sa_engine.public.calc_sa_exposure",
+   "to_column": "exposure_class",
+   "hop": 9,
+   "transformation": "pass-through",
+   "kind": "value"
+  },
+  {
+   "from_node": "dwh.public.mart_sa_exposure",
+   "from_column": "rating_status",
+   "to_node": "sa_engine.public.calc_sa_exposure",
+   "to_column": "rating_status",
+   "hop": 9,
+   "transformation": "pass-through",
+   "kind": "value"
+  },
+  {
+   "from_node": "dwh.public.mart_sa_exposure",
+   "from_column": "on_bal_eur",
+   "to_node": "sa_engine.public.calc_sa_exposure",
+   "to_column": "orig_on_eur",
+   "hop": 9,
+   "transformation": "pass-through",
+   "kind": "value"
+  },
+  {
+   "from_node": "dwh.public.mart_sa_exposure",
+   "from_column": "off_bal_eur",
+   "to_node": "sa_engine.public.calc_sa_exposure",
+   "to_column": "orig_off_eur",
+   "hop": 9,
+   "transformation": "pass-through",
+   "kind": "value"
+  },
+  {
+   "from_node": "dwh.public.mart_sa_exposure",
+   "from_column": "provision_pct",
+   "to_node": "sa_engine.public.calc_sa_exposure",
+   "to_column": "adj_on_eur",
+   "hop": 9,
+   "transformation": "ROUND(on_bal_eur * (1 - provision_pct), 2)",
+   "kind": "value",
+   "business_rule": "adj_on_eur = on_bal_eur \u00d7 (1 - provision_pct), rounded to 2 dp"
+  },
+  {
+   "from_node": "dwh.public.mart_sa_exposure",
+   "from_column": "on_bal_eur",
+   "to_node": "sa_engine.public.calc_sa_exposure",
+   "to_column": "adj_on_eur",
+   "hop": 9,
+   "transformation": "ROUND(on_bal_eur * (1 - provision_pct), 2)",
+   "kind": "value",
+   "business_rule": "adj_on_eur = on_bal_eur \u00d7 (1 - provision_pct), rounded to 2 dp"
+  },
+  {
+   "from_node": "dwh.public.mart_sa_exposure",
+   "from_column": "provision_pct",
+   "to_node": "sa_engine.public.calc_sa_exposure",
+   "to_column": "adj_off_eur",
+   "hop": 9,
+   "transformation": "ROUND(off_bal_eur * (1 - provision_pct), 2)",
+   "kind": "value",
+   "business_rule": "adj_off_eur = off_bal_eur \u00d7 (1 - provision_pct), rounded to 2 dp"
+  },
+  {
+   "from_node": "dwh.public.mart_sa_exposure",
+   "from_column": "off_bal_eur",
+   "to_node": "sa_engine.public.calc_sa_exposure",
+   "to_column": "adj_off_eur",
+   "hop": 9,
+   "transformation": "ROUND(off_bal_eur * (1 - provision_pct), 2)",
+   "kind": "value",
+   "business_rule": "adj_off_eur = off_bal_eur \u00d7 (1 - provision_pct), rounded to 2 dp"
+  },
+  {
+   "from_node": "dwh.public.mart_sa_exposure",
+   "from_column": "provision_pct",
+   "to_node": "sa_engine.public.calc_sa_exposure",
+   "to_column": "crm_eur",
+   "hop": 9,
+   "transformation": "LEAST(COALESCE(SUM(allocated_value_eur), 0), ROUND(on_bal_eur * (1 - provision_pct), 2))",
+   "kind": "value",
+   "business_rule": "LEAST(COALESCE(SUM(allocated_value_eur), 0), ROUND(on_bal_eur \u00d7 (1 - provision_pct), 2))"
+  },
+  {
+   "from_node": "dwh.public.mart_sa_exposure",
+   "from_column": "on_bal_eur",
+   "to_node": "sa_engine.public.calc_sa_exposure",
+   "to_column": "crm_eur",
+   "hop": 9,
+   "transformation": "LEAST(COALESCE(SUM(allocated_value_eur), 0), ROUND(on_bal_eur * (1 - provision_pct), 2))",
+   "kind": "value",
+   "business_rule": "LEAST(COALESCE(SUM(allocated_value_eur), 0), ROUND(on_bal_eur \u00d7 (1 - provision_pct), 2))"
+  },
+  {
+   "from_node": "dwh.public.mart_sa_exposure",
+   "from_column": "product_code",
+   "to_node": "sa_engine.public.calc_sa_exposure",
+   "to_column": "ccf",
+   "hop": 9,
+   "transformation": "CASE product_code WHEN 'COMMIT' THEN 0.939866 ELSE 1.0 END",
+   "kind": "value",
+   "business_rule": "product_code mapped by lookup: 'COMMIT' \u2192 0.939866"
+  },
+  {
+   "from_node": "dwh.public.mart_sa_exposure",
+   "from_column": "provision_pct",
+   "to_node": "sa_engine.public.calc_sa_exposure",
+   "to_column": "ev_on_eur",
+   "hop": 9,
+   "transformation": "ROUND(on_bal_eur * (1 - provision_pct), 2) - LEAST(COALESCE(SUM(allocated_value_eur), 0), ROUND(on_bal_eur * (1 - provision_pct), 2))",
+   "kind": "value",
+   "business_rule": "On-balance exposure value (EUR) = ROUND(on_bal_eur \u00d7 (1 - provision_pct), 2) - LEAST(COALESCE(SUM(allocated_value_eur), 0), ROUND(on_bal_eur \u00d7 (1 - provision_pct), 2))"
+  },
+  {
+   "from_node": "dwh.public.mart_sa_exposure",
+   "from_column": "on_bal_eur",
+   "to_node": "sa_engine.public.calc_sa_exposure",
+   "to_column": "ev_on_eur",
+   "hop": 9,
+   "transformation": "ROUND(on_bal_eur * (1 - provision_pct), 2) - LEAST(COALESCE(SUM(allocated_value_eur), 0), ROUND(on_bal_eur * (1 - provision_pct), 2))",
+   "kind": "value",
+   "business_rule": "On-balance exposure value (EUR) = ROUND(on_bal_eur \u00d7 (1 - provision_pct), 2) - LEAST(COALESCE(SUM(allocated_value_eur), 0), ROUND(on_bal_eur \u00d7 (1 - provision_pct), 2))"
+  },
+  {
+   "from_node": "dwh.public.mart_sa_exposure",
+   "from_column": "provision_pct",
+   "to_node": "sa_engine.public.calc_sa_exposure",
+   "to_column": "ev_off_eur",
+   "hop": 9,
+   "transformation": "ROUND(off_bal_eur * (1 - provision_pct) * CASE product_code WHEN 'COMMIT' THEN 0.939866 ELSE 1.0 END, 2)",
+   "kind": "value",
+   "business_rule": "Off-balance exposure value (EUR) = off_bal_eur \u00d7 (1 - provision_pct) \u00d7 CASE product_code WHEN 'COMMIT' THEN 0.939866 ELSE 1.0 END, rounded to 2 dp"
+  },
+  {
+   "from_node": "dwh.public.mart_sa_exposure",
+   "from_column": "off_bal_eur",
+   "to_node": "sa_engine.public.calc_sa_exposure",
+   "to_column": "ev_off_eur",
+   "hop": 9,
+   "transformation": "ROUND(off_bal_eur * (1 - provision_pct) * CASE product_code WHEN 'COMMIT' THEN 0.939866 ELSE 1.0 END, 2)",
+   "kind": "value",
+   "business_rule": "Off-balance exposure value (EUR) = off_bal_eur \u00d7 (1 - provision_pct) \u00d7 CASE product_code WHEN 'COMMIT' THEN 0.939866 ELSE 1.0 END, rounded to 2 dp"
+  },
+  {
+   "from_node": "dwh.public.mart_sa_exposure",
+   "from_column": "product_code",
+   "to_node": "sa_engine.public.calc_sa_exposure",
+   "to_column": "ev_off_eur",
+   "hop": 9,
+   "transformation": "ROUND(off_bal_eur * (1 - provision_pct) * CASE product_code WHEN 'COMMIT' THEN 0.939866 ELSE 1.0 END, 2)",
+   "kind": "value",
+   "business_rule": "Off-balance exposure value (EUR) = off_bal_eur \u00d7 (1 - provision_pct) \u00d7 CASE product_code WHEN 'COMMIT' THEN 0.939866 ELSE 1.0 END, rounded to 2 dp"
+  },
+  {
+   "from_node": "dwh.public.mart_sa_exposure",
+   "from_column": "as_of_date",
+   "to_node": "sa_engine.public.calc_sa_exposure",
+   "to_column": "as_of_date",
+   "hop": 9,
+   "transformation": "pass-through",
+   "kind": "value"
+  },
+  {
+   "from_node": "sa_engine.public.calc_sa_exposure",
+   "from_column": "exposure_class",
+   "to_node": "reporting_db.rpt.c0700_facts",
+   "to_column": "sheet",
+   "hop": 10,
+   "transformation": "pass-through",
+   "kind": "value"
+  },
+  {
+   "from_node": "sa_engine.public.calc_sa_exposure",
+   "from_column": "ev_on_eur",
+   "to_node": "reporting_db.rpt.c0700_facts",
+   "to_column": "value",
+   "hop": 10,
+   "transformation": "ROUND((SUM(ev_on_eur) + SUM(ev_off_eur)) / 1000000, 1)",
+   "kind": "value",
+   "business_rule": "Reported value = SUM(ev_on_eur) + SUM(ev_off_eur), expressed in millions (\u00f71,000,000), rounded to 1 dp"
+  },
+  {
+   "from_node": "sa_engine.public.calc_sa_exposure",
+   "from_column": "ev_off_eur",
+   "to_node": "reporting_db.rpt.c0700_facts",
+   "to_column": "value",
+   "hop": 10,
+   "transformation": "ROUND((SUM(ev_on_eur) + SUM(ev_off_eur)) / 1000000, 1)",
+   "kind": "value",
+   "business_rule": "Reported value = SUM(ev_on_eur) + SUM(ev_off_eur), expressed in millions (\u00f71,000,000), rounded to 1 dp"
+  },
+  {
+   "from_node": "sa_engine.public.calc_sa_exposure",
+   "from_column": "as_of_date",
+   "to_node": "reporting_db.rpt.c0700_facts",
+   "to_column": "as_of_date",
+   "hop": 10,
+   "transformation": "MAX(as_of_date)",
+   "kind": "value",
+   "business_rule": "Maximum of as_of_date"
+  }
+ ]
+}

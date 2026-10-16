@@ -1,0 +1,2055 @@
+{
+ "header": {
+  "mode": "data_point",
+  "unit": "USD m",
+  "label": "LCR Liquidity Coverage \u00b7 ENT-UK lcr_pct",
+  "value": 150.0,
+  "ref_date": "2026-06-30",
+  "template": null,
+  "direction": "reverse"
+ },
+ "summary": {
+  "hops": 20,
+  "proven": 20,
+  "code_derived": 0,
+  "unresolved": 0,
+  "systems_of_record": 5,
+  "title": "USD 150m traced to 5 systems of record"
+ },
+ "lanes": [
+  "system_of_record",
+  "staging",
+  "warehouse",
+  "reporting_layer",
+  "report_tool"
+ ],
+ "nodes": [
+  {
+   "id": "lcr_mart.raw.fx_rate",
+   "kind": "sor",
+   "lane": "system_of_record",
+   "name": "fx_rate",
+   "object": "raw.fx_rate",
+   "schema": "raw",
+   "system": "lcr_mart",
+   "columns": [
+    {
+     "name": "ccy",
+     "data_type": "text",
+     "in_path": false
+    },
+    {
+     "name": "rate_date",
+     "data_type": "date",
+     "in_path": false
+    },
+    {
+     "name": "rate_to_usd",
+     "data_type": "numeric",
+     "description": "FX rate to USD: Units of USD per one unit of the currency on the rate date.",
+     "in_path": true
+    }
+   ],
+   "service": "postgresql",
+   "database": "lcr_mart",
+   "description": "Daily FX rates to USD from the market data feed; source of record for conversion.",
+   "entity_type": "table",
+   "on_value_path": true
+  },
+  {
+   "id": "lcr_mart.raw.cashflow",
+   "kind": "sor",
+   "lane": "system_of_record",
+   "name": "cashflow",
+   "object": "raw.cashflow",
+   "schema": "raw",
+   "system": "lcr_mart",
+   "columns": [
+    {
+     "name": "entity_code",
+     "data_type": "text",
+     "in_path": false
+    },
+    {
+     "name": "flow_type",
+     "data_type": "text",
+     "in_path": false
+    },
+    {
+     "name": "ccy",
+     "data_type": "text",
+     "in_path": false
+    },
+    {
+     "name": "amount",
+     "data_type": "numeric",
+     "in_path": true
+    },
+    {
+     "name": "maturity_date",
+     "data_type": "date",
+     "in_path": false
+    }
+   ],
+   "service": "postgresql",
+   "database": "lcr_mart",
+   "description": "Contractual cash flows (inflows and wholesale funding outflows) with maturity date, in flow currency.",
+   "entity_type": "table",
+   "on_value_path": true
+  },
+  {
+   "id": "lcr_mart.stg.cashflow",
+   "kind": "intermediate",
+   "lane": "staging",
+   "name": "cashflow",
+   "object": "stg.cashflow",
+   "schema": "stg",
+   "system": "lcr_mart",
+   "columns": [
+    {
+     "name": "entity_code",
+     "data_type": "text",
+     "in_path": false
+    },
+    {
+     "name": "flow_type",
+     "data_type": "text",
+     "in_path": false
+    },
+    {
+     "name": "amount_usd",
+     "data_type": "numeric",
+     "description": "Cash flow USD: Contractual cash flow converted to USD at the 30-Jun-2026 rate.",
+     "in_path": true
+    },
+    {
+     "name": "maturity_date",
+     "data_type": "date",
+     "in_path": false
+    }
+   ],
+   "service": "postgresql",
+   "database": "lcr_mart",
+   "description": "Typed contractual cash flows converted to USD.",
+   "entity_type": "table",
+   "on_value_path": true
+  },
+  {
+   "id": "lcr_mart.raw.lcr_param",
+   "kind": "sor",
+   "lane": "system_of_record",
+   "name": "lcr_param",
+   "object": "raw.lcr_param",
+   "schema": "raw",
+   "system": "lcr_mart",
+   "columns": [
+    {
+     "name": "item_code",
+     "data_type": "text",
+     "in_path": false
+    },
+    {
+     "name": "factor",
+     "data_type": "numeric",
+     "description": "Factor: Run-off rate, inflow rate or haircut (0 to 1) for the item code.",
+     "in_path": true
+    }
+   ],
+   "service": "postgresql",
+   "database": "lcr_mart",
+   "description": "LCR parameters: run-off rates, inflow rates and HQLA haircuts per item code.",
+   "entity_type": "table",
+   "on_value_path": true
+  },
+  {
+   "id": "lcr_mart.stg.lcr_param",
+   "kind": "intermediate",
+   "lane": "staging",
+   "name": "lcr_param",
+   "object": "stg.lcr_param",
+   "schema": "stg",
+   "system": "lcr_mart",
+   "columns": [
+    {
+     "name": "item_code",
+     "data_type": "text",
+     "in_path": false
+    },
+    {
+     "name": "factor",
+     "data_type": "numeric",
+     "in_path": true
+    }
+   ],
+   "service": "postgresql",
+   "database": "lcr_mart",
+   "description": "Typed LCR parameters.",
+   "entity_type": "table",
+   "on_value_path": true
+  },
+  {
+   "id": "lcr_mart.core.fact_hqla",
+   "kind": "intermediate",
+   "lane": "warehouse",
+   "name": "fact_hqla",
+   "object": "core.fact_hqla",
+   "schema": "core",
+   "system": "lcr_mart",
+   "columns": [
+    {
+     "name": "entity",
+     "data_type": "text",
+     "in_path": true
+    },
+    {
+     "name": "hqla_level",
+     "data_type": "text",
+     "in_path": false
+    },
+    {
+     "name": "mv_usd",
+     "data_type": "numeric",
+     "in_path": false
+    },
+    {
+     "name": "haircut",
+     "data_type": "numeric",
+     "description": "Haircut: Regulatory valuation haircut for the HQLA level (L1 0%, L2A 15%, L2B 50%).",
+     "in_path": false
+    },
+    {
+     "name": "weighted_usd",
+     "data_type": "numeric",
+     "description": "HQLA after haircut: Market value in USD multiplied by (1 - haircut).",
+     "in_path": true
+    }
+   ],
+   "service": "postgresql",
+   "database": "lcr_mart",
+   "description": "High quality liquid assets per entity and HQLA level after haircut; encumbered assets excluded.",
+   "entity_type": "table",
+   "on_value_path": true
+  },
+  {
+   "id": "lcr_mart.rpt.lcr_summary",
+   "kind": "intermediate",
+   "lane": "reporting_layer",
+   "name": "lcr_summary",
+   "object": "rpt.lcr_summary",
+   "schema": "rpt",
+   "system": "lcr_mart",
+   "columns": [
+    {
+     "name": "entity",
+     "data_type": "text",
+     "in_path": true
+    },
+    {
+     "name": "hqla_usd",
+     "data_type": "numeric",
+     "description": "HQLA: Stock of high quality liquid assets after haircuts, USD m.",
+     "in_path": true
+    },
+    {
+     "name": "outflows_usd",
+     "data_type": "numeric",
+     "description": "Total outflows: Stressed cash outflows over 30 days, USD m.",
+     "in_path": false
+    },
+    {
+     "name": "inflows_usd",
+     "data_type": "numeric",
+     "description": "Total inflows: Cash inflows over 30 days before the cap, USD m.",
+     "in_path": false
+    },
+    {
+     "name": "net_outflows_usd",
+     "data_type": "numeric",
+     "description": "Net cash outflows: Outflows minus inflows capped at 75% of outflows, USD m.",
+     "in_path": true
+    },
+    {
+     "name": "lcr_pct",
+     "data_type": "numeric",
+     "description": "LCR: HQLA divided by net cash outflows over 30 days, in percent.",
+     "in_path": true
+    }
+   ],
+   "service": "postgresql",
+   "database": "lcr_mart",
+   "description": "Liquidity Coverage Ratio per entity in USD m, loaded from core facts.",
+   "entity_type": "table",
+   "on_value_path": true
+  },
+  {
+   "id": "lcr_mart.core.fact_inflow",
+   "kind": "intermediate",
+   "lane": "warehouse",
+   "name": "fact_inflow",
+   "object": "core.fact_inflow",
+   "schema": "core",
+   "system": "lcr_mart",
+   "columns": [
+    {
+     "name": "entity",
+     "data_type": "text",
+     "in_path": false
+    },
+    {
+     "name": "category",
+     "data_type": "text",
+     "in_path": false
+    },
+    {
+     "name": "balance_usd",
+     "data_type": "numeric",
+     "in_path": false
+    },
+    {
+     "name": "inflow_rate",
+     "data_type": "numeric",
+     "in_path": false
+    },
+    {
+     "name": "inflow_usd",
+     "data_type": "numeric",
+     "description": "Inflow: Contractual inflow in USD multiplied by the inflow rate of the category.",
+     "in_path": true
+    }
+   ],
+   "service": "postgresql",
+   "database": "lcr_mart",
+   "description": "Contractual 30-day cash inflows per entity and category after inflow rates.",
+   "entity_type": "table",
+   "on_value_path": true
+  },
+  {
+   "id": "lcr_mart.core.fact_outflow",
+   "kind": "intermediate",
+   "lane": "warehouse",
+   "name": "fact_outflow",
+   "object": "core.fact_outflow",
+   "schema": "core",
+   "system": "lcr_mart",
+   "columns": [
+    {
+     "name": "entity",
+     "data_type": "text",
+     "in_path": false
+    },
+    {
+     "name": "category",
+     "data_type": "text",
+     "in_path": false
+    },
+    {
+     "name": "balance_usd",
+     "data_type": "numeric",
+     "in_path": false
+    },
+    {
+     "name": "runoff_rate",
+     "data_type": "numeric",
+     "description": "Run-off rate: Share of the balance assumed to leave within 30 days under stress.",
+     "in_path": false
+    },
+    {
+     "name": "outflow_usd",
+     "data_type": "numeric",
+     "description": "Stressed outflow: Balance in USD multiplied by the run-off rate of the category.",
+     "in_path": true
+    }
+   ],
+   "service": "postgresql",
+   "database": "lcr_mart",
+   "description": "Stressed 30-day cash outflows per entity and category (deposit run-off and wholesale funding maturing).",
+   "entity_type": "table",
+   "on_value_path": true
+  },
+  {
+   "id": "lcr_mart.rpt.v_lcr_summary",
+   "kind": "intermediate",
+   "lane": "reporting_layer",
+   "name": "v_lcr_summary",
+   "object": "rpt.v_lcr_summary",
+   "schema": "rpt",
+   "system": "lcr_mart",
+   "columns": [
+    {
+     "name": "entity",
+     "data_type": "text",
+     "in_path": true
+    },
+    {
+     "name": "hqla_usd",
+     "data_type": "numeric",
+     "in_path": false
+    },
+    {
+     "name": "outflows_usd",
+     "data_type": "numeric",
+     "in_path": false
+    },
+    {
+     "name": "inflows_usd",
+     "data_type": "numeric",
+     "in_path": false
+    },
+    {
+     "name": "net_outflows_usd",
+     "data_type": "numeric",
+     "in_path": false
+    },
+    {
+     "name": "lcr_pct",
+     "data_type": "numeric",
+     "in_path": true
+    }
+   ],
+   "service": "postgresql",
+   "database": "lcr_mart",
+   "description": "LCR per entity plus GROUP total row (sums of entity amounts; group LCR from summed HQLA and net outflows).",
+   "entity_type": "view",
+   "on_value_path": true
+  },
+  {
+   "id": "lcr_mart.raw.deposit_account",
+   "kind": "sor",
+   "lane": "system_of_record",
+   "name": "deposit_account",
+   "object": "raw.deposit_account",
+   "schema": "raw",
+   "system": "lcr_mart",
+   "columns": [
+    {
+     "name": "account_id",
+     "data_type": "text",
+     "in_path": false
+    },
+    {
+     "name": "entity_code",
+     "data_type": "text",
+     "in_path": false
+    },
+    {
+     "name": "cpty_type",
+     "data_type": "text",
+     "description": "Counterparty type: RETAIL, SME, CORP corporate or FIN financial institution.",
+     "in_path": false
+    },
+    {
+     "name": "product",
+     "data_type": "text",
+     "in_path": false
+    },
+    {
+     "name": "ccy",
+     "data_type": "text",
+     "in_path": false
+    },
+    {
+     "name": "balance",
+     "data_type": "numeric",
+     "description": "Deposit balance: Outstanding balance of the deposit account in account currency.",
+     "in_path": true
+    },
+    {
+     "name": "is_operational",
+     "data_type": "text",
+     "description": "Operational deposit: Y when the deposit is held for clearing, custody or cash management.",
+     "in_path": false
+    },
+    {
+     "name": "insured",
+     "data_type": "text",
+     "description": "Insured: Y when the deposit is covered by a deposit guarantee scheme.",
+     "in_path": false
+    }
+   ],
+   "service": "postgresql",
+   "database": "lcr_mart",
+   "description": "Customer deposit accounts as booked in the deposit system, balances in account currency.",
+   "entity_type": "table",
+   "on_value_path": true
+  },
+  {
+   "id": "lcr_mart.stg.deposit_account",
+   "kind": "intermediate",
+   "lane": "staging",
+   "name": "deposit_account",
+   "object": "stg.deposit_account",
+   "schema": "stg",
+   "system": "lcr_mart",
+   "columns": [
+    {
+     "name": "account_id",
+     "data_type": "text",
+     "in_path": false
+    },
+    {
+     "name": "entity_code",
+     "data_type": "text",
+     "in_path": false
+    },
+    {
+     "name": "cpty_type",
+     "data_type": "text",
+     "in_path": false
+    },
+    {
+     "name": "is_operational",
+     "data_type": "boolean",
+     "in_path": false
+    },
+    {
+     "name": "insured",
+     "data_type": "boolean",
+     "in_path": false
+    },
+    {
+     "name": "balance_usd",
+     "data_type": "numeric",
+     "description": "Deposit balance USD: Deposit balance converted to USD at the 30-Jun-2026 rate.",
+     "in_path": true
+    }
+   ],
+   "service": "postgresql",
+   "database": "lcr_mart",
+   "description": "Typed deposits with balance converted to USD at the reporting date.",
+   "entity_type": "table",
+   "on_value_path": true
+  },
+  {
+   "id": "lcr_mart.raw.security_holding",
+   "kind": "sor",
+   "lane": "system_of_record",
+   "name": "security_holding",
+   "object": "raw.security_holding",
+   "schema": "raw",
+   "system": "lcr_mart",
+   "columns": [
+    {
+     "name": "isin",
+     "data_type": "text",
+     "in_path": false
+    },
+    {
+     "name": "entity_code",
+     "data_type": "text",
+     "in_path": true
+    },
+    {
+     "name": "asset_class",
+     "data_type": "text",
+     "description": "Asset class: L1_SOVEREIGN, L1_CENTRAL_BANK, L2A_GOV, L2A_COVERED, L2B_RMBS, L2B_CORP_BOND or non-HQLA classes.",
+     "in_path": false
+    },
+    {
+     "name": "ccy",
+     "data_type": "text",
+     "in_path": false
+    },
+    {
+     "name": "market_value",
+     "data_type": "numeric",
+     "description": "Market value: Market value of the security holding in security currency.",
+     "in_path": true
+    },
+    {
+     "name": "is_encumbered",
+     "data_type": "text",
+     "description": "Encumbered: Y when pledged and therefore not available as liquidity buffer.",
+     "in_path": false
+    }
+   ],
+   "service": "postgresql",
+   "database": "lcr_mart",
+   "description": "Securities held in the liquidity portfolio, market value in security currency.",
+   "entity_type": "table",
+   "on_value_path": true
+  },
+  {
+   "id": "lcr_mart.stg.security_holding",
+   "kind": "intermediate",
+   "lane": "staging",
+   "name": "security_holding",
+   "object": "stg.security_holding",
+   "schema": "stg",
+   "system": "lcr_mart",
+   "columns": [
+    {
+     "name": "isin",
+     "data_type": "text",
+     "in_path": false
+    },
+    {
+     "name": "entity_code",
+     "data_type": "text",
+     "in_path": true
+    },
+    {
+     "name": "asset_class",
+     "data_type": "text",
+     "in_path": false
+    },
+    {
+     "name": "is_encumbered",
+     "data_type": "boolean",
+     "in_path": false
+    },
+    {
+     "name": "mv_usd",
+     "data_type": "numeric",
+     "description": "Market value USD: Security market value converted to USD at the 30-Jun-2026 rate.",
+     "in_path": true
+    }
+   ],
+   "service": "postgresql",
+   "database": "lcr_mart",
+   "description": "Typed security holdings with market value converted to USD.",
+   "entity_type": "table",
+   "on_value_path": true
+  },
+  {
+   "id": "superset.LCR Liquidity Coverage",
+   "kind": "anchor",
+   "lane": "report_tool",
+   "name": "LCR Liquidity Coverage",
+   "object": "LCR Liquidity Coverage",
+   "system": "superset",
+   "columns": [
+    {
+     "name": "entity",
+     "data_type": "STRING",
+     "in_path": false
+    },
+    {
+     "name": "hqla_usd",
+     "data_type": "DECIMAL",
+     "in_path": false
+    },
+    {
+     "name": "outflows_usd",
+     "data_type": "DECIMAL",
+     "in_path": false
+    },
+    {
+     "name": "inflows_usd",
+     "data_type": "DECIMAL",
+     "in_path": false
+    },
+    {
+     "name": "net_outflows_usd",
+     "data_type": "DECIMAL",
+     "in_path": false
+    },
+    {
+     "name": "lcr_pct",
+     "data_type": "DECIMAL",
+     "in_path": true
+    }
+   ],
+   "service": "superset",
+   "description": null,
+   "entity_type": "chart",
+   "schema": null,
+   "on_value_path": true
+  }
+ ],
+ "edges": [
+  {
+   "from": "lcr_mart.raw.cashflow",
+   "to": "lcr_mart.stg.cashflow",
+   "hop": 1,
+   "status": "proven"
+  },
+  {
+   "from": "lcr_mart.raw.fx_rate",
+   "to": "lcr_mart.stg.cashflow",
+   "hop": 2,
+   "status": "proven"
+  },
+  {
+   "from": "lcr_mart.raw.deposit_account",
+   "to": "lcr_mart.stg.deposit_account",
+   "hop": 3,
+   "status": "proven"
+  },
+  {
+   "from": "lcr_mart.raw.fx_rate",
+   "to": "lcr_mart.stg.deposit_account",
+   "hop": 4,
+   "status": "proven"
+  },
+  {
+   "from": "lcr_mart.raw.lcr_param",
+   "to": "lcr_mart.stg.lcr_param",
+   "hop": 5,
+   "status": "proven"
+  },
+  {
+   "from": "lcr_mart.raw.fx_rate",
+   "to": "lcr_mart.stg.security_holding",
+   "hop": 6,
+   "status": "proven"
+  },
+  {
+   "from": "lcr_mart.raw.security_holding",
+   "to": "lcr_mart.stg.security_holding",
+   "hop": 7,
+   "status": "proven"
+  },
+  {
+   "from": "lcr_mart.stg.lcr_param",
+   "to": "lcr_mart.core.fact_hqla",
+   "hop": 8,
+   "status": "proven"
+  },
+  {
+   "from": "lcr_mart.stg.security_holding",
+   "to": "lcr_mart.core.fact_hqla",
+   "hop": 9,
+   "status": "proven"
+  },
+  {
+   "from": "lcr_mart.stg.cashflow",
+   "to": "lcr_mart.core.fact_inflow",
+   "hop": 10,
+   "status": "proven"
+  },
+  {
+   "from": "lcr_mart.stg.lcr_param",
+   "to": "lcr_mart.core.fact_inflow",
+   "hop": 11,
+   "status": "proven"
+  },
+  {
+   "from": "lcr_mart.stg.cashflow",
+   "to": "lcr_mart.core.fact_outflow",
+   "hop": 12,
+   "status": "proven"
+  },
+  {
+   "from": "lcr_mart.stg.deposit_account",
+   "to": "lcr_mart.core.fact_outflow",
+   "hop": 13,
+   "status": "proven"
+  },
+  {
+   "from": "lcr_mart.stg.lcr_param",
+   "to": "lcr_mart.core.fact_outflow",
+   "hop": 14,
+   "status": "proven"
+  },
+  {
+   "from": "lcr_mart.stg.lcr_param",
+   "to": "lcr_mart.core.fact_outflow",
+   "hop": 15,
+   "status": "proven"
+  },
+  {
+   "from": "lcr_mart.core.fact_hqla",
+   "to": "lcr_mart.rpt.lcr_summary",
+   "hop": 16,
+   "status": "proven"
+  },
+  {
+   "from": "lcr_mart.core.fact_inflow",
+   "to": "lcr_mart.rpt.lcr_summary",
+   "hop": 17,
+   "status": "proven"
+  },
+  {
+   "from": "lcr_mart.core.fact_outflow",
+   "to": "lcr_mart.rpt.lcr_summary",
+   "hop": 18,
+   "status": "proven"
+  },
+  {
+   "from": "lcr_mart.rpt.lcr_summary",
+   "to": "lcr_mart.rpt.v_lcr_summary",
+   "hop": 19,
+   "status": "proven"
+  },
+  {
+   "from": "lcr_mart.rpt.v_lcr_summary",
+   "to": "superset.LCR Liquidity Coverage",
+   "hop": 20,
+   "status": "proven"
+  }
+ ],
+ "hops": [
+  {
+   "n": 1,
+   "to": "lcr_mart.stg.cashflow",
+   "from": "lcr_mart.raw.cashflow",
+   "status": "proven",
+   "purpose": null,
+   "evidence": {
+    "log": "16-Oct 08:44:50 \u00b7 app lcr_shell \u00b7 user etl_owner \u00b7 INSERT INTO stg.cashflow (entity_code, flow_type, amount_usd, maturity_date) SELECT UPPER(c.entity_code), c.fl",
+    "sql": "INSERT INTO stg.cashflow (entity_code, flow_type, amount_usd, maturity_date)\nSELECT UPPER(c.entity_code),\n       c.flow_type,\n       ROUND(c.amount * fx.rate_to_usd, 2),\n       c.maturity_date\nFROM raw.cashflow c\nJOIN raw.fx_rate fx\n  ON fx.ccy = c.ccy\n AND fx.rate_date = DATE '2026-06-30';",
+    "code": "pipelines/lcr/12_stg_cashflow.sql lines 3\u201311",
+    "version": "definition sha256 d1efb9ed3026\u2026 \u00b7 captured 2026-10-16",
+    "reconciliation": "Recalculated 944,023,680.74 agrees to stored value 944,023,680.74 (tolerance \u00b10.01) [cashflow.amount_usd]"
+   },
+   "consumed_by": "stg.cashflow",
+   "sourced_from": [
+    "raw.cashflow.amount"
+   ],
+   "pipeline_type": "sql_script",
+   "business_rules": [
+    "Cash flow USD = amount \u00d7 FX rate to USD, rounded to 2 dp"
+   ],
+   "transformation": "Calculated as ROUND(c.amount * fx.rate_to_usd, 2); converted using FX rate fx.rate_to_usd.",
+   "statement_rules": [
+    "Cash flow USD = amount \u00d7 FX rate to USD, rounded to 2 dp",
+    "Converted to USD at the 30-Jun-2026 FX rate (rate_to_usd matched on ccy and rate_date)"
+   ],
+   "attribute_held_in": [
+    "stg.cashflow.amount_usd"
+   ],
+   "on_value_path": true
+  },
+  {
+   "n": 2,
+   "to": "lcr_mart.stg.cashflow",
+   "from": "lcr_mart.raw.fx_rate",
+   "status": "proven",
+   "purpose": null,
+   "evidence": {
+    "log": "16-Oct 08:44:50 \u00b7 app lcr_shell \u00b7 user etl_owner \u00b7 INSERT INTO stg.cashflow (entity_code, flow_type, amount_usd, maturity_date) SELECT UPPER(c.entity_code), c.fl",
+    "sql": "INSERT INTO stg.cashflow (entity_code, flow_type, amount_usd, maturity_date)\nSELECT UPPER(c.entity_code),\n       c.flow_type,\n       ROUND(c.amount * fx.rate_to_usd, 2),\n       c.maturity_date\nFROM raw.cashflow c\nJOIN raw.fx_rate fx\n  ON fx.ccy = c.ccy\n AND fx.rate_date = DATE '2026-06-30';",
+    "code": "pipelines/lcr/12_stg_cashflow.sql lines 3\u201311",
+    "version": "definition sha256 d1efb9ed3026\u2026 \u00b7 captured 2026-10-16",
+    "reconciliation": "Recalculated 944,023,680.74 agrees to stored value 944,023,680.74 (tolerance \u00b10.01) [cashflow.amount_usd]"
+   },
+   "consumed_by": "stg.cashflow",
+   "sourced_from": [
+    "raw.fx_rate.rate_to_usd"
+   ],
+   "pipeline_type": "sql_script",
+   "business_rules": [
+    "Converted to USD at the 30-Jun-2026 FX rate (rate_to_usd matched on ccy and rate_date)"
+   ],
+   "transformation": "Calculated as ROUND(c.amount * fx.rate_to_usd, 2); converted using FX rate fx.rate_to_usd.",
+   "statement_rules": [
+    "Cash flow USD = amount \u00d7 FX rate to USD, rounded to 2 dp",
+    "Converted to USD at the 30-Jun-2026 FX rate (rate_to_usd matched on ccy and rate_date)"
+   ],
+   "attribute_held_in": [
+    "stg.cashflow.amount_usd"
+   ],
+   "on_value_path": true
+  },
+  {
+   "n": 3,
+   "to": "lcr_mart.stg.deposit_account",
+   "from": "lcr_mart.raw.deposit_account",
+   "status": "proven",
+   "purpose": null,
+   "evidence": {
+    "log": "16-Oct 08:44:50 \u00b7 app lcr_shell \u00b7 user etl_owner \u00b7 INSERT INTO stg.deposit_account (account_id, entity_code, cpty_type, is_operational, insured, balance_usd) SEL",
+    "sql": "INSERT INTO stg.deposit_account (account_id, entity_code, cpty_type, is_operational, insured, balance_usd)\nSELECT d.account_id,\n       UPPER(d.entity_code),\n       UPPER(d.cpty_type),\n       d.is_operational = 'Y',\n       d.insured = 'Y',\n       ROUND(d.balance * fx.rate_to_usd, 2)\nFROM raw.deposit_account d\nJOIN raw.fx_rate fx\n  ON fx.ccy = d.ccy\n AND fx.rate_date = DATE '2026-06-30';",
+    "code": "pipelines/lcr/10_stg_deposit_account.sql lines 3\u201313",
+    "version": "definition sha256 8a5b752749b7\u2026 \u00b7 captured 2026-10-16",
+    "reconciliation": "Recalculated 1,729,380,467.95 agrees to stored value 1,729,380,467.95 (tolerance \u00b10.01) [deposit_account.balance_usd]"
+   },
+   "consumed_by": "stg.deposit_account",
+   "sourced_from": [
+    "raw.deposit_account.balance"
+   ],
+   "pipeline_type": "sql_script",
+   "business_rules": [
+    "Deposit balance USD = Deposit balance \u00d7 FX rate to USD, rounded to 2 dp"
+   ],
+   "transformation": "Calculated as ROUND(d.balance * fx.rate_to_usd, 2); converted using FX rate fx.rate_to_usd.",
+   "statement_rules": [
+    "Deposit balance USD = Deposit balance \u00d7 FX rate to USD, rounded to 2 dp",
+    "Converted to USD at the 30-Jun-2026 FX rate (rate_to_usd matched on ccy and rate_date)"
+   ],
+   "attribute_held_in": [
+    "stg.deposit_account.balance_usd"
+   ],
+   "on_value_path": true
+  },
+  {
+   "n": 4,
+   "to": "lcr_mart.stg.deposit_account",
+   "from": "lcr_mart.raw.fx_rate",
+   "status": "proven",
+   "purpose": null,
+   "evidence": {
+    "log": "16-Oct 08:44:50 \u00b7 app lcr_shell \u00b7 user etl_owner \u00b7 INSERT INTO stg.deposit_account (account_id, entity_code, cpty_type, is_operational, insured, balance_usd) SEL",
+    "sql": "INSERT INTO stg.deposit_account (account_id, entity_code, cpty_type, is_operational, insured, balance_usd)\nSELECT d.account_id,\n       UPPER(d.entity_code),\n       UPPER(d.cpty_type),\n       d.is_operational = 'Y',\n       d.insured = 'Y',\n       ROUND(d.balance * fx.rate_to_usd, 2)\nFROM raw.deposit_account d\nJOIN raw.fx_rate fx\n  ON fx.ccy = d.ccy\n AND fx.rate_date = DATE '2026-06-30';",
+    "code": "pipelines/lcr/10_stg_deposit_account.sql lines 3\u201313",
+    "version": "definition sha256 8a5b752749b7\u2026 \u00b7 captured 2026-10-16",
+    "reconciliation": "Recalculated 1,729,380,467.95 agrees to stored value 1,729,380,467.95 (tolerance \u00b10.01) [deposit_account.balance_usd]"
+   },
+   "consumed_by": "stg.deposit_account",
+   "sourced_from": [
+    "raw.fx_rate.rate_to_usd"
+   ],
+   "pipeline_type": "sql_script",
+   "business_rules": [
+    "Converted to USD at the 30-Jun-2026 FX rate (rate_to_usd matched on ccy and rate_date)"
+   ],
+   "transformation": "Calculated as ROUND(d.balance * fx.rate_to_usd, 2); converted using FX rate fx.rate_to_usd.",
+   "statement_rules": [
+    "Deposit balance USD = Deposit balance \u00d7 FX rate to USD, rounded to 2 dp",
+    "Converted to USD at the 30-Jun-2026 FX rate (rate_to_usd matched on ccy and rate_date)"
+   ],
+   "attribute_held_in": [
+    "stg.deposit_account.balance_usd"
+   ],
+   "on_value_path": true
+  },
+  {
+   "n": 5,
+   "to": "lcr_mart.stg.lcr_param",
+   "from": "lcr_mart.raw.lcr_param",
+   "status": "proven",
+   "purpose": null,
+   "evidence": {
+    "log": "16-Oct 08:44:50 \u00b7 app lcr_shell \u00b7 user etl_owner \u00b7 INSERT INTO stg.lcr_param (item_code, factor) SELECT p.item_code, p.factor::numeric FROM raw.lcr_param p;",
+    "sql": "INSERT INTO stg.lcr_param (item_code, factor)\nSELECT p.item_code,\n       p.factor::numeric\nFROM raw.lcr_param p;",
+    "code": "pipelines/lcr/13_stg_lcr_param.sql lines 3\u20136",
+    "version": "definition sha256 f22c0f6c18ca\u2026 \u00b7 captured 2026-10-16",
+    "reconciliation": "Recalculated 4.95 agrees to stored value 4.95 (tolerance \u00b10.01) [lcr_param.factor]"
+   },
+   "consumed_by": "stg.lcr_param",
+   "sourced_from": [
+    "raw.lcr_param.factor"
+   ],
+   "pipeline_type": "sql_script",
+   "business_rules": [],
+   "transformation": "Calculated as CAST(p.factor AS DECIMAL).",
+   "statement_rules": [],
+   "attribute_held_in": [
+    "stg.lcr_param.factor"
+   ],
+   "on_value_path": true
+  },
+  {
+   "n": 6,
+   "to": "lcr_mart.stg.security_holding",
+   "from": "lcr_mart.raw.fx_rate",
+   "status": "proven",
+   "purpose": null,
+   "evidence": {
+    "log": "16-Oct 08:44:50 \u00b7 app lcr_shell \u00b7 user etl_owner \u00b7 INSERT INTO stg.security_holding (isin, entity_code, asset_class, is_encumbered, mv_usd) SELECT s.isin, UPPER(",
+    "sql": "INSERT INTO stg.security_holding (isin, entity_code, asset_class, is_encumbered, mv_usd)\nSELECT s.isin,\n       UPPER(s.entity_code),\n       s.asset_class,\n       s.is_encumbered = 'Y',\n       ROUND(s.market_value * fx.rate_to_usd, 2)\nFROM raw.security_holding s\nJOIN raw.fx_rate fx\n  ON fx.ccy = s.ccy\n AND fx.rate_date = DATE '2026-06-30';",
+    "code": "pipelines/lcr/11_stg_security_holding.sql lines 3\u201312",
+    "version": "definition sha256 584db098c4db\u2026 \u00b7 captured 2026-10-16",
+    "reconciliation": "Recalculated 754,173,898.36 agrees to stored value 754,173,898.36 (tolerance \u00b10.01) [security_holding.mv_usd]"
+   },
+   "consumed_by": "stg.security_holding",
+   "sourced_from": [
+    "raw.fx_rate.rate_to_usd"
+   ],
+   "pipeline_type": "sql_script",
+   "business_rules": [
+    "Converted to USD at the 30-Jun-2026 FX rate (rate_to_usd matched on ccy and rate_date)"
+   ],
+   "transformation": "Calculated as ROUND(s.market_value * fx.rate_to_usd, 2); converted using FX rate fx.rate_to_usd.",
+   "statement_rules": [
+    "Market value USD = Market value \u00d7 FX rate to USD, rounded to 2 dp",
+    "Converted to USD at the 30-Jun-2026 FX rate (rate_to_usd matched on ccy and rate_date)"
+   ],
+   "attribute_held_in": [
+    "stg.security_holding.mv_usd"
+   ],
+   "on_value_path": true
+  },
+  {
+   "n": 7,
+   "to": "lcr_mart.stg.security_holding",
+   "from": "lcr_mart.raw.security_holding",
+   "status": "proven",
+   "purpose": null,
+   "evidence": {
+    "log": "16-Oct 08:44:50 \u00b7 app lcr_shell \u00b7 user etl_owner \u00b7 INSERT INTO stg.security_holding (isin, entity_code, asset_class, is_encumbered, mv_usd) SELECT s.isin, UPPER(",
+    "sql": "INSERT INTO stg.security_holding (isin, entity_code, asset_class, is_encumbered, mv_usd)\nSELECT s.isin,\n       UPPER(s.entity_code),\n       s.asset_class,\n       s.is_encumbered = 'Y',\n       ROUND(s.market_value * fx.rate_to_usd, 2)\nFROM raw.security_holding s\nJOIN raw.fx_rate fx\n  ON fx.ccy = s.ccy\n AND fx.rate_date = DATE '2026-06-30';",
+    "code": "pipelines/lcr/11_stg_security_holding.sql lines 3\u201312",
+    "version": "definition sha256 584db098c4db\u2026 \u00b7 captured 2026-10-16",
+    "reconciliation": "Recalculated 754,173,898.36 agrees to stored value 754,173,898.36 (tolerance \u00b10.01) [security_holding.mv_usd]"
+   },
+   "consumed_by": "stg.security_holding",
+   "sourced_from": [
+    "raw.security_holding.market_value",
+    "raw.security_holding.entity_code"
+   ],
+   "pipeline_type": "sql_script",
+   "business_rules": [
+    "Market value USD = Market value \u00d7 FX rate to USD, rounded to 2 dp"
+   ],
+   "transformation": "Calculated as ROUND(s.market_value * fx.rate_to_usd, 2); converted using FX rate fx.rate_to_usd.",
+   "statement_rules": [
+    "Market value USD = Market value \u00d7 FX rate to USD, rounded to 2 dp",
+    "Converted to USD at the 30-Jun-2026 FX rate (rate_to_usd matched on ccy and rate_date)"
+   ],
+   "attribute_held_in": [
+    "stg.security_holding.mv_usd"
+   ],
+   "on_value_path": true
+  },
+  {
+   "n": 8,
+   "to": "lcr_mart.core.fact_hqla",
+   "from": "lcr_mart.stg.lcr_param",
+   "status": "proven",
+   "purpose": null,
+   "evidence": {
+    "log": "16-Oct 08:44:50 \u00b7 app lcr_shell \u00b7 user etl_owner \u00b7 INSERT INTO core.fact_hqla (entity, hqla_level, mv_usd, haircut, weighted_usd) SELECT s.entity_code, CASE WHEN",
+    "sql": "INSERT INTO core.fact_hqla (entity, hqla_level, mv_usd, haircut, weighted_usd)\nSELECT s.entity_code,\n       CASE\n         WHEN s.asset_class IN ('L1_SOVEREIGN', 'L1_CENTRAL_BANK') THEN '1'\n         WHEN s.asset_class IN ('L2A_GOV', 'L2A_COVERED') THEN '2A'\n         ELSE '2B'\n       END AS hqla_level,\n       SUM(s.mv_usd) AS mv_usd,\n       p.factor AS haircut,\n       SUM(s.mv_usd) * (1 - p.factor) AS weighted_usd\nFROM stg.security_holding s\nJOIN stg.lcr_param p\n  ON p.item_code = 'HQLA_L' || CASE\n         WHEN s.asset_class IN ('L1_SOVEREIGN', 'L1_CENTRAL_BANK') THEN '1'\n         WHEN s.asset_class IN ('L2A_GOV', 'L2A_COVERED') THEN '2A'\n         ELSE '2B'\n       END\nWHERE NOT s.is_encumbered\n  AND s.asset_class IN ('L1_SOVEREIGN', 'L1_CENTRAL_BANK', 'L2A_GOV', 'L2A_COVERED', 'L2B_RMBS', 'L2B_CORP_BOND')\nGROUP BY s.entity_code, 2, p.factor;",
+    "code": "pipelines/lcr/20_core_fact_hqla.sql lines 3\u201322",
+    "version": "definition sha256 90941ef521db\u2026 \u00b7 captured 2026-10-16",
+    "reconciliation": "Recalculated 0.65 agrees to stored value 0.65 (tolerance \u00b10.01) [fact_hqla.haircut]"
+   },
+   "consumed_by": "core.fact_hqla",
+   "sourced_from": [
+    "stg.lcr_param.factor"
+   ],
+   "pipeline_type": "sql_script",
+   "business_rules": [
+    "factor looked up from lcr_param by item_code = 'HQLA_L' || CASE WHEN asset_class IN ('L1_SOVEREIGN', 'L1_CENTRAL_BANK') THEN '1' WHEN asset_class IN ('L2A_GOV', 'L2A_COVERED') THEN '2A' ELSE '2B' END",
+    "Summed by entity_code and hqla_level and factor"
+   ],
+   "transformation": "Sums s.mv_usd grouped by s.entity_code, hqla_level, p.factor; filtered to NOT s.is_encumbered; filtered to s.asset_class IN ('L1_SOVEREIGN', 'L1_CENTRAL_BANK', 'L2A_GOV', 'L2A_COVERED', 'L2B_RMBS', 'L2B_CORP_BOND').",
+   "statement_rules": [
+    "HQLA after haircut = SUM(Market value USD) \u00d7 (1 - factor)",
+    "factor looked up from lcr_param by item_code = 'HQLA_L' || CASE WHEN asset_class IN ('L1_SOVEREIGN', 'L1_CENTRAL_BANK') THEN '1' WHEN asset_class IN ('L2A_GOV', 'L2A_COVERED') THEN '2A' ELSE '2B' END",
+    "Excludes rows where is_encumbered",
+    "Filtered to asset_class IN ('L1_SOVEREIGN', 'L1_CENTRAL_BANK', 'L2A_GOV', 'L2A_COVERED', 'L2B_RMBS', 'L2B_CORP_BOND')",
+    "Summed by entity_code and hqla_level and factor"
+   ],
+   "attribute_held_in": [
+    "core.fact_hqla.weighted_usd"
+   ],
+   "on_value_path": true
+  },
+  {
+   "n": 9,
+   "to": "lcr_mart.core.fact_hqla",
+   "from": "lcr_mart.stg.security_holding",
+   "status": "proven",
+   "purpose": null,
+   "evidence": {
+    "log": "16-Oct 08:44:50 \u00b7 app lcr_shell \u00b7 user etl_owner \u00b7 INSERT INTO core.fact_hqla (entity, hqla_level, mv_usd, haircut, weighted_usd) SELECT s.entity_code, CASE WHEN",
+    "sql": "INSERT INTO core.fact_hqla (entity, hqla_level, mv_usd, haircut, weighted_usd)\nSELECT s.entity_code,\n       CASE\n         WHEN s.asset_class IN ('L1_SOVEREIGN', 'L1_CENTRAL_BANK') THEN '1'\n         WHEN s.asset_class IN ('L2A_GOV', 'L2A_COVERED') THEN '2A'\n         ELSE '2B'\n       END AS hqla_level,\n       SUM(s.mv_usd) AS mv_usd,\n       p.factor AS haircut,\n       SUM(s.mv_usd) * (1 - p.factor) AS weighted_usd\nFROM stg.security_holding s\nJOIN stg.lcr_param p\n  ON p.item_code = 'HQLA_L' || CASE\n         WHEN s.asset_class IN ('L1_SOVEREIGN', 'L1_CENTRAL_BANK') THEN '1'\n         WHEN s.asset_class IN ('L2A_GOV', 'L2A_COVERED') THEN '2A'\n         ELSE '2B'\n       END\nWHERE NOT s.is_encumbered\n  AND s.asset_class IN ('L1_SOVEREIGN', 'L1_CENTRAL_BANK', 'L2A_GOV', 'L2A_COVERED', 'L2B_RMBS', 'L2B_CORP_BOND')\nGROUP BY s.entity_code, 2, p.factor;",
+    "code": "pipelines/lcr/20_core_fact_hqla.sql lines 3\u201322",
+    "version": "definition sha256 90941ef521db\u2026 \u00b7 captured 2026-10-16",
+    "reconciliation": "Recalculated 530,595,633.08 agrees to stored value 530,595,633.08 (tolerance \u00b10.01) [fact_hqla.mv_usd]"
+   },
+   "consumed_by": "core.fact_hqla",
+   "sourced_from": [
+    "stg.security_holding.mv_usd",
+    "stg.security_holding.entity_code"
+   ],
+   "pipeline_type": "sql_script",
+   "business_rules": [
+    "HQLA after haircut = SUM(Market value USD) \u00d7 (1 - factor)",
+    "Excludes rows where is_encumbered",
+    "Filtered to asset_class IN ('L1_SOVEREIGN', 'L1_CENTRAL_BANK', 'L2A_GOV', 'L2A_COVERED', 'L2B_RMBS', 'L2B_CORP_BOND')",
+    "Summed by entity_code and hqla_level and factor"
+   ],
+   "transformation": "Sums s.mv_usd grouped by s.entity_code, hqla_level, p.factor; filtered to NOT s.is_encumbered; filtered to s.asset_class IN ('L1_SOVEREIGN', 'L1_CENTRAL_BANK', 'L2A_GOV', 'L2A_COVERED', 'L2B_RMBS', 'L2B_CORP_BOND').",
+   "statement_rules": [
+    "HQLA after haircut = SUM(Market value USD) \u00d7 (1 - factor)",
+    "factor looked up from lcr_param by item_code = 'HQLA_L' || CASE WHEN asset_class IN ('L1_SOVEREIGN', 'L1_CENTRAL_BANK') THEN '1' WHEN asset_class IN ('L2A_GOV', 'L2A_COVERED') THEN '2A' ELSE '2B' END",
+    "Excludes rows where is_encumbered",
+    "Filtered to asset_class IN ('L1_SOVEREIGN', 'L1_CENTRAL_BANK', 'L2A_GOV', 'L2A_COVERED', 'L2B_RMBS', 'L2B_CORP_BOND')",
+    "Summed by entity_code and hqla_level and factor"
+   ],
+   "attribute_held_in": [
+    "core.fact_hqla.weighted_usd"
+   ],
+   "on_value_path": true
+  },
+  {
+   "n": 10,
+   "to": "lcr_mart.core.fact_inflow",
+   "from": "lcr_mart.stg.cashflow",
+   "status": "proven",
+   "purpose": null,
+   "evidence": {
+    "log": "16-Oct 08:44:50 \u00b7 app lcr_shell \u00b7 user etl_owner \u00b7 INSERT INTO core.fact_inflow (entity, category, balance_usd, inflow_rate, inflow_usd) SELECT c.entity_code, c.",
+    "sql": "INSERT INTO core.fact_inflow (entity, category, balance_usd, inflow_rate, inflow_usd)\nSELECT c.entity_code,\n       c.flow_type AS category,\n       SUM(c.amount_usd) AS balance_usd,\n       p.factor AS inflow_rate,\n       SUM(c.amount_usd) * p.factor AS inflow_usd\nFROM stg.cashflow c\nJOIN stg.lcr_param p\n  ON p.item_code = c.flow_type\nWHERE c.flow_type LIKE 'IN%'\n  AND c.maturity_date > DATE '2026-06-30'\n  AND c.maturity_date <= DATE '2026-07-30'\nGROUP BY c.entity_code, c.flow_type, p.factor;",
+    "code": "pipelines/lcr/22_core_fact_inflow.sql lines 3\u201315",
+    "version": "definition sha256 2068c350d698\u2026 \u00b7 captured 2026-10-16",
+    "reconciliation": "Recalculated 546,509,177.03 agrees to stored value 546,509,177.03 (tolerance \u00b10.01) [fact_inflow.balance_usd]"
+   },
+   "consumed_by": "core.fact_inflow",
+   "sourced_from": [
+    "stg.cashflow.amount_usd"
+   ],
+   "pipeline_type": "sql_script",
+   "business_rules": [
+    "Inflow = SUM(Cash flow USD) \u00d7 factor",
+    "Filtered to flow_type LIKE 'IN%'",
+    "Date condition maturity_date > CAST('2026-06-30' AS DATE)",
+    "Date condition maturity_date <= CAST('2026-07-30' AS DATE)",
+    "Summed by entity_code and flow_type and factor"
+   ],
+   "transformation": "Sums c.amount_usd grouped by c.entity_code, c.flow_type, p.factor; filtered to c.flow_type LIKE 'IN%'; filtered to c.maturity_date > CAST('2026-06-30' AS DATE); filtered to c.maturity_date <= CAST('2026-07-30' AS DATE).",
+   "statement_rules": [
+    "Inflow = SUM(Cash flow USD) \u00d7 factor",
+    "factor looked up from lcr_param by item_code = flow_type",
+    "Filtered to flow_type LIKE 'IN%'",
+    "Date condition maturity_date > CAST('2026-06-30' AS DATE)",
+    "Date condition maturity_date <= CAST('2026-07-30' AS DATE)",
+    "Summed by entity_code and flow_type and factor"
+   ],
+   "attribute_held_in": [
+    "core.fact_inflow.inflow_usd"
+   ],
+   "on_value_path": true
+  },
+  {
+   "n": 11,
+   "to": "lcr_mart.core.fact_inflow",
+   "from": "lcr_mart.stg.lcr_param",
+   "status": "proven",
+   "purpose": null,
+   "evidence": {
+    "log": "16-Oct 08:44:50 \u00b7 app lcr_shell \u00b7 user etl_owner \u00b7 INSERT INTO core.fact_inflow (entity, category, balance_usd, inflow_rate, inflow_usd) SELECT c.entity_code, c.",
+    "sql": "INSERT INTO core.fact_inflow (entity, category, balance_usd, inflow_rate, inflow_usd)\nSELECT c.entity_code,\n       c.flow_type AS category,\n       SUM(c.amount_usd) AS balance_usd,\n       p.factor AS inflow_rate,\n       SUM(c.amount_usd) * p.factor AS inflow_usd\nFROM stg.cashflow c\nJOIN stg.lcr_param p\n  ON p.item_code = c.flow_type\nWHERE c.flow_type LIKE 'IN%'\n  AND c.maturity_date > DATE '2026-06-30'\n  AND c.maturity_date <= DATE '2026-07-30'\nGROUP BY c.entity_code, c.flow_type, p.factor;",
+    "code": "pipelines/lcr/22_core_fact_inflow.sql lines 3\u201315",
+    "version": "definition sha256 2068c350d698\u2026 \u00b7 captured 2026-10-16",
+    "reconciliation": "Recalculated 4.5 agrees to stored value 4.5 (tolerance \u00b10.01) [fact_inflow.inflow_rate]"
+   },
+   "consumed_by": "core.fact_inflow",
+   "sourced_from": [
+    "stg.lcr_param.factor"
+   ],
+   "pipeline_type": "sql_script",
+   "business_rules": [
+    "factor looked up from lcr_param by item_code = flow_type",
+    "Summed by entity_code and flow_type and factor"
+   ],
+   "transformation": "Sums c.amount_usd grouped by c.entity_code, c.flow_type, p.factor; filtered to c.flow_type LIKE 'IN%'; filtered to c.maturity_date > CAST('2026-06-30' AS DATE); filtered to c.maturity_date <= CAST('2026-07-30' AS DATE).",
+   "statement_rules": [
+    "Inflow = SUM(Cash flow USD) \u00d7 factor",
+    "factor looked up from lcr_param by item_code = flow_type",
+    "Filtered to flow_type LIKE 'IN%'",
+    "Date condition maturity_date > CAST('2026-06-30' AS DATE)",
+    "Date condition maturity_date <= CAST('2026-07-30' AS DATE)",
+    "Summed by entity_code and flow_type and factor"
+   ],
+   "attribute_held_in": [
+    "core.fact_inflow.inflow_usd"
+   ],
+   "on_value_path": true
+  },
+  {
+   "n": 12,
+   "to": "lcr_mart.core.fact_outflow",
+   "from": "lcr_mart.stg.cashflow",
+   "status": "proven",
+   "purpose": null,
+   "evidence": {
+    "log": "16-Oct 08:44:50 \u00b7 app lcr_shell \u00b7 user etl_owner \u00b7 INSERT INTO core.fact_outflow (entity, category, balance_usd, runoff_rate, outflow_usd) SELECT c.entity_code, ",
+    "sql": "INSERT INTO core.fact_outflow (entity, category, balance_usd, runoff_rate, outflow_usd)\nSELECT c.entity_code,\n       c.flow_type AS category,\n       SUM(c.amount_usd) AS balance_usd,\n       p.factor AS runoff_rate,\n       SUM(c.amount_usd) * p.factor AS outflow_usd\nFROM stg.cashflow c\nJOIN stg.lcr_param p\n  ON p.item_code = c.flow_type\nWHERE c.flow_type LIKE 'OUT%'\n  AND c.maturity_date > DATE '2026-06-30'\n  AND c.maturity_date <= DATE '2026-07-30'\nGROUP BY c.entity_code, c.flow_type, p.factor;",
+    "code": "pipelines/lcr/21_core_fact_outflow.sql lines 26\u201338",
+    "version": "definition sha256 856c0288e8eb\u2026 \u00b7 captured 2026-10-16",
+    "reconciliation": "Recalculated 1,951,320,075.32 agrees to stored value 1,951,320,075.32 (tolerance \u00b10.01) [fact_outflow.balance_usd]"
+   },
+   "consumed_by": "core.fact_outflow",
+   "sourced_from": [
+    "stg.cashflow.amount_usd"
+   ],
+   "pipeline_type": "sql_script",
+   "business_rules": [
+    "Stressed outflow = SUM(Cash flow USD) \u00d7 factor",
+    "Filtered to flow_type LIKE 'OUT%'",
+    "Date condition maturity_date > CAST('2026-06-30' AS DATE)",
+    "Date condition maturity_date <= CAST('2026-07-30' AS DATE)",
+    "Summed by entity_code and flow_type and factor"
+   ],
+   "transformation": "Sums c.amount_usd grouped by c.entity_code, c.flow_type, p.factor; filtered to c.flow_type LIKE 'OUT%'; filtered to c.maturity_date > CAST('2026-06-30' AS DATE); filtered to c.maturity_date <= CAST('2026-07-30' AS DATE).",
+   "statement_rules": [
+    "Stressed outflow = SUM(Cash flow USD) \u00d7 factor",
+    "factor looked up from lcr_param by item_code = flow_type",
+    "Filtered to flow_type LIKE 'OUT%'",
+    "Date condition maturity_date > CAST('2026-06-30' AS DATE)",
+    "Date condition maturity_date <= CAST('2026-07-30' AS DATE)",
+    "Summed by entity_code and flow_type and factor"
+   ],
+   "attribute_held_in": [
+    "core.fact_outflow.outflow_usd"
+   ],
+   "on_value_path": true
+  },
+  {
+   "n": 13,
+   "to": "lcr_mart.core.fact_outflow",
+   "from": "lcr_mart.stg.deposit_account",
+   "status": "proven",
+   "purpose": null,
+   "evidence": {
+    "log": "16-Oct 08:44:50 \u00b7 app lcr_shell \u00b7 user etl_owner \u00b7 INSERT INTO core.fact_outflow (entity, category, balance_usd, runoff_rate, outflow_usd) SELECT d.entity_code, ",
+    "sql": "INSERT INTO core.fact_outflow (entity, category, balance_usd, runoff_rate, outflow_usd)\nSELECT d.entity_code,\n       CASE\n         WHEN d.cpty_type = 'RETAIL' AND d.insured THEN 'RET_STABLE'\n         WHEN d.cpty_type = 'RETAIL' THEN 'RET_LESS_STABLE'\n         WHEN d.is_operational THEN 'WHOLESALE_OPERATIONAL'\n         WHEN d.cpty_type = 'FIN' THEN 'FIN_NON_OPERATIONAL'\n         ELSE 'CORP_NON_OPERATIONAL'\n       END AS category,\n       SUM(d.balance_usd) AS balance_usd,\n       p.factor AS runoff_rate,\n       SUM(d.balance_usd) * p.factor AS outflow_usd\nFROM stg.deposit_account d\nJOIN stg.lcr_param p\n  ON p.item_code = CASE\n         WHEN d.cpty_type = 'RETAIL' AND d.insured THEN 'RET_STABLE'\n         WHEN d.cpty_type = 'RETAIL' THEN 'RET_LESS_STABLE'\n         WHEN d.is_operational THEN 'WHOLESALE_OPERATIONAL'\n         WHEN d.cpty_type = 'FIN' THEN 'FIN_NON_OPERATIONAL'\n         ELSE 'CORP_NON_OPERATIONAL'\n       END\nGROUP BY d.entity_code, 2, p.factor;",
+    "code": "pipelines/lcr/21_core_fact_outflow.sql lines 3\u201324",
+    "version": "definition sha256 6f6a50f876d5\u2026 \u00b7 captured 2026-10-16",
+    "reconciliation": "Recalculated 1,951,320,075.32 agrees to stored value 1,951,320,075.32 (tolerance \u00b10.01) [fact_outflow.balance_usd]"
+   },
+   "consumed_by": "core.fact_outflow",
+   "sourced_from": [
+    "stg.deposit_account.balance_usd"
+   ],
+   "pipeline_type": "sql_script",
+   "business_rules": [
+    "Stressed outflow = SUM(Deposit balance USD) \u00d7 factor",
+    "Summed by entity_code and category and factor"
+   ],
+   "transformation": "Sums d.balance_usd grouped by d.entity_code, category, p.factor.",
+   "statement_rules": [
+    "Stressed outflow = SUM(Deposit balance USD) \u00d7 factor",
+    "factor looked up from lcr_param by item_code = CASE WHEN cpty_type = 'RETAIL' AND insured THEN 'RET_STABLE' WHEN cpty_type = 'RETAIL' THEN 'RET_LESS_STABLE' WHEN is_operational THEN 'WHOLESALE_OPERATIONAL' WHEN cpty_type = 'FIN' THEN 'FIN_NON_OPERATIONAL' ELSE 'CORP_NON_OPERATIONAL' END",
+    "Summed by entity_code and category and factor"
+   ],
+   "attribute_held_in": [
+    "core.fact_outflow.outflow_usd"
+   ],
+   "on_value_path": true
+  },
+  {
+   "n": 14,
+   "to": "lcr_mart.core.fact_outflow",
+   "from": "lcr_mart.stg.lcr_param",
+   "status": "proven",
+   "purpose": null,
+   "evidence": {
+    "log": "16-Oct 08:44:50 \u00b7 app lcr_shell \u00b7 user etl_owner \u00b7 INSERT INTO core.fact_outflow (entity, category, balance_usd, runoff_rate, outflow_usd) SELECT c.entity_code, ",
+    "sql": "INSERT INTO core.fact_outflow (entity, category, balance_usd, runoff_rate, outflow_usd)\nSELECT c.entity_code,\n       c.flow_type AS category,\n       SUM(c.amount_usd) AS balance_usd,\n       p.factor AS runoff_rate,\n       SUM(c.amount_usd) * p.factor AS outflow_usd\nFROM stg.cashflow c\nJOIN stg.lcr_param p\n  ON p.item_code = c.flow_type\nWHERE c.flow_type LIKE 'OUT%'\n  AND c.maturity_date > DATE '2026-06-30'\n  AND c.maturity_date <= DATE '2026-07-30'\nGROUP BY c.entity_code, c.flow_type, p.factor;",
+    "code": "pipelines/lcr/21_core_fact_outflow.sql lines 26\u201338",
+    "version": "definition sha256 856c0288e8eb\u2026 \u00b7 captured 2026-10-16",
+    "reconciliation": "Recalculated 8.4 agrees to stored value 8.4 (tolerance \u00b10.01) [fact_outflow.runoff_rate]"
+   },
+   "consumed_by": "core.fact_outflow",
+   "sourced_from": [
+    "stg.lcr_param.factor"
+   ],
+   "pipeline_type": "sql_script",
+   "business_rules": [
+    "factor looked up from lcr_param by item_code = flow_type",
+    "Summed by entity_code and flow_type and factor"
+   ],
+   "transformation": "Sums c.amount_usd grouped by c.entity_code, c.flow_type, p.factor; filtered to c.flow_type LIKE 'OUT%'; filtered to c.maturity_date > CAST('2026-06-30' AS DATE); filtered to c.maturity_date <= CAST('2026-07-30' AS DATE).",
+   "statement_rules": [
+    "Stressed outflow = SUM(Cash flow USD) \u00d7 factor",
+    "factor looked up from lcr_param by item_code = flow_type",
+    "Filtered to flow_type LIKE 'OUT%'",
+    "Date condition maturity_date > CAST('2026-06-30' AS DATE)",
+    "Date condition maturity_date <= CAST('2026-07-30' AS DATE)",
+    "Summed by entity_code and flow_type and factor"
+   ],
+   "attribute_held_in": [
+    "core.fact_outflow.outflow_usd"
+   ],
+   "on_value_path": true
+  },
+  {
+   "n": 15,
+   "to": "lcr_mart.core.fact_outflow",
+   "from": "lcr_mart.stg.lcr_param",
+   "status": "proven",
+   "purpose": null,
+   "evidence": {
+    "log": "16-Oct 08:44:50 \u00b7 app lcr_shell \u00b7 user etl_owner \u00b7 INSERT INTO core.fact_outflow (entity, category, balance_usd, runoff_rate, outflow_usd) SELECT d.entity_code, ",
+    "sql": "INSERT INTO core.fact_outflow (entity, category, balance_usd, runoff_rate, outflow_usd)\nSELECT d.entity_code,\n       CASE\n         WHEN d.cpty_type = 'RETAIL' AND d.insured THEN 'RET_STABLE'\n         WHEN d.cpty_type = 'RETAIL' THEN 'RET_LESS_STABLE'\n         WHEN d.is_operational THEN 'WHOLESALE_OPERATIONAL'\n         WHEN d.cpty_type = 'FIN' THEN 'FIN_NON_OPERATIONAL'\n         ELSE 'CORP_NON_OPERATIONAL'\n       END AS category,\n       SUM(d.balance_usd) AS balance_usd,\n       p.factor AS runoff_rate,\n       SUM(d.balance_usd) * p.factor AS outflow_usd\nFROM stg.deposit_account d\nJOIN stg.lcr_param p\n  ON p.item_code = CASE\n         WHEN d.cpty_type = 'RETAIL' AND d.insured THEN 'RET_STABLE'\n         WHEN d.cpty_type = 'RETAIL' THEN 'RET_LESS_STABLE'\n         WHEN d.is_operational THEN 'WHOLESALE_OPERATIONAL'\n         WHEN d.cpty_type = 'FIN' THEN 'FIN_NON_OPERATIONAL'\n         ELSE 'CORP_NON_OPERATIONAL'\n       END\nGROUP BY d.entity_code, 2, p.factor;",
+    "code": "pipelines/lcr/21_core_fact_outflow.sql lines 3\u201324",
+    "version": "definition sha256 6f6a50f876d5\u2026 \u00b7 captured 2026-10-16",
+    "reconciliation": "Recalculated 8.4 agrees to stored value 8.4 (tolerance \u00b10.01) [fact_outflow.runoff_rate]"
+   },
+   "consumed_by": "core.fact_outflow",
+   "sourced_from": [
+    "stg.lcr_param.factor"
+   ],
+   "pipeline_type": "sql_script",
+   "business_rules": [
+    "factor looked up from lcr_param by item_code = CASE WHEN cpty_type = 'RETAIL' AND insured THEN 'RET_STABLE' WHEN cpty_type = 'RETAIL' THEN 'RET_LESS_STABLE' WHEN is_operational THEN 'WHOLESALE_OPERATIONAL' WHEN cpty_type = 'FIN' THEN 'FIN_NON_OPERATIONAL' ELSE 'CORP_NON_OPERATIONAL' END",
+    "Summed by entity_code and category and factor"
+   ],
+   "transformation": "Sums d.balance_usd grouped by d.entity_code, category, p.factor.",
+   "statement_rules": [
+    "Stressed outflow = SUM(Deposit balance USD) \u00d7 factor",
+    "factor looked up from lcr_param by item_code = CASE WHEN cpty_type = 'RETAIL' AND insured THEN 'RET_STABLE' WHEN cpty_type = 'RETAIL' THEN 'RET_LESS_STABLE' WHEN is_operational THEN 'WHOLESALE_OPERATIONAL' WHEN cpty_type = 'FIN' THEN 'FIN_NON_OPERATIONAL' ELSE 'CORP_NON_OPERATIONAL' END",
+    "Summed by entity_code and category and factor"
+   ],
+   "attribute_held_in": [
+    "core.fact_outflow.outflow_usd"
+   ],
+   "on_value_path": true
+  },
+  {
+   "n": 16,
+   "to": "lcr_mart.rpt.lcr_summary",
+   "from": "lcr_mart.core.fact_hqla",
+   "status": "proven",
+   "purpose": null,
+   "evidence": {
+    "log": "16-Oct 08:44:50 \u00b7 app lcr_shell \u00b7 user etl_owner \u00b7 INSERT INTO rpt.lcr_summary (entity, hqla_usd, outflows_usd, inflows_usd, net_outflows_usd, lcr_pct) SELECT h.",
+    "sql": "INSERT INTO rpt.lcr_summary (entity, hqla_usd, outflows_usd, inflows_usd, net_outflows_usd, lcr_pct)\nSELECT h.entity,\n       ROUND(h.hqla / 1000000, 2) AS hqla_usd,\n       ROUND(o.outflows / 1000000, 2) AS outflows_usd,\n       ROUND(i.inflows / 1000000, 2) AS inflows_usd,\n       ROUND((o.outflows - LEAST(i.inflows, 0.75 * o.outflows)) / 1000000, 2) AS net_outflows_usd,\n       ROUND(h.hqla / (o.outflows - LEAST(i.inflows, 0.75 * o.outflows)) * 100, 2) AS lcr_pct\nFROM (SELECT entity, SUM(weighted_usd) AS hqla FROM core.fact_hqla GROUP BY entity) h\nJOIN (SELECT entity, SUM(outflow_usd) AS outflows FROM core.fact_outflow GROUP BY entity) o\n  ON o.entity = h.entity\nJOIN (SELECT entity, SUM(inflow_usd) AS inflows FROM core.fact_inflow GROUP BY entity) i\n  ON i.entity = h.entity;",
+    "code": "pipelines/lcr/30_rpt_lcr_summary.sql lines 3\u201314",
+    "version": "definition sha256 1ae123e35b65\u2026 \u00b7 captured 2026-10-16",
+    "reconciliation": "Recalculated 414.6 agrees to stored value 414.6 (tolerance \u00b10.01) [lcr_summary.hqla_usd]"
+   },
+   "consumed_by": "rpt.lcr_summary",
+   "sourced_from": [
+    "core.fact_hqla.weighted_usd",
+    "core.fact_hqla.entity"
+   ],
+   "pipeline_type": "sql_script",
+   "business_rules": [
+    "LCR = SUM(HQLA after haircut) \u00f7 (SUM(Stressed outflow) - LEAST(SUM(Inflow), 0.75 \u00d7 SUM(Stressed outflow))) \u00d7 100, rounded to 2 dp",
+    "Summed by entity"
+   ],
+   "transformation": "Calculated as ROUND(h.hqla / (o.outflows - LEAST(i.inflows, 0.75 * o.outflows)) * 100, 2).",
+   "statement_rules": [
+    "LCR = SUM(HQLA after haircut) \u00f7 (SUM(Stressed outflow) - LEAST(SUM(Inflow), 0.75 \u00d7 SUM(Stressed outflow))) \u00d7 100, rounded to 2 dp",
+    "Summed by entity"
+   ],
+   "attribute_held_in": [
+    "rpt.lcr_summary.lcr_pct"
+   ],
+   "on_value_path": true
+  },
+  {
+   "n": 17,
+   "to": "lcr_mart.rpt.lcr_summary",
+   "from": "lcr_mart.core.fact_inflow",
+   "status": "proven",
+   "purpose": null,
+   "evidence": {
+    "log": "16-Oct 08:44:50 \u00b7 app lcr_shell \u00b7 user etl_owner \u00b7 INSERT INTO rpt.lcr_summary (entity, hqla_usd, outflows_usd, inflows_usd, net_outflows_usd, lcr_pct) SELECT h.",
+    "sql": "INSERT INTO rpt.lcr_summary (entity, hqla_usd, outflows_usd, inflows_usd, net_outflows_usd, lcr_pct)\nSELECT h.entity,\n       ROUND(h.hqla / 1000000, 2) AS hqla_usd,\n       ROUND(o.outflows / 1000000, 2) AS outflows_usd,\n       ROUND(i.inflows / 1000000, 2) AS inflows_usd,\n       ROUND((o.outflows - LEAST(i.inflows, 0.75 * o.outflows)) / 1000000, 2) AS net_outflows_usd,\n       ROUND(h.hqla / (o.outflows - LEAST(i.inflows, 0.75 * o.outflows)) * 100, 2) AS lcr_pct\nFROM (SELECT entity, SUM(weighted_usd) AS hqla FROM core.fact_hqla GROUP BY entity) h\nJOIN (SELECT entity, SUM(outflow_usd) AS outflows FROM core.fact_outflow GROUP BY entity) o\n  ON o.entity = h.entity\nJOIN (SELECT entity, SUM(inflow_usd) AS inflows FROM core.fact_inflow GROUP BY entity) i\n  ON i.entity = h.entity;",
+    "code": "pipelines/lcr/30_rpt_lcr_summary.sql lines 3\u201314",
+    "version": "definition sha256 1ae123e35b65\u2026 \u00b7 captured 2026-10-16",
+    "reconciliation": "Recalculated 129.11 agrees to stored value 129.11 (tolerance \u00b10.01) [lcr_summary.inflows_usd]"
+   },
+   "consumed_by": "rpt.lcr_summary",
+   "sourced_from": [
+    "core.fact_inflow.inflow_usd"
+   ],
+   "pipeline_type": "sql_script",
+   "business_rules": [
+    "LCR = SUM(HQLA after haircut) \u00f7 (SUM(Stressed outflow) - LEAST(SUM(Inflow), 0.75 \u00d7 SUM(Stressed outflow))) \u00d7 100, rounded to 2 dp",
+    "Summed by entity"
+   ],
+   "transformation": "Calculated as ROUND(h.hqla / (o.outflows - LEAST(i.inflows, 0.75 * o.outflows)) * 100, 2).",
+   "statement_rules": [
+    "LCR = SUM(HQLA after haircut) \u00f7 (SUM(Stressed outflow) - LEAST(SUM(Inflow), 0.75 \u00d7 SUM(Stressed outflow))) \u00d7 100, rounded to 2 dp",
+    "Summed by entity"
+   ],
+   "attribute_held_in": [
+    "rpt.lcr_summary.lcr_pct"
+   ],
+   "on_value_path": true
+  },
+  {
+   "n": 18,
+   "to": "lcr_mart.rpt.lcr_summary",
+   "from": "lcr_mart.core.fact_outflow",
+   "status": "proven",
+   "purpose": null,
+   "evidence": {
+    "log": "16-Oct 08:44:50 \u00b7 app lcr_shell \u00b7 user etl_owner \u00b7 INSERT INTO rpt.lcr_summary (entity, hqla_usd, outflows_usd, inflows_usd, net_outflows_usd, lcr_pct) SELECT h.",
+    "sql": "INSERT INTO rpt.lcr_summary (entity, hqla_usd, outflows_usd, inflows_usd, net_outflows_usd, lcr_pct)\nSELECT h.entity,\n       ROUND(h.hqla / 1000000, 2) AS hqla_usd,\n       ROUND(o.outflows / 1000000, 2) AS outflows_usd,\n       ROUND(i.inflows / 1000000, 2) AS inflows_usd,\n       ROUND((o.outflows - LEAST(i.inflows, 0.75 * o.outflows)) / 1000000, 2) AS net_outflows_usd,\n       ROUND(h.hqla / (o.outflows - LEAST(i.inflows, 0.75 * o.outflows)) * 100, 2) AS lcr_pct\nFROM (SELECT entity, SUM(weighted_usd) AS hqla FROM core.fact_hqla GROUP BY entity) h\nJOIN (SELECT entity, SUM(outflow_usd) AS outflows FROM core.fact_outflow GROUP BY entity) o\n  ON o.entity = h.entity\nJOIN (SELECT entity, SUM(inflow_usd) AS inflows FROM core.fact_inflow GROUP BY entity) i\n  ON i.entity = h.entity;",
+    "code": "pipelines/lcr/30_rpt_lcr_summary.sql lines 3\u201314",
+    "version": "definition sha256 1ae123e35b65\u2026 \u00b7 captured 2026-10-16",
+    "reconciliation": "Recalculated 405.51 agrees to stored value 405.51 (tolerance \u00b10.01) [lcr_summary.outflows_usd]"
+   },
+   "consumed_by": "rpt.lcr_summary",
+   "sourced_from": [
+    "core.fact_outflow.outflow_usd"
+   ],
+   "pipeline_type": "sql_script",
+   "business_rules": [
+    "LCR = SUM(HQLA after haircut) \u00f7 (SUM(Stressed outflow) - LEAST(SUM(Inflow), 0.75 \u00d7 SUM(Stressed outflow))) \u00d7 100, rounded to 2 dp",
+    "Summed by entity"
+   ],
+   "transformation": "Calculated as ROUND(h.hqla / (o.outflows - LEAST(i.inflows, 0.75 * o.outflows)) * 100, 2).",
+   "statement_rules": [
+    "LCR = SUM(HQLA after haircut) \u00f7 (SUM(Stressed outflow) - LEAST(SUM(Inflow), 0.75 \u00d7 SUM(Stressed outflow))) \u00d7 100, rounded to 2 dp",
+    "Summed by entity"
+   ],
+   "attribute_held_in": [
+    "rpt.lcr_summary.lcr_pct"
+   ],
+   "on_value_path": true
+  },
+  {
+   "n": 19,
+   "to": "lcr_mart.rpt.v_lcr_summary",
+   "from": "lcr_mart.rpt.lcr_summary",
+   "status": "proven",
+   "purpose": "LCR per entity plus GROUP total row (sums of entity amounts; group LCR from summed HQLA and net outflows).",
+   "evidence": {
+    "log": null,
+    "sql": "CREATE VIEW \"rpt\".\"v_lcr_summary\" AS SELECT lcr_summary.entity,\n    lcr_summary.hqla_usd,\n    lcr_summary.outflows_usd,\n    lcr_summary.inflows_usd,\n    lcr_summary.net_outflows_usd,\n    lcr_summary.lcr_pct\n   FROM rpt.lcr_summary\nUNION ALL\n SELECT 'GROUP'::text AS entity,\n    sum(lcr_summary.hqla_usd) AS hqla_usd,\n    sum(lcr_summary.outflows_usd) AS outflows_usd,\n    sum(lcr_summary.inflows_usd) AS inflows_usd,\n    sum(lcr_summary.net_outflows_usd) AS net_outflows_usd,\n    round(((sum(lcr_summary.hqla_usd) / sum(lcr_summary.net_outflows_usd)) * (100)::numeric), 2) AS lcr_pct\n   FROM rpt.lcr_summary",
+    "code": "lcr_mart: view rpt.v_lcr_summary",
+    "version": "definition sha256 f9fec64155d9\u2026 \u00b7 captured 2026-10-16",
+    "reconciliation": "Recalculated 150 agrees to stored value 150 (tolerance \u00b10.01) [v_lcr_summary.lcr_pct]"
+   },
+   "consumed_by": "rpt.v_lcr_summary",
+   "sourced_from": [
+    "rpt.lcr_summary.lcr_pct",
+    "rpt.lcr_summary.hqla_usd",
+    "rpt.lcr_summary.net_outflows_usd",
+    "rpt.lcr_summary.entity"
+   ],
+   "pipeline_type": "view",
+   "business_rules": [
+    "Total row GROUP = sum of the detail rows"
+   ],
+   "transformation": "Copied from lcr_summary.lcr_pct; assembled from 2 UNION branches.",
+   "statement_rules": [
+    "Total row GROUP = sum of the detail rows"
+   ],
+   "attribute_held_in": [
+    "rpt.v_lcr_summary.lcr_pct"
+   ],
+   "on_value_path": true
+  },
+  {
+   "n": 20,
+   "to": "superset.LCR Liquidity Coverage",
+   "from": "lcr_mart.rpt.v_lcr_summary",
+   "status": "proven",
+   "evidence": {
+    "sql": "SELECT entity AS entity, hqla_usd AS hqla_usd, outflows_usd AS outflows_usd, inflows_usd AS inflows_usd, net_outflows_usd AS net_outflows_usd, lcr_pct AS lcr_pct FROM rpt.v_lcr_summary ORDER BY (entity = 'GROUP'), entity LIMIT 1000",
+    "code": "Superset chart 24 'LCR Liquidity Coverage' \u2192 dataset lcr_liquidity_summary",
+    "reconciliation": "Superset chart data re-run returned 150.0 for the selected keys; rpt.v_lcr_summary.lcr_pct sums to 150.0"
+   },
+   "consumed_by": "Report LCR Liquidity Coverage",
+   "sourced_from": [
+    "rpt.v_lcr_summary.lcr_pct"
+   ],
+   "pipeline_type": "bi_tool",
+   "business_rules": [
+    "Displayed as a table in Superset chart 'LCR Liquidity Coverage'"
+   ],
+   "transformation": "Superset dataset 'lcr_liquidity_summary' is a virtual dataset over SQL; the chart displays it as a table.",
+   "attribute_held_in": [
+    "LCR Liquidity Coverage"
+   ],
+   "on_value_path": true
+  }
+ ],
+ "default_hop": 20,
+ "column_edges": [
+  {
+   "from_node": "lcr_mart.raw.cashflow",
+   "from_column": "entity_code",
+   "to_node": "lcr_mart.stg.cashflow",
+   "to_column": "entity_code",
+   "hop": 1,
+   "transformation": "UPPER(entity_code)",
+   "kind": "value",
+   "business_rule": "entity_code = entity_code cleansed (upper-cased)"
+  },
+  {
+   "from_node": "lcr_mart.raw.cashflow",
+   "from_column": "flow_type",
+   "to_node": "lcr_mart.stg.cashflow",
+   "to_column": "flow_type",
+   "hop": 1,
+   "transformation": "pass-through",
+   "kind": "value"
+  },
+  {
+   "from_node": "lcr_mart.raw.cashflow",
+   "from_column": "amount",
+   "to_node": "lcr_mart.stg.cashflow",
+   "to_column": "amount_usd",
+   "hop": 1,
+   "transformation": "ROUND(amount * rate_to_usd, 2)",
+   "kind": "value",
+   "business_rule": "Cash flow USD = amount \u00d7 FX rate to USD, rounded to 2 dp"
+  },
+  {
+   "from_node": "lcr_mart.raw.cashflow",
+   "from_column": "maturity_date",
+   "to_node": "lcr_mart.stg.cashflow",
+   "to_column": "maturity_date",
+   "hop": 1,
+   "transformation": "pass-through",
+   "kind": "value"
+  },
+  {
+   "from_node": "lcr_mart.raw.fx_rate",
+   "from_column": "rate_to_usd",
+   "to_node": "lcr_mart.stg.cashflow",
+   "to_column": "amount_usd",
+   "hop": 2,
+   "transformation": "ROUND(amount * rate_to_usd, 2)",
+   "kind": "value",
+   "business_rule": "Cash flow USD = amount \u00d7 FX rate to USD, rounded to 2 dp"
+  },
+  {
+   "from_node": "lcr_mart.raw.deposit_account",
+   "from_column": "account_id",
+   "to_node": "lcr_mart.stg.deposit_account",
+   "to_column": "account_id",
+   "hop": 3,
+   "transformation": "pass-through",
+   "kind": "value"
+  },
+  {
+   "from_node": "lcr_mart.raw.deposit_account",
+   "from_column": "entity_code",
+   "to_node": "lcr_mart.stg.deposit_account",
+   "to_column": "entity_code",
+   "hop": 3,
+   "transformation": "UPPER(entity_code)",
+   "kind": "value",
+   "business_rule": "entity_code = entity_code cleansed (upper-cased)"
+  },
+  {
+   "from_node": "lcr_mart.raw.deposit_account",
+   "from_column": "cpty_type",
+   "to_node": "lcr_mart.stg.deposit_account",
+   "to_column": "cpty_type",
+   "hop": 3,
+   "transformation": "UPPER(cpty_type)",
+   "kind": "value",
+   "business_rule": "Counterparty type = Counterparty type cleansed (upper-cased)"
+  },
+  {
+   "from_node": "lcr_mart.raw.deposit_account",
+   "from_column": "is_operational",
+   "to_node": "lcr_mart.stg.deposit_account",
+   "to_column": "is_operational",
+   "hop": 3,
+   "transformation": "is_operational = 'Y'",
+   "kind": "value",
+   "business_rule": "Operational deposit = Operational deposit = 'Y'"
+  },
+  {
+   "from_node": "lcr_mart.raw.deposit_account",
+   "from_column": "insured",
+   "to_node": "lcr_mart.stg.deposit_account",
+   "to_column": "insured",
+   "hop": 3,
+   "transformation": "insured = 'Y'",
+   "kind": "value",
+   "business_rule": "Insured = Insured = 'Y'"
+  },
+  {
+   "from_node": "lcr_mart.raw.deposit_account",
+   "from_column": "balance",
+   "to_node": "lcr_mart.stg.deposit_account",
+   "to_column": "balance_usd",
+   "hop": 3,
+   "transformation": "ROUND(balance * rate_to_usd, 2)",
+   "kind": "value",
+   "business_rule": "Deposit balance USD = Deposit balance \u00d7 FX rate to USD, rounded to 2 dp"
+  },
+  {
+   "from_node": "lcr_mart.raw.fx_rate",
+   "from_column": "rate_to_usd",
+   "to_node": "lcr_mart.stg.deposit_account",
+   "to_column": "balance_usd",
+   "hop": 4,
+   "transformation": "ROUND(balance * rate_to_usd, 2)",
+   "kind": "value",
+   "business_rule": "Deposit balance USD = Deposit balance \u00d7 FX rate to USD, rounded to 2 dp"
+  },
+  {
+   "from_node": "lcr_mart.raw.lcr_param",
+   "from_column": "item_code",
+   "to_node": "lcr_mart.stg.lcr_param",
+   "to_column": "item_code",
+   "hop": 5,
+   "transformation": "pass-through",
+   "kind": "value"
+  },
+  {
+   "from_node": "lcr_mart.raw.lcr_param",
+   "from_column": "factor",
+   "to_node": "lcr_mart.stg.lcr_param",
+   "to_column": "factor",
+   "hop": 5,
+   "transformation": "pass-through",
+   "kind": "value"
+  },
+  {
+   "from_node": "lcr_mart.raw.fx_rate",
+   "from_column": "rate_to_usd",
+   "to_node": "lcr_mart.stg.security_holding",
+   "to_column": "mv_usd",
+   "hop": 6,
+   "transformation": "ROUND(market_value * rate_to_usd, 2)",
+   "kind": "value",
+   "business_rule": "Market value USD = Market value \u00d7 FX rate to USD, rounded to 2 dp"
+  },
+  {
+   "from_node": "lcr_mart.raw.security_holding",
+   "from_column": "isin",
+   "to_node": "lcr_mart.stg.security_holding",
+   "to_column": "isin",
+   "hop": 7,
+   "transformation": "pass-through",
+   "kind": "value"
+  },
+  {
+   "from_node": "lcr_mart.raw.security_holding",
+   "from_column": "entity_code",
+   "to_node": "lcr_mart.stg.security_holding",
+   "to_column": "entity_code",
+   "hop": 7,
+   "transformation": "UPPER(entity_code)",
+   "kind": "value",
+   "business_rule": "entity_code = entity_code cleansed (upper-cased)"
+  },
+  {
+   "from_node": "lcr_mart.raw.security_holding",
+   "from_column": "asset_class",
+   "to_node": "lcr_mart.stg.security_holding",
+   "to_column": "asset_class",
+   "hop": 7,
+   "transformation": "pass-through",
+   "kind": "value"
+  },
+  {
+   "from_node": "lcr_mart.raw.security_holding",
+   "from_column": "is_encumbered",
+   "to_node": "lcr_mart.stg.security_holding",
+   "to_column": "is_encumbered",
+   "hop": 7,
+   "transformation": "is_encumbered = 'Y'",
+   "kind": "value",
+   "business_rule": "Encumbered = Encumbered = 'Y'"
+  },
+  {
+   "from_node": "lcr_mart.raw.security_holding",
+   "from_column": "market_value",
+   "to_node": "lcr_mart.stg.security_holding",
+   "to_column": "mv_usd",
+   "hop": 7,
+   "transformation": "ROUND(market_value * rate_to_usd, 2)",
+   "kind": "value",
+   "business_rule": "Market value USD = Market value \u00d7 FX rate to USD, rounded to 2 dp"
+  },
+  {
+   "from_node": "lcr_mart.stg.lcr_param",
+   "from_column": "factor",
+   "to_node": "lcr_mart.core.fact_hqla",
+   "to_column": "haircut",
+   "hop": 8,
+   "transformation": "pass-through",
+   "kind": "value"
+  },
+  {
+   "from_node": "lcr_mart.stg.lcr_param",
+   "from_column": "factor",
+   "to_node": "lcr_mart.core.fact_hqla",
+   "to_column": "weighted_usd",
+   "hop": 8,
+   "transformation": "SUM(mv_usd) * (1 - factor)",
+   "kind": "value",
+   "business_rule": "HQLA after haircut = SUM(Market value USD) \u00d7 (1 - factor)"
+  },
+  {
+   "from_node": "lcr_mart.stg.security_holding",
+   "from_column": "entity_code",
+   "to_node": "lcr_mart.core.fact_hqla",
+   "to_column": "entity",
+   "hop": 9,
+   "transformation": "pass-through",
+   "kind": "value"
+  },
+  {
+   "from_node": "lcr_mart.stg.security_holding",
+   "from_column": "asset_class",
+   "to_node": "lcr_mart.core.fact_hqla",
+   "to_column": "hqla_level",
+   "hop": 9,
+   "transformation": "CASE WHEN asset_class IN ('L1_SOVEREIGN', 'L1_CENTRAL_BANK') THEN '1' WHEN asset_class IN ('L2A_GOV', 'L2A_COVERED') THEN '2A' ELSE '2B' END",
+   "kind": "value",
+   "business_rule": "asset_class mapped by lookup: asset_class IN ('L1_SOVEREIGN', 'L1_CENTRAL_BANK') \u2192 '1', asset_class IN ('L2A_GOV', 'L2A_COVERED') \u2192 '2A'"
+  },
+  {
+   "from_node": "lcr_mart.stg.security_holding",
+   "from_column": "mv_usd",
+   "to_node": "lcr_mart.core.fact_hqla",
+   "to_column": "mv_usd",
+   "hop": 9,
+   "transformation": "SUM(mv_usd)",
+   "kind": "value",
+   "business_rule": "Sum of Market value USD"
+  },
+  {
+   "from_node": "lcr_mart.stg.security_holding",
+   "from_column": "mv_usd",
+   "to_node": "lcr_mart.core.fact_hqla",
+   "to_column": "weighted_usd",
+   "hop": 9,
+   "transformation": "SUM(mv_usd) * (1 - factor)",
+   "kind": "value",
+   "business_rule": "HQLA after haircut = SUM(Market value USD) \u00d7 (1 - factor)"
+  },
+  {
+   "from_node": "lcr_mart.stg.cashflow",
+   "from_column": "entity_code",
+   "to_node": "lcr_mart.core.fact_inflow",
+   "to_column": "entity",
+   "hop": 10,
+   "transformation": "pass-through",
+   "kind": "value"
+  },
+  {
+   "from_node": "lcr_mart.stg.cashflow",
+   "from_column": "flow_type",
+   "to_node": "lcr_mart.core.fact_inflow",
+   "to_column": "category",
+   "hop": 10,
+   "transformation": "pass-through",
+   "kind": "value"
+  },
+  {
+   "from_node": "lcr_mart.stg.cashflow",
+   "from_column": "amount_usd",
+   "to_node": "lcr_mart.core.fact_inflow",
+   "to_column": "balance_usd",
+   "hop": 10,
+   "transformation": "SUM(amount_usd)",
+   "kind": "value",
+   "business_rule": "Sum of Cash flow USD"
+  },
+  {
+   "from_node": "lcr_mart.stg.cashflow",
+   "from_column": "amount_usd",
+   "to_node": "lcr_mart.core.fact_inflow",
+   "to_column": "inflow_usd",
+   "hop": 10,
+   "transformation": "SUM(amount_usd) * factor",
+   "kind": "value",
+   "business_rule": "Inflow = SUM(Cash flow USD) \u00d7 factor"
+  },
+  {
+   "from_node": "lcr_mart.stg.lcr_param",
+   "from_column": "factor",
+   "to_node": "lcr_mart.core.fact_inflow",
+   "to_column": "inflow_rate",
+   "hop": 11,
+   "transformation": "pass-through",
+   "kind": "value"
+  },
+  {
+   "from_node": "lcr_mart.stg.lcr_param",
+   "from_column": "factor",
+   "to_node": "lcr_mart.core.fact_inflow",
+   "to_column": "inflow_usd",
+   "hop": 11,
+   "transformation": "SUM(amount_usd) * factor",
+   "kind": "value",
+   "business_rule": "Inflow = SUM(Cash flow USD) \u00d7 factor"
+  },
+  {
+   "from_node": "lcr_mart.stg.cashflow",
+   "from_column": "entity_code",
+   "to_node": "lcr_mart.core.fact_outflow",
+   "to_column": "entity",
+   "hop": 12,
+   "transformation": "pass-through",
+   "kind": "value"
+  },
+  {
+   "from_node": "lcr_mart.stg.cashflow",
+   "from_column": "flow_type",
+   "to_node": "lcr_mart.core.fact_outflow",
+   "to_column": "category",
+   "hop": 12,
+   "transformation": "pass-through",
+   "kind": "value"
+  },
+  {
+   "from_node": "lcr_mart.stg.cashflow",
+   "from_column": "amount_usd",
+   "to_node": "lcr_mart.core.fact_outflow",
+   "to_column": "balance_usd",
+   "hop": 12,
+   "transformation": "SUM(amount_usd)",
+   "kind": "value",
+   "business_rule": "Sum of Cash flow USD"
+  },
+  {
+   "from_node": "lcr_mart.stg.cashflow",
+   "from_column": "amount_usd",
+   "to_node": "lcr_mart.core.fact_outflow",
+   "to_column": "outflow_usd",
+   "hop": 12,
+   "transformation": "SUM(amount_usd) * factor",
+   "kind": "value",
+   "business_rule": "Stressed outflow = SUM(Cash flow USD) \u00d7 factor"
+  },
+  {
+   "from_node": "lcr_mart.stg.deposit_account",
+   "from_column": "entity_code",
+   "to_node": "lcr_mart.core.fact_outflow",
+   "to_column": "entity",
+   "hop": 13,
+   "transformation": "pass-through",
+   "kind": "value"
+  },
+  {
+   "from_node": "lcr_mart.stg.deposit_account",
+   "from_column": "is_operational",
+   "to_node": "lcr_mart.core.fact_outflow",
+   "to_column": "category",
+   "hop": 13,
+   "transformation": "CASE WHEN cpty_type = 'RETAIL' AND insured THEN 'RET_STABLE' WHEN cpty_type = 'RETAIL' THEN 'RET_LESS_STABLE' WHEN is_operational THEN 'WHOLESALE_OPERATIONAL' W",
+   "kind": "value",
+   "business_rule": "is_operational mapped by lookup: cpty_type = 'RETAIL' AND insured \u2192 'RET_STABLE', 'RETAIL' \u2192 'RET_LESS_STABLE', is_operational \u2192 'WHOLESALE_OPERATIONAL', 'FIN' \u2192 'FIN_NON_OPERATIONAL'"
+  },
+  {
+   "from_node": "lcr_mart.stg.deposit_account",
+   "from_column": "insured",
+   "to_node": "lcr_mart.core.fact_outflow",
+   "to_column": "category",
+   "hop": 13,
+   "transformation": "CASE WHEN cpty_type = 'RETAIL' AND insured THEN 'RET_STABLE' WHEN cpty_type = 'RETAIL' THEN 'RET_LESS_STABLE' WHEN is_operational THEN 'WHOLESALE_OPERATIONAL' W",
+   "kind": "value",
+   "business_rule": "is_operational mapped by lookup: cpty_type = 'RETAIL' AND insured \u2192 'RET_STABLE', 'RETAIL' \u2192 'RET_LESS_STABLE', is_operational \u2192 'WHOLESALE_OPERATIONAL', 'FIN' \u2192 'FIN_NON_OPERATIONAL'"
+  },
+  {
+   "from_node": "lcr_mart.stg.deposit_account",
+   "from_column": "cpty_type",
+   "to_node": "lcr_mart.core.fact_outflow",
+   "to_column": "category",
+   "hop": 13,
+   "transformation": "CASE WHEN cpty_type = 'RETAIL' AND insured THEN 'RET_STABLE' WHEN cpty_type = 'RETAIL' THEN 'RET_LESS_STABLE' WHEN is_operational THEN 'WHOLESALE_OPERATIONAL' W",
+   "kind": "value",
+   "business_rule": "is_operational mapped by lookup: cpty_type = 'RETAIL' AND insured \u2192 'RET_STABLE', 'RETAIL' \u2192 'RET_LESS_STABLE', is_operational \u2192 'WHOLESALE_OPERATIONAL', 'FIN' \u2192 'FIN_NON_OPERATIONAL'"
+  },
+  {
+   "from_node": "lcr_mart.stg.deposit_account",
+   "from_column": "balance_usd",
+   "to_node": "lcr_mart.core.fact_outflow",
+   "to_column": "balance_usd",
+   "hop": 13,
+   "transformation": "SUM(balance_usd)",
+   "kind": "value",
+   "business_rule": "Sum of Deposit balance USD"
+  },
+  {
+   "from_node": "lcr_mart.stg.deposit_account",
+   "from_column": "balance_usd",
+   "to_node": "lcr_mart.core.fact_outflow",
+   "to_column": "outflow_usd",
+   "hop": 13,
+   "transformation": "SUM(balance_usd) * factor",
+   "kind": "value",
+   "business_rule": "Stressed outflow = SUM(Deposit balance USD) \u00d7 factor"
+  },
+  {
+   "from_node": "lcr_mart.stg.lcr_param",
+   "from_column": "factor",
+   "to_node": "lcr_mart.core.fact_outflow",
+   "to_column": "runoff_rate",
+   "hop": 14,
+   "transformation": "pass-through",
+   "kind": "value"
+  },
+  {
+   "from_node": "lcr_mart.stg.lcr_param",
+   "from_column": "factor",
+   "to_node": "lcr_mart.core.fact_outflow",
+   "to_column": "outflow_usd",
+   "hop": 14,
+   "transformation": "SUM(amount_usd) * factor",
+   "kind": "value",
+   "business_rule": "Stressed outflow = SUM(Cash flow USD) \u00d7 factor"
+  },
+  {
+   "from_node": "lcr_mart.stg.lcr_param",
+   "from_column": "factor",
+   "to_node": "lcr_mart.core.fact_outflow",
+   "to_column": "runoff_rate",
+   "hop": 15,
+   "transformation": "pass-through",
+   "kind": "value"
+  },
+  {
+   "from_node": "lcr_mart.stg.lcr_param",
+   "from_column": "factor",
+   "to_node": "lcr_mart.core.fact_outflow",
+   "to_column": "outflow_usd",
+   "hop": 15,
+   "transformation": "SUM(balance_usd) * factor",
+   "kind": "value",
+   "business_rule": "Stressed outflow = SUM(Deposit balance USD) \u00d7 factor"
+  },
+  {
+   "from_node": "lcr_mart.core.fact_hqla",
+   "from_column": "entity",
+   "to_node": "lcr_mart.rpt.lcr_summary",
+   "to_column": "entity",
+   "hop": 16,
+   "transformation": "pass-through",
+   "kind": "value"
+  },
+  {
+   "from_node": "lcr_mart.core.fact_hqla",
+   "from_column": "weighted_usd",
+   "to_node": "lcr_mart.rpt.lcr_summary",
+   "to_column": "hqla_usd",
+   "hop": 16,
+   "transformation": "ROUND(SUM(weighted_usd) / 1000000, 2)",
+   "kind": "value",
+   "business_rule": "Sum of HQLA after haircut, expressed in millions (\u00f71,000,000), rounded to 2 dp"
+  },
+  {
+   "from_node": "lcr_mart.core.fact_hqla",
+   "from_column": "weighted_usd",
+   "to_node": "lcr_mart.rpt.lcr_summary",
+   "to_column": "lcr_pct",
+   "hop": 16,
+   "transformation": "ROUND(SUM(weighted_usd) / (SUM(outflow_usd) - LEAST(SUM(inflow_usd), 0.75 * SUM(outflow_usd))) * 100, 2)",
+   "kind": "value",
+   "business_rule": "LCR = SUM(HQLA after haircut) \u00f7 (SUM(Stressed outflow) - LEAST(SUM(Inflow), 0.75 \u00d7 SUM(Stressed outflow))) \u00d7 100, rounded to 2 dp"
+  },
+  {
+   "from_node": "lcr_mart.core.fact_inflow",
+   "from_column": "inflow_usd",
+   "to_node": "lcr_mart.rpt.lcr_summary",
+   "to_column": "inflows_usd",
+   "hop": 17,
+   "transformation": "ROUND(SUM(inflow_usd) / 1000000, 2)",
+   "kind": "value",
+   "business_rule": "Sum of Inflow, expressed in millions (\u00f71,000,000), rounded to 2 dp"
+  },
+  {
+   "from_node": "lcr_mart.core.fact_inflow",
+   "from_column": "inflow_usd",
+   "to_node": "lcr_mart.rpt.lcr_summary",
+   "to_column": "net_outflows_usd",
+   "hop": 17,
+   "transformation": "ROUND((SUM(outflow_usd) - LEAST(SUM(inflow_usd), 0.75 * SUM(outflow_usd))) / 1000000, 2)",
+   "kind": "value",
+   "business_rule": "Net cash outflows = SUM(Stressed outflow) - LEAST(SUM(Inflow), 0.75 \u00d7 SUM(Stressed outflow)), expressed in millions (\u00f71,000,000), rounded to 2 dp"
+  },
+  {
+   "from_node": "lcr_mart.core.fact_inflow",
+   "from_column": "inflow_usd",
+   "to_node": "lcr_mart.rpt.lcr_summary",
+   "to_column": "lcr_pct",
+   "hop": 17,
+   "transformation": "ROUND(SUM(weighted_usd) / (SUM(outflow_usd) - LEAST(SUM(inflow_usd), 0.75 * SUM(outflow_usd))) * 100, 2)",
+   "kind": "value",
+   "business_rule": "LCR = SUM(HQLA after haircut) \u00f7 (SUM(Stressed outflow) - LEAST(SUM(Inflow), 0.75 \u00d7 SUM(Stressed outflow))) \u00d7 100, rounded to 2 dp"
+  },
+  {
+   "from_node": "lcr_mart.core.fact_outflow",
+   "from_column": "outflow_usd",
+   "to_node": "lcr_mart.rpt.lcr_summary",
+   "to_column": "outflows_usd",
+   "hop": 18,
+   "transformation": "ROUND(SUM(outflow_usd) / 1000000, 2)",
+   "kind": "value",
+   "business_rule": "Sum of Stressed outflow, expressed in millions (\u00f71,000,000), rounded to 2 dp"
+  },
+  {
+   "from_node": "lcr_mart.core.fact_outflow",
+   "from_column": "outflow_usd",
+   "to_node": "lcr_mart.rpt.lcr_summary",
+   "to_column": "net_outflows_usd",
+   "hop": 18,
+   "transformation": "ROUND((SUM(outflow_usd) - LEAST(SUM(inflow_usd), 0.75 * SUM(outflow_usd))) / 1000000, 2)",
+   "kind": "value",
+   "business_rule": "Net cash outflows = SUM(Stressed outflow) - LEAST(SUM(Inflow), 0.75 \u00d7 SUM(Stressed outflow)), expressed in millions (\u00f71,000,000), rounded to 2 dp"
+  },
+  {
+   "from_node": "lcr_mart.core.fact_outflow",
+   "from_column": "outflow_usd",
+   "to_node": "lcr_mart.rpt.lcr_summary",
+   "to_column": "lcr_pct",
+   "hop": 18,
+   "transformation": "ROUND(SUM(weighted_usd) / (SUM(outflow_usd) - LEAST(SUM(inflow_usd), 0.75 * SUM(outflow_usd))) * 100, 2)",
+   "kind": "value",
+   "business_rule": "LCR = SUM(HQLA after haircut) \u00f7 (SUM(Stressed outflow) - LEAST(SUM(Inflow), 0.75 \u00d7 SUM(Stressed outflow))) \u00d7 100, rounded to 2 dp"
+  },
+  {
+   "from_node": "lcr_mart.rpt.lcr_summary",
+   "from_column": "entity",
+   "to_node": "lcr_mart.rpt.v_lcr_summary",
+   "to_column": "entity",
+   "hop": 19,
+   "transformation": "pass-through",
+   "kind": "value"
+  },
+  {
+   "from_node": "lcr_mart.rpt.lcr_summary",
+   "from_column": "hqla_usd",
+   "to_node": "lcr_mart.rpt.v_lcr_summary",
+   "to_column": "hqla_usd",
+   "hop": 19,
+   "transformation": "pass-through",
+   "kind": "value"
+  },
+  {
+   "from_node": "lcr_mart.rpt.lcr_summary",
+   "from_column": "outflows_usd",
+   "to_node": "lcr_mart.rpt.v_lcr_summary",
+   "to_column": "outflows_usd",
+   "hop": 19,
+   "transformation": "pass-through",
+   "kind": "value"
+  },
+  {
+   "from_node": "lcr_mart.rpt.lcr_summary",
+   "from_column": "inflows_usd",
+   "to_node": "lcr_mart.rpt.v_lcr_summary",
+   "to_column": "inflows_usd",
+   "hop": 19,
+   "transformation": "pass-through",
+   "kind": "value"
+  },
+  {
+   "from_node": "lcr_mart.rpt.lcr_summary",
+   "from_column": "net_outflows_usd",
+   "to_node": "lcr_mart.rpt.v_lcr_summary",
+   "to_column": "net_outflows_usd",
+   "hop": 19,
+   "transformation": "pass-through",
+   "kind": "value"
+  },
+  {
+   "from_node": "lcr_mart.rpt.lcr_summary",
+   "from_column": "lcr_pct",
+   "to_node": "lcr_mart.rpt.v_lcr_summary",
+   "to_column": "lcr_pct",
+   "hop": 19,
+   "transformation": "pass-through",
+   "kind": "value"
+  },
+  {
+   "from_node": "lcr_mart.rpt.lcr_summary",
+   "from_column": "hqla_usd",
+   "to_node": "lcr_mart.rpt.v_lcr_summary",
+   "to_column": "lcr_pct",
+   "hop": 19,
+   "transformation": "pass-through",
+   "kind": "value"
+  },
+  {
+   "from_node": "lcr_mart.rpt.lcr_summary",
+   "from_column": "net_outflows_usd",
+   "to_node": "lcr_mart.rpt.v_lcr_summary",
+   "to_column": "lcr_pct",
+   "hop": 19,
+   "transformation": "pass-through",
+   "kind": "value"
+  },
+  {
+   "from_node": "lcr_mart.rpt.v_lcr_summary",
+   "from_column": "lcr_pct",
+   "to_node": "superset.LCR Liquidity Coverage",
+   "to_column": "lcr_pct",
+   "hop": 20,
+   "transformation": "pass-through",
+   "kind": "value"
+  }
+ ]
+}

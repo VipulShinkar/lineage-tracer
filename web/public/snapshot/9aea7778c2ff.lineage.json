@@ -1,0 +1,3417 @@
+{
+ "header": {
+  "mode": "data_point",
+  "unit": "USD m",
+  "label": "EFR Credit Risk Summary \u00b7 ENT-UK \u00b7 CREDIT \u00b7 Corporates exposure_ead",
+  "value": 1277.32,
+  "ref_date": "2026-06-30",
+  "template": null,
+  "direction": "reverse"
+ },
+ "summary": {
+  "hops": 28,
+  "proven": 27,
+  "code_derived": 1,
+  "unresolved": 0,
+  "systems_of_record": 7,
+  "title": "USD 1,277.32m traced to 7 systems of record"
+ },
+ "lanes": [
+  "system_of_record",
+  "staging",
+  "warehouse",
+  "reporting_layer",
+  "report_tool"
+ ],
+ "nodes": [
+  {
+   "id": "fin_lake.stg.loan",
+   "kind": "intermediate",
+   "lane": "staging",
+   "name": "loan",
+   "object": "stg.loan",
+   "schema": "stg",
+   "system": "fin_lake",
+   "columns": [
+    {
+     "name": "contract_id",
+     "data_type": "text",
+     "in_path": false
+    },
+    {
+     "name": "entity_code",
+     "data_type": "text",
+     "in_path": false
+    },
+    {
+     "name": "cpty_id",
+     "data_type": "text",
+     "in_path": false
+    },
+    {
+     "name": "product_code",
+     "data_type": "text",
+     "description": "Product type: Standardised product type used to look up the credit conversion factor and risk weight.",
+     "in_path": true
+    },
+    {
+     "name": "ccy",
+     "data_type": "character(3)",
+     "in_path": false
+    },
+    {
+     "name": "drawn_amt",
+     "data_type": "numeric(20,2)",
+     "description": "Drawn balance: Drawn balance in transaction currency: principal plus accrued interest minus impairment.",
+     "in_path": true
+    },
+    {
+     "name": "undrawn_amt",
+     "data_type": "numeric(20,2)",
+     "description": "Undrawn commitment: Undrawn commitment in transaction currency.",
+     "in_path": true
+    },
+    {
+     "name": "start_date",
+     "data_type": "date",
+     "in_path": false
+    },
+    {
+     "name": "maturity_date",
+     "data_type": "date",
+     "in_path": false
+    }
+   ],
+   "service": "postgresql",
+   "database": "fin_lake",
+   "description": "Typed loan contracts with drawn and undrawn amounts in transaction currency.",
+   "entity_type": "table",
+   "on_value_path": true
+  },
+  {
+   "id": "fin_lake.raw.entity",
+   "kind": "sor",
+   "lane": "system_of_record",
+   "name": "entity",
+   "object": "raw.entity",
+   "schema": "raw",
+   "system": "fin_lake",
+   "columns": [
+    {
+     "name": "entity_code",
+     "data_type": "text",
+     "in_path": true
+    },
+    {
+     "name": "entity_name",
+     "data_type": "text",
+     "in_path": false
+    },
+    {
+     "name": "country",
+     "data_type": "text",
+     "in_path": false
+    },
+    {
+     "name": "consolidation_group",
+     "data_type": "text",
+     "in_path": false
+    },
+    {
+     "name": "_batch_id",
+     "data_type": "text",
+     "in_path": false
+    },
+    {
+     "name": "_loaded_at",
+     "data_type": "timestamp with time zone",
+     "in_path": false
+    }
+   ],
+   "service": "postgresql",
+   "database": "fin_lake",
+   "description": "Legal entities of the reporting group as delivered by the entity master; starting point (source of record) for entity attributes.",
+   "entity_type": "table",
+   "on_value_path": false
+  },
+  {
+   "id": "fin_lake.raw.rating",
+   "kind": "sor",
+   "lane": "system_of_record",
+   "name": "rating",
+   "object": "raw.rating",
+   "schema": "raw",
+   "system": "fin_lake",
+   "columns": [
+    {
+     "name": "cpty_id",
+     "data_type": "text",
+     "in_path": true
+    },
+    {
+     "name": "rating_grade",
+     "data_type": "text",
+     "in_path": true
+    },
+    {
+     "name": "rating_date",
+     "data_type": "text",
+     "in_path": false
+    },
+    {
+     "name": "agency",
+     "data_type": "text",
+     "in_path": false
+    },
+    {
+     "name": "_batch_id",
+     "data_type": "text",
+     "in_path": false
+    },
+    {
+     "name": "_loaded_at",
+     "data_type": "timestamp with time zone",
+     "in_path": false
+    }
+   ],
+   "service": "postgresql",
+   "database": "fin_lake",
+   "description": "External/internal credit rating history per counterparty as delivered by the rating source.",
+   "entity_type": "table",
+   "on_value_path": false
+  },
+  {
+   "id": "fin_lake.stg.entity",
+   "kind": "intermediate",
+   "lane": "staging",
+   "name": "entity",
+   "object": "stg.entity",
+   "schema": "stg",
+   "system": "fin_lake",
+   "columns": [
+    {
+     "name": "entity_code",
+     "data_type": "text",
+     "in_path": true
+    },
+    {
+     "name": "entity_name",
+     "data_type": "text",
+     "in_path": false
+    },
+    {
+     "name": "country",
+     "data_type": "text",
+     "in_path": false
+    },
+    {
+     "name": "consolidation_group",
+     "data_type": "text",
+     "in_path": false
+    }
+   ],
+   "service": "postgresql",
+   "database": "fin_lake",
+   "description": "Cleaned legal entity list (codes standardised to upper case).",
+   "entity_type": "table",
+   "on_value_path": false
+  },
+  {
+   "id": "fin_lake.stg.rating",
+   "kind": "intermediate",
+   "lane": "staging",
+   "name": "rating",
+   "object": "stg.rating",
+   "schema": "stg",
+   "system": "fin_lake",
+   "columns": [
+    {
+     "name": "cpty_id",
+     "data_type": "text",
+     "in_path": true
+    },
+    {
+     "name": "rating_grade",
+     "data_type": "text",
+     "in_path": true
+    },
+    {
+     "name": "rating_date",
+     "data_type": "date",
+     "in_path": false
+    },
+    {
+     "name": "agency",
+     "data_type": "text",
+     "in_path": false
+    }
+   ],
+   "service": "postgresql",
+   "database": "fin_lake",
+   "description": "Latest rating per counterparty, typed and upper-cased.",
+   "entity_type": "table",
+   "on_value_path": false
+  },
+  {
+   "id": "fin_lake.raw.fx_rate",
+   "kind": "sor",
+   "lane": "system_of_record",
+   "name": "fx_rate",
+   "object": "raw.fx_rate",
+   "schema": "raw",
+   "system": "fin_lake",
+   "columns": [
+    {
+     "name": "ccy",
+     "data_type": "text",
+     "in_path": true
+    },
+    {
+     "name": "rate_date",
+     "data_type": "text",
+     "in_path": true
+    },
+    {
+     "name": "rate_to_usd",
+     "data_type": "text",
+     "description": "FX rate to USD: Units of USD per one unit of the currency on the rate date.",
+     "in_path": true
+    },
+    {
+     "name": "_batch_id",
+     "data_type": "text",
+     "in_path": false
+    },
+    {
+     "name": "_loaded_at",
+     "data_type": "timestamp with time zone",
+     "in_path": false
+    }
+   ],
+   "service": "postgresql",
+   "database": "fin_lake",
+   "description": "Daily foreign exchange rates to USD from the market data feed; source of record for currency conversion.",
+   "entity_type": "table",
+   "on_value_path": true
+  },
+  {
+   "id": "fin_lake.stg.fx_rate",
+   "kind": "intermediate",
+   "lane": "staging",
+   "name": "fx_rate",
+   "object": "stg.fx_rate",
+   "schema": "stg",
+   "system": "fin_lake",
+   "columns": [
+    {
+     "name": "ccy",
+     "data_type": "character(3)",
+     "in_path": true
+    },
+    {
+     "name": "rate_date",
+     "data_type": "date",
+     "in_path": true
+    },
+    {
+     "name": "rate_to_usd",
+     "data_type": "numeric(18,8)",
+     "description": "FX rate to USD: Units of USD per one unit of the currency on the rate date.",
+     "in_path": true
+    }
+   ],
+   "service": "postgresql",
+   "database": "fin_lake",
+   "description": "Typed daily FX rates to USD used for all currency conversion in the warehouse.",
+   "entity_type": "table",
+   "on_value_path": true
+  },
+  {
+   "id": "fin_lake.raw.collateral",
+   "kind": "sor",
+   "lane": "system_of_record",
+   "name": "collateral",
+   "object": "raw.collateral",
+   "schema": "raw",
+   "system": "fin_lake",
+   "columns": [
+    {
+     "name": "collateral_id",
+     "data_type": "text",
+     "in_path": false
+    },
+    {
+     "name": "contract_id",
+     "data_type": "text",
+     "in_path": true
+    },
+    {
+     "name": "collateral_type",
+     "data_type": "text",
+     "in_path": false
+    },
+    {
+     "name": "ccy",
+     "data_type": "text",
+     "in_path": true
+    },
+    {
+     "name": "market_value",
+     "data_type": "text",
+     "in_path": false
+    },
+    {
+     "name": "_batch_id",
+     "data_type": "text",
+     "in_path": false
+    },
+    {
+     "name": "_loaded_at",
+     "data_type": "timestamp with time zone",
+     "in_path": false
+    }
+   ],
+   "service": "postgresql",
+   "database": "fin_lake",
+   "description": "Collateral pledged against loan contracts, valued in the contract currency.",
+   "entity_type": "table",
+   "on_value_path": false
+  },
+  {
+   "id": "fin_lake.stg.collateral",
+   "kind": "intermediate",
+   "lane": "staging",
+   "name": "collateral",
+   "object": "stg.collateral",
+   "schema": "stg",
+   "system": "fin_lake",
+   "columns": [
+    {
+     "name": "collateral_id",
+     "data_type": "text",
+     "in_path": false
+    },
+    {
+     "name": "contract_id",
+     "data_type": "text",
+     "in_path": true
+    },
+    {
+     "name": "collateral_type",
+     "data_type": "text",
+     "in_path": false
+    },
+    {
+     "name": "ccy",
+     "data_type": "character(3)",
+     "in_path": true
+    },
+    {
+     "name": "market_value",
+     "data_type": "numeric(20,2)",
+     "in_path": false
+    }
+   ],
+   "service": "postgresql",
+   "database": "fin_lake",
+   "description": "Typed collateral valuations in transaction currency.",
+   "entity_type": "table",
+   "on_value_path": false
+  },
+  {
+   "id": "fin_lake.core.dim_entity",
+   "kind": "intermediate",
+   "lane": "warehouse",
+   "name": "dim_entity",
+   "object": "core.dim_entity",
+   "schema": "core",
+   "system": "fin_lake",
+   "columns": [
+    {
+     "name": "entity_key",
+     "data_type": "integer",
+     "in_path": true
+    },
+    {
+     "name": "entity_code",
+     "data_type": "text",
+     "description": "Entity: Code of the reporting legal entity (e.g. ENT-UK).",
+     "in_path": true
+    },
+    {
+     "name": "entity_name",
+     "data_type": "text",
+     "in_path": false
+    },
+    {
+     "name": "country",
+     "data_type": "text",
+     "in_path": false
+    },
+    {
+     "name": "consolidation_group",
+     "data_type": "text",
+     "in_path": false
+    }
+   ],
+   "service": "postgresql",
+   "database": "fin_lake",
+   "description": "Reporting legal entity dimension.",
+   "entity_type": "table",
+   "on_value_path": false
+  },
+  {
+   "id": "fin_lake.core.dim_rating",
+   "kind": "intermediate",
+   "lane": "warehouse",
+   "name": "dim_rating",
+   "object": "core.dim_rating",
+   "schema": "core",
+   "system": "fin_lake",
+   "columns": [
+    {
+     "name": "rating_key",
+     "data_type": "integer",
+     "in_path": false
+    },
+    {
+     "name": "rating_grade",
+     "data_type": "text",
+     "in_path": true
+    },
+    {
+     "name": "pd",
+     "data_type": "numeric(9,6)",
+     "description": "PD: Probability of default over one year for the rating grade.",
+     "in_path": false
+    },
+    {
+     "name": "lgd",
+     "data_type": "numeric(9,6)",
+     "description": "LGD: Loss given default (fraction of exposure lost on default) for the rating grade band.",
+     "in_path": false
+    }
+   ],
+   "service": "postgresql",
+   "database": "fin_lake",
+   "description": "Rating grade dimension mapping each grade to a probability of default and a loss-given-default band; NR = not rated.",
+   "entity_type": "table",
+   "on_value_path": false
+  },
+  {
+   "id": "fin_lake.core.fact_limit",
+   "kind": "intermediate",
+   "lane": "warehouse",
+   "name": "fact_limit",
+   "object": "core.fact_limit",
+   "schema": "core",
+   "system": "fin_lake",
+   "columns": [
+    {
+     "name": "as_of",
+     "data_type": "date",
+     "in_path": false
+    },
+    {
+     "name": "entity_key",
+     "data_type": "integer",
+     "in_path": true
+    },
+    {
+     "name": "portfolio",
+     "data_type": "text",
+     "in_path": true
+    },
+    {
+     "name": "limit_usd",
+     "data_type": "numeric(20,2)",
+     "description": "Limit (USD): Approved credit risk appetite limit in USD at the reporting-date FX rate.",
+     "in_path": false
+    }
+   ],
+   "service": "postgresql",
+   "database": "fin_lake",
+   "description": "Approved credit limits per entity and portfolio on the reporting date, in USD.",
+   "entity_type": "table",
+   "on_value_path": false
+  },
+  {
+   "id": "fin_lake.core.dim_product",
+   "kind": "intermediate",
+   "lane": "warehouse",
+   "name": "dim_product",
+   "object": "core.dim_product",
+   "schema": "core",
+   "system": "fin_lake",
+   "columns": [
+    {
+     "name": "product_key",
+     "data_type": "integer",
+     "in_path": false
+    },
+    {
+     "name": "product_code",
+     "data_type": "text",
+     "in_path": false
+    },
+    {
+     "name": "ccf",
+     "data_type": "numeric(9,4)",
+     "description": "CCF: Credit Conversion Factor applied to undrawn commitments (CRR Art. 111).",
+     "in_path": true
+    },
+    {
+     "name": "risk_weight_base",
+     "data_type": "numeric(9,4)",
+     "description": "Base risk weight: Base risk weight applied to EAD to derive risk-weighted assets.",
+     "in_path": false
+    }
+   ],
+   "service": "postgresql",
+   "database": "fin_lake",
+   "description": "Product dimension carrying the credit conversion factor and base risk weight per product type.",
+   "entity_type": "table",
+   "on_value_path": true
+  },
+  {
+   "id": "fin_lake.raw.counterparty",
+   "kind": "sor",
+   "lane": "system_of_record",
+   "name": "counterparty",
+   "object": "raw.counterparty",
+   "schema": "raw",
+   "system": "fin_lake",
+   "columns": [
+    {
+     "name": "cpty_id",
+     "data_type": "text",
+     "in_path": true
+    },
+    {
+     "name": "cpty_name",
+     "data_type": "text",
+     "in_path": false
+    },
+    {
+     "name": "country",
+     "data_type": "text",
+     "in_path": false
+    },
+    {
+     "name": "sector_code",
+     "data_type": "text",
+     "description": "Counterparty sector: Counterparty sector: SOV sovereign, BNK bank, CORP corporate, RET retail.",
+     "in_path": true
+    },
+    {
+     "name": "is_intragroup",
+     "data_type": "text",
+     "description": "Intragroup flag: Y when the counterparty belongs to the same consolidation group.",
+     "in_path": true
+    },
+    {
+     "name": "_batch_id",
+     "data_type": "text",
+     "in_path": false
+    },
+    {
+     "name": "_loaded_at",
+     "data_type": "timestamp with time zone",
+     "in_path": false
+    }
+   ],
+   "service": "postgresql",
+   "database": "fin_lake",
+   "description": "Counterparty master as delivered by the client onboarding system; may contain several deliveries per counterparty.",
+   "entity_type": "table",
+   "on_value_path": false
+  },
+  {
+   "id": "fin_lake.raw.credit_limit",
+   "kind": "sor",
+   "lane": "system_of_record",
+   "name": "credit_limit",
+   "object": "raw.credit_limit",
+   "schema": "raw",
+   "system": "fin_lake",
+   "columns": [
+    {
+     "name": "entity_code",
+     "data_type": "text",
+     "in_path": true
+    },
+    {
+     "name": "sector_code",
+     "data_type": "text",
+     "in_path": false
+    },
+    {
+     "name": "limit_amount",
+     "data_type": "text",
+     "description": "Approved limit: Approved limit in the currency given in ccy.",
+     "in_path": false
+    },
+    {
+     "name": "ccy",
+     "data_type": "text",
+     "in_path": true
+    },
+    {
+     "name": "_batch_id",
+     "data_type": "text",
+     "in_path": false
+    },
+    {
+     "name": "_loaded_at",
+     "data_type": "timestamp with time zone",
+     "in_path": false
+    }
+   ],
+   "service": "postgresql",
+   "database": "fin_lake",
+   "description": "Approved credit risk appetite limits per legal entity and counterparty sector, in the entity currency.",
+   "entity_type": "table",
+   "on_value_path": false
+  },
+  {
+   "id": "fin_lake.stg.counterparty",
+   "kind": "intermediate",
+   "lane": "staging",
+   "name": "counterparty",
+   "object": "stg.counterparty",
+   "schema": "stg",
+   "system": "fin_lake",
+   "columns": [
+    {
+     "name": "cpty_id",
+     "data_type": "text",
+     "in_path": true
+    },
+    {
+     "name": "cpty_name",
+     "data_type": "text",
+     "in_path": false
+    },
+    {
+     "name": "country",
+     "data_type": "text",
+     "in_path": false
+    },
+    {
+     "name": "sector_code",
+     "data_type": "text",
+     "description": "Counterparty sector: Counterparty sector code used to derive the regulatory portfolio.",
+     "in_path": true
+    },
+    {
+     "name": "is_intragroup",
+     "data_type": "boolean",
+     "description": "Intragroup flag: TRUE when the counterparty is a group company; such exposures are excluded from external credit risk reporting.",
+     "in_path": true
+    }
+   ],
+   "service": "postgresql",
+   "database": "fin_lake",
+   "description": "Deduplicated counterparty master (latest delivery wins) with the intragroup indicator as a boolean.",
+   "entity_type": "table",
+   "on_value_path": false
+  },
+  {
+   "id": "fin_lake.stg.credit_limit",
+   "kind": "intermediate",
+   "lane": "staging",
+   "name": "credit_limit",
+   "object": "stg.credit_limit",
+   "schema": "stg",
+   "system": "fin_lake",
+   "columns": [
+    {
+     "name": "entity_code",
+     "data_type": "text",
+     "in_path": true
+    },
+    {
+     "name": "sector_code",
+     "data_type": "text",
+     "in_path": false
+    },
+    {
+     "name": "limit_amount",
+     "data_type": "numeric(20,2)",
+     "description": "Approved limit: Approved limit in the entity currency.",
+     "in_path": false
+    },
+    {
+     "name": "ccy",
+     "data_type": "character(3)",
+     "in_path": true
+    }
+   ],
+   "service": "postgresql",
+   "database": "fin_lake",
+   "description": "Typed credit limits per entity and sector in the entity currency.",
+   "entity_type": "table",
+   "on_value_path": false
+  },
+  {
+   "id": "fin_lake.raw.loan_contract",
+   "kind": "sor",
+   "lane": "system_of_record",
+   "name": "loan_contract",
+   "object": "raw.loan_contract",
+   "schema": "raw",
+   "system": "fin_lake",
+   "columns": [
+    {
+     "name": "contract_id",
+     "data_type": "text",
+     "in_path": false
+    },
+    {
+     "name": "entity_code",
+     "data_type": "text",
+     "in_path": false
+    },
+    {
+     "name": "cpty_id",
+     "data_type": "text",
+     "in_path": false
+    },
+    {
+     "name": "product_code",
+     "data_type": "text",
+     "description": "Product type: Product type: TERM loan, RCF revolving facility, GUAR guarantee, TRADE trade finance.",
+     "in_path": false
+    },
+    {
+     "name": "ccy",
+     "data_type": "text",
+     "description": "Contract currency: ISO currency of the contract.",
+     "in_path": false
+    },
+    {
+     "name": "principal",
+     "data_type": "text",
+     "description": "Principal: Outstanding principal drawn by the borrower, in contract currency.",
+     "in_path": true
+    },
+    {
+     "name": "undrawn_limit",
+     "data_type": "text",
+     "description": "Undrawn limit: Committed but undrawn amount available to the borrower, in contract currency.",
+     "in_path": true
+    },
+    {
+     "name": "accrued_int",
+     "data_type": "text",
+     "description": "Accrued interest: Interest accrued and not yet paid, in contract currency.",
+     "in_path": true
+    },
+    {
+     "name": "impairment",
+     "data_type": "text",
+     "description": "Impairment: Specific impairment (value adjustment) recognised against the contract, in contract currency.",
+     "in_path": true
+    },
+    {
+     "name": "start_date",
+     "data_type": "text",
+     "in_path": false
+    },
+    {
+     "name": "maturity_date",
+     "data_type": "text",
+     "in_path": false
+    },
+    {
+     "name": "_batch_id",
+     "data_type": "text",
+     "in_path": false
+    },
+    {
+     "name": "_loaded_at",
+     "data_type": "timestamp with time zone",
+     "in_path": false
+    }
+   ],
+   "service": "postgresql",
+   "database": "fin_lake",
+   "description": "Loan and commitment contracts as booked in the lending system; source of drawn and undrawn amounts. Amounts are text as delivered.",
+   "entity_type": "table",
+   "on_value_path": true
+  },
+  {
+   "id": "fin_lake.core.fact_exposure",
+   "kind": "intermediate",
+   "lane": "warehouse",
+   "name": "fact_exposure",
+   "object": "core.fact_exposure",
+   "schema": "core",
+   "system": "fin_lake",
+   "columns": [
+    {
+     "name": "as_of",
+     "data_type": "date",
+     "in_path": false
+    },
+    {
+     "name": "entity_key",
+     "data_type": "integer",
+     "in_path": false
+    },
+    {
+     "name": "cpty_key",
+     "data_type": "integer",
+     "in_path": false
+    },
+    {
+     "name": "product_key",
+     "data_type": "integer",
+     "in_path": false
+    },
+    {
+     "name": "rating_key",
+     "data_type": "integer",
+     "in_path": false
+    },
+    {
+     "name": "drawn_usd",
+     "data_type": "numeric(20,2)",
+     "description": "Drawn (USD): Drawn balance in USD, converted at the reporting-date FX rate.",
+     "in_path": false
+    },
+    {
+     "name": "undrawn_usd",
+     "data_type": "numeric(20,2)",
+     "description": "Undrawn (USD): Undrawn commitment in USD, converted at the reporting-date FX rate.",
+     "in_path": false
+    },
+    {
+     "name": "ccf",
+     "data_type": "numeric(9,4)",
+     "description": "CCF: Credit conversion factor applied to the undrawn commitment.",
+     "in_path": false
+    },
+    {
+     "name": "ead_usd",
+     "data_type": "numeric(20,2)",
+     "description": "EAD (USD): Exposure at Default in USD: drawn balance plus CCF-weighted undrawn commitment, converted at the reporting-date FX rate; intragroup excluded.",
+     "in_path": true
+    },
+    {
+     "name": "risk_weight",
+     "data_type": "numeric(9,4)",
+     "description": "Risk weight: Risk weight applied to EAD.",
+     "in_path": false
+    },
+    {
+     "name": "rwa_usd",
+     "data_type": "numeric(20,2)",
+     "description": "RWA (USD): Risk-weighted assets in USD: EAD multiplied by the risk weight.",
+     "in_path": false
+    },
+    {
+     "name": "pd",
+     "data_type": "numeric(9,6)",
+     "description": "PD: Probability of default of the counterparty rating grade.",
+     "in_path": false
+    },
+    {
+     "name": "lgd",
+     "data_type": "numeric(9,6)",
+     "description": "LGD: Loss given default of the counterparty rating grade.",
+     "in_path": false
+    },
+    {
+     "name": "el_usd",
+     "data_type": "numeric(20,2)",
+     "description": "Expected loss (USD): Expected loss in USD: PD multiplied by LGD multiplied by EAD.",
+     "in_path": false
+    },
+    {
+     "name": "collateral_usd",
+     "data_type": "numeric(20,2)",
+     "description": "Collateral (USD): Market value of collateral pledged against the contract, in USD (informational, not deducted from EAD).",
+     "in_path": false
+    }
+   ],
+   "service": "postgresql",
+   "database": "fin_lake",
+   "description": "Credit exposure fact at contract grain on the reporting date, in USD: drawn, undrawn, EAD, RWA and expected loss. Intragroup excluded.",
+   "entity_type": "table",
+   "on_value_path": true
+  },
+  {
+   "id": "fin_lake.core.dim_counterparty",
+   "kind": "intermediate",
+   "lane": "warehouse",
+   "name": "dim_counterparty",
+   "object": "core.dim_counterparty",
+   "schema": "core",
+   "system": "fin_lake",
+   "columns": [
+    {
+     "name": "cpty_key",
+     "data_type": "integer",
+     "in_path": false
+    },
+    {
+     "name": "cpty_id",
+     "data_type": "text",
+     "in_path": true
+    },
+    {
+     "name": "cpty_name",
+     "data_type": "text",
+     "in_path": false
+    },
+    {
+     "name": "country",
+     "data_type": "text",
+     "in_path": false
+    },
+    {
+     "name": "sector_code",
+     "data_type": "text",
+     "in_path": false
+    },
+    {
+     "name": "portfolio",
+     "data_type": "text",
+     "description": "Portfolio: Regulatory portfolio derived from the sector code: SOV Sovereigns, BNK Banks, CORP Corporates, RET Retail.",
+     "in_path": true
+    },
+    {
+     "name": "is_intragroup",
+     "data_type": "boolean",
+     "description": "Intragroup flag: TRUE when the counterparty belongs to the group; excluded from exposure.",
+     "in_path": true
+    }
+   ],
+   "service": "postgresql",
+   "database": "fin_lake",
+   "description": "Counterparty dimension with the regulatory portfolio (Sovereigns, Banks, Corporates, Retail) and the intragroup indicator.",
+   "entity_type": "table",
+   "on_value_path": false
+  },
+  {
+   "id": "superset.EFR Credit Risk Summary",
+   "kind": "anchor",
+   "lane": "report_tool",
+   "name": "EFR Credit Risk Summary",
+   "object": "EFR Credit Risk Summary",
+   "system": "superset",
+   "columns": [
+    {
+     "name": "entity",
+     "data_type": "STRING",
+     "in_path": false
+    },
+    {
+     "name": "risk_type",
+     "data_type": "STRING",
+     "in_path": false
+    },
+    {
+     "name": "portfolio",
+     "data_type": "STRING",
+     "in_path": false
+    },
+    {
+     "name": "exposure_ead",
+     "data_type": "DECIMAL",
+     "in_path": true
+    },
+    {
+     "name": "rwa",
+     "data_type": "DECIMAL",
+     "in_path": false
+    },
+    {
+     "name": "expected_loss",
+     "data_type": "DECIMAL",
+     "in_path": false
+    },
+    {
+     "name": "limit_amount",
+     "data_type": "DECIMAL",
+     "in_path": false
+    },
+    {
+     "name": "utilisation_pct",
+     "data_type": "DECIMAL",
+     "in_path": false
+    }
+   ],
+   "service": "superset",
+   "description": null,
+   "entity_type": "chart",
+   "schema": null,
+   "on_value_path": true
+  },
+  {
+   "id": "fin_lake.rpt.efr_credit_risk_summary",
+   "kind": "intermediate",
+   "lane": "reporting_layer",
+   "name": "efr_credit_risk_summary",
+   "object": "rpt.efr_credit_risk_summary",
+   "schema": "rpt",
+   "system": "fin_lake",
+   "columns": [
+    {
+     "name": "entity",
+     "data_type": "text",
+     "description": "Entity: Reporting legal entity code.",
+     "in_path": true
+    },
+    {
+     "name": "risk_type",
+     "data_type": "text",
+     "in_path": true
+    },
+    {
+     "name": "portfolio",
+     "data_type": "text",
+     "description": "Portfolio: Regulatory portfolio of the counterparties.",
+     "in_path": true
+    },
+    {
+     "name": "exposure_ead",
+     "data_type": "numeric(18,2)",
+     "description": "EAD (USD m): Exposure at Default in USD millions: sum of EAD, intragroup excluded.",
+     "in_path": true
+    },
+    {
+     "name": "rwa",
+     "data_type": "numeric(18,2)",
+     "description": "RWA (USD m): Risk-weighted assets in USD millions.",
+     "in_path": false
+    },
+    {
+     "name": "expected_loss",
+     "data_type": "numeric(18,2)",
+     "description": "Expected loss (USD m): Expected loss in USD millions (PD x LGD x EAD).",
+     "in_path": false
+    },
+    {
+     "name": "limit_amount",
+     "data_type": "numeric(18,2)",
+     "description": "Limit (USD m): Approved credit risk appetite limit in USD millions.",
+     "in_path": false
+    },
+    {
+     "name": "as_of",
+     "data_type": "date",
+     "in_path": false
+    }
+   ],
+   "service": "postgresql",
+   "database": "fin_lake",
+   "description": "Enterprise Financial Risk credit risk summary per entity and portfolio in USD millions (BCBS 239 report data).",
+   "entity_type": "table",
+   "on_value_path": true
+  },
+  {
+   "id": "fin_lake.rpt.v_efr_credit_risk_summary",
+   "kind": "intermediate",
+   "lane": "reporting_layer",
+   "name": "v_efr_credit_risk_summary",
+   "object": "rpt.v_efr_credit_risk_summary",
+   "schema": "rpt",
+   "system": "fin_lake",
+   "columns": [
+    {
+     "name": "entity",
+     "data_type": "text",
+     "in_path": true
+    },
+    {
+     "name": "risk_type",
+     "data_type": "text",
+     "in_path": true
+    },
+    {
+     "name": "portfolio",
+     "data_type": "text",
+     "in_path": true
+    },
+    {
+     "name": "exposure_ead",
+     "data_type": "numeric",
+     "description": "EAD (USD m): Exposure at Default in USD millions; the GROUP row is the sum over all entities and portfolios.",
+     "in_path": true
+    },
+    {
+     "name": "rwa",
+     "data_type": "numeric",
+     "description": "RWA (USD m): Risk-weighted assets in USD millions.",
+     "in_path": false
+    },
+    {
+     "name": "expected_loss",
+     "data_type": "numeric",
+     "description": "Expected loss (USD m): Expected loss in USD millions (PD x LGD x EAD).",
+     "in_path": false
+    },
+    {
+     "name": "limit_amount",
+     "data_type": "numeric",
+     "description": "Limit (USD m): Approved credit risk appetite limit in USD millions.",
+     "in_path": false
+    },
+    {
+     "name": "utilisation_pct",
+     "data_type": "numeric",
+     "description": "Limit utilisation: Limit utilisation: exposure at default divided by the approved limit, in percent.",
+     "in_path": false
+    }
+   ],
+   "service": "postgresql",
+   "database": "fin_lake",
+   "description": "EFR Credit Risk Summary as published: entity/portfolio rows plus the GROUP total row, with limit utilisation.",
+   "entity_type": "view",
+   "on_value_path": true
+  }
+ ],
+ "edges": [
+  {
+   "from": "fin_lake.raw.collateral",
+   "to": "fin_lake.stg.collateral",
+   "hop": 1,
+   "status": "proven"
+  },
+  {
+   "from": "fin_lake.raw.counterparty",
+   "to": "fin_lake.stg.counterparty",
+   "hop": 2,
+   "status": "proven"
+  },
+  {
+   "from": "fin_lake.raw.credit_limit",
+   "to": "fin_lake.stg.credit_limit",
+   "hop": 3,
+   "status": "proven"
+  },
+  {
+   "from": "fin_lake.raw.entity",
+   "to": "fin_lake.stg.entity",
+   "hop": 4,
+   "status": "proven"
+  },
+  {
+   "from": "fin_lake.raw.fx_rate",
+   "to": "fin_lake.stg.fx_rate",
+   "hop": 5,
+   "status": "code_derived"
+  },
+  {
+   "from": "fin_lake.raw.loan_contract",
+   "to": "fin_lake.stg.loan",
+   "hop": 6,
+   "status": "proven"
+  },
+  {
+   "from": "fin_lake.raw.rating",
+   "to": "fin_lake.stg.rating",
+   "hop": 7,
+   "status": "proven"
+  },
+  {
+   "from": "fin_lake.stg.counterparty",
+   "to": "fin_lake.core.dim_counterparty",
+   "hop": 8,
+   "status": "proven"
+  },
+  {
+   "from": "fin_lake.stg.entity",
+   "to": "fin_lake.core.dim_entity",
+   "hop": 9,
+   "status": "proven"
+  },
+  {
+   "from": "fin_lake.stg.loan",
+   "to": "fin_lake.core.dim_product",
+   "hop": 10,
+   "status": "proven"
+  },
+  {
+   "from": "fin_lake.stg.rating",
+   "to": "fin_lake.core.dim_rating",
+   "hop": 11,
+   "status": "proven"
+  },
+  {
+   "from": "fin_lake.core.dim_counterparty",
+   "to": "fin_lake.core.fact_exposure",
+   "hop": 12,
+   "status": "proven"
+  },
+  {
+   "from": "fin_lake.core.dim_entity",
+   "to": "fin_lake.core.fact_exposure",
+   "hop": 13,
+   "status": "proven"
+  },
+  {
+   "from": "fin_lake.core.dim_product",
+   "to": "fin_lake.core.fact_exposure",
+   "hop": 14,
+   "status": "proven"
+  },
+  {
+   "from": "fin_lake.core.dim_rating",
+   "to": "fin_lake.core.fact_exposure",
+   "hop": 15,
+   "status": "proven"
+  },
+  {
+   "from": "fin_lake.stg.collateral",
+   "to": "fin_lake.core.fact_exposure",
+   "hop": 16,
+   "status": "proven"
+  },
+  {
+   "from": "fin_lake.stg.fx_rate",
+   "to": "fin_lake.core.fact_exposure",
+   "hop": 17,
+   "status": "proven"
+  },
+  {
+   "from": "fin_lake.stg.loan",
+   "to": "fin_lake.core.fact_exposure",
+   "hop": 18,
+   "status": "proven"
+  },
+  {
+   "from": "fin_lake.stg.rating",
+   "to": "fin_lake.core.fact_exposure",
+   "hop": 19,
+   "status": "proven"
+  },
+  {
+   "from": "fin_lake.core.dim_entity",
+   "to": "fin_lake.core.fact_limit",
+   "hop": 20,
+   "status": "proven"
+  },
+  {
+   "from": "fin_lake.stg.credit_limit",
+   "to": "fin_lake.core.fact_limit",
+   "hop": 21,
+   "status": "proven"
+  },
+  {
+   "from": "fin_lake.stg.fx_rate",
+   "to": "fin_lake.core.fact_limit",
+   "hop": 22,
+   "status": "proven"
+  },
+  {
+   "from": "fin_lake.core.dim_counterparty",
+   "to": "fin_lake.rpt.efr_credit_risk_summary",
+   "hop": 23,
+   "status": "proven"
+  },
+  {
+   "from": "fin_lake.core.dim_entity",
+   "to": "fin_lake.rpt.efr_credit_risk_summary",
+   "hop": 24,
+   "status": "proven"
+  },
+  {
+   "from": "fin_lake.core.fact_exposure",
+   "to": "fin_lake.rpt.efr_credit_risk_summary",
+   "hop": 25,
+   "status": "proven"
+  },
+  {
+   "from": "fin_lake.core.fact_limit",
+   "to": "fin_lake.rpt.efr_credit_risk_summary",
+   "hop": 26,
+   "status": "proven"
+  },
+  {
+   "from": "fin_lake.rpt.efr_credit_risk_summary",
+   "to": "fin_lake.rpt.v_efr_credit_risk_summary",
+   "hop": 27,
+   "status": "proven"
+  },
+  {
+   "from": "fin_lake.rpt.v_efr_credit_risk_summary",
+   "to": "superset.EFR Credit Risk Summary",
+   "hop": 28,
+   "status": "proven"
+  }
+ ],
+ "hops": [
+  {
+   "n": 1,
+   "to": "fin_lake.stg.collateral",
+   "from": "fin_lake.raw.collateral",
+   "status": "proven",
+   "purpose": null,
+   "evidence": {
+    "log": "OpenLineage job efr_credit_risk.execute_save_into_data_source_command.stg_collateral",
+    "sql": "(\"stg.collateral\", \"\"\"\nSELECT c.collateral_id, c.contract_id, c.collateral_type, c.ccy, CAST(c.market_value AS DECIMAL(20,2)) AS market_value\nFROM raw_collateral c\"\"\"),",
+    "code": "pipelines/spark/efr_job.py lines 54\u201356",
+    "version": null,
+    "reconciliation": "Recalculated 899 agrees to stored value 899 (tolerance \u00b10.01) [collateral.row count]"
+   },
+   "consumed_by": "stg.collateral",
+   "sourced_from": [
+    "raw.collateral.contract_id",
+    "raw.collateral.ccy"
+   ],
+   "pipeline_type": "spark",
+   "business_rules": [],
+   "transformation": "Copied from c.contract_id.",
+   "statement_rules": [],
+   "attribute_held_in": [
+    "stg.collateral.contract_id"
+   ],
+   "on_value_path": false
+  },
+  {
+   "n": 2,
+   "to": "fin_lake.stg.counterparty",
+   "from": "fin_lake.raw.counterparty",
+   "status": "proven",
+   "purpose": null,
+   "evidence": {
+    "log": "OpenLineage job efr_credit_risk.execute_save_into_data_source_command.stg_counterparty",
+    "sql": "(\"stg.counterparty\", \"\"\"\n-- dedupe: keep the latest delivery per counterparty; flag intragroup\nSELECT d.cpty_id, TRIM(d.cpty_name) AS cpty_name, d.country, UPPER(d.sector_code) AS sector_code,\n       (d.is_intragroup = 'Y') AS is_intragroup\nFROM (SELECT c.*, ROW_NUMBER() OVER (PARTITION BY c.cpty_id ORDER BY c._loaded_at DESC) AS rn FROM raw_counterparty c) d\nWHERE d.rn = 1\"\"\"),",
+    "code": "pipelines/spark/efr_job.py lines 33\u201338",
+    "version": null,
+    "reconciliation": "Recalculated 400 agrees to stored value 400 (tolerance \u00b10.01) [counterparty.row count]"
+   },
+   "consumed_by": "stg.counterparty",
+   "sourced_from": [
+    "raw.counterparty.sector_code",
+    "raw.counterparty.cpty_id",
+    "raw.counterparty.is_intragroup"
+   ],
+   "pipeline_type": "spark",
+   "business_rules": [
+    "Counterparty sector = Counterparty sector cleansed (upper-cased)",
+    "Deduplicated: keeps the first-ranked row per key (latest delivery)"
+   ],
+   "transformation": "Calculated as UPPER(d.sector_code); filtered to d.rn = 1.",
+   "statement_rules": [
+    "Counterparty sector = Counterparty sector cleansed (upper-cased)",
+    "Deduplicated: keeps the first-ranked row per key (latest delivery)"
+   ],
+   "attribute_held_in": [
+    "stg.counterparty.sector_code"
+   ],
+   "on_value_path": false
+  },
+  {
+   "n": 3,
+   "to": "fin_lake.stg.credit_limit",
+   "from": "fin_lake.raw.credit_limit",
+   "status": "proven",
+   "purpose": null,
+   "evidence": {
+    "log": "OpenLineage job efr_credit_risk.execute_save_into_data_source_command.stg_credit_limit",
+    "sql": "(\"stg.credit_limit\", \"\"\"\nSELECT UPPER(l.entity_code) AS entity_code, UPPER(l.sector_code) AS sector_code,\n       CAST(l.limit_amount AS DECIMAL(20,2)) AS limit_amount, l.ccy\nFROM raw_credit_limit l\"\"\"),",
+    "code": "pipelines/spark/efr_job.py lines 58\u201361",
+    "version": null,
+    "reconciliation": "Recalculated 12 agrees to stored value 12 (tolerance \u00b10.01) [credit_limit.row count]"
+   },
+   "consumed_by": "stg.credit_limit",
+   "sourced_from": [
+    "raw.credit_limit.entity_code",
+    "raw.credit_limit.ccy"
+   ],
+   "pipeline_type": "spark",
+   "business_rules": [
+    "entity_code = entity_code cleansed (upper-cased)"
+   ],
+   "transformation": "Calculated as UPPER(l.entity_code).",
+   "statement_rules": [
+    "entity_code = entity_code cleansed (upper-cased)"
+   ],
+   "attribute_held_in": [
+    "stg.credit_limit.entity_code"
+   ],
+   "on_value_path": false
+  },
+  {
+   "n": 4,
+   "to": "fin_lake.stg.entity",
+   "from": "fin_lake.raw.entity",
+   "status": "proven",
+   "purpose": null,
+   "evidence": {
+    "log": "OpenLineage job efr_credit_risk.execute_save_into_data_source_command.stg_entity",
+    "sql": "(\"stg.entity\", \"\"\"\nSELECT UPPER(TRIM(e.entity_code)) AS entity_code, TRIM(e.entity_name) AS entity_name, e.country, e.consolidation_group\nFROM raw_entity e\"\"\"),",
+    "code": "pipelines/spark/efr_job.py lines 29\u201331",
+    "version": null,
+    "reconciliation": "Recalculated 1 agrees to stored value 1 (tolerance \u00b10.01) [entity.row count]"
+   },
+   "consumed_by": "stg.entity",
+   "sourced_from": [
+    "raw.entity.entity_code"
+   ],
+   "pipeline_type": "spark",
+   "business_rules": [
+    "entity_code = entity_code cleansed (trimmed, upper-cased)"
+   ],
+   "transformation": "Calculated as UPPER(TRIM(e.entity_code)).",
+   "statement_rules": [
+    "entity_code = entity_code cleansed (trimmed, upper-cased)"
+   ],
+   "attribute_held_in": [
+    "stg.entity.entity_code"
+   ],
+   "on_value_path": false
+  },
+  {
+   "n": 5,
+   "to": "fin_lake.stg.fx_rate",
+   "from": "fin_lake.raw.fx_rate",
+   "status": "code_derived",
+   "purpose": null,
+   "evidence": {
+    "log": "OpenLineage job efr_credit_risk.execute_save_into_data_source_command.stg_fx_rate",
+    "sql": "(\"stg.fx_rate\", \"\"\"\nSELECT f.ccy, CAST(f.rate_date AS DATE) AS rate_date, CAST(f.rate_to_usd AS DECIMAL(18,8)) AS rate_to_usd\nFROM raw_fx_rate f\"\"\"),",
+    "code": "pipelines/spark/efr_job.py lines 63\u201365",
+    "version": null,
+    "reconciliation": "Not reconciled: recalculated 12.33 vs stored 12.31 (tolerance \u00b10.01) [fx_rate.rate_to_usd]"
+   },
+   "consumed_by": "stg.fx_rate",
+   "sourced_from": [
+    "raw.fx_rate.rate_to_usd",
+    "raw.fx_rate.ccy",
+    "raw.fx_rate.rate_date"
+   ],
+   "pipeline_type": "spark",
+   "business_rules": [
+    "Converted to USD at the 30-Jun-2026 FX rate"
+   ],
+   "transformation": "Calculated as CAST(f.rate_to_usd AS DECIMAL(18, 8)); converted using FX rate f.rate_to_usd.",
+   "statement_rules": [
+    "Converted to USD at the 30-Jun-2026 FX rate"
+   ],
+   "attribute_held_in": [
+    "stg.fx_rate.rate_to_usd"
+   ],
+   "on_value_path": true
+  },
+  {
+   "n": 6,
+   "to": "fin_lake.stg.loan",
+   "from": "fin_lake.raw.loan_contract",
+   "status": "proven",
+   "purpose": null,
+   "evidence": {
+    "log": "OpenLineage job efr_credit_risk.execute_save_into_data_source_command.stg_loan",
+    "sql": "(\"stg.loan\", \"\"\"\n-- drawn amount = principal + accrued interest - impairment (transaction currency)\nSELECT l.contract_id, UPPER(l.entity_code) AS entity_code, l.cpty_id, UPPER(l.product_code) AS product_code, l.ccy,\n       CAST(l.principal AS DECIMAL(20,2)) + CAST(l.accrued_int AS DECIMAL(20,2)) - CAST(l.impairment AS DECIMAL(20,2)) AS drawn_amt,\n       CAST(l.undrawn_limit AS DECIMAL(20,2)) AS undrawn_amt,\n       CAST(l.start_date AS DATE) AS start_date, CAST(l.maturity_date AS DATE) AS maturity_date\nFROM raw_loan_contract l\"\"\"),",
+    "code": "pipelines/spark/efr_job.py lines 46\u201352",
+    "version": null,
+    "reconciliation": "Recalculated 34,470,540,208.96 agrees to stored value 34,470,540,208.96 (tolerance \u00b10.01) [loan.undrawn_amt]"
+   },
+   "consumed_by": "stg.loan",
+   "sourced_from": [
+    "raw.loan_contract.undrawn_limit",
+    "raw.loan_contract.impairment",
+    "raw.loan_contract.accrued_int",
+    "raw.loan_contract.principal"
+   ],
+   "pipeline_type": "spark",
+   "business_rules": [],
+   "transformation": "Calculated as CAST(l.undrawn_limit AS DECIMAL(20, 2)).",
+   "statement_rules": [],
+   "attribute_held_in": [
+    "stg.loan.undrawn_amt"
+   ],
+   "on_value_path": true
+  },
+  {
+   "n": 7,
+   "to": "fin_lake.stg.rating",
+   "from": "fin_lake.raw.rating",
+   "status": "proven",
+   "purpose": null,
+   "evidence": {
+    "log": "OpenLineage job efr_credit_risk.execute_save_into_data_source_command.stg_rating",
+    "sql": "(\"stg.rating\", \"\"\"\n-- latest rating per counterparty\nSELECT d.cpty_id, UPPER(d.rating_grade) AS rating_grade, CAST(d.rating_date AS DATE) AS rating_date, d.agency\nFROM (SELECT r.*, ROW_NUMBER() OVER (PARTITION BY r.cpty_id ORDER BY r.rating_date DESC) AS rn FROM raw_rating r) d\nWHERE d.rn = 1\"\"\"),",
+    "code": "pipelines/spark/efr_job.py lines 40\u201344",
+    "version": null,
+    "reconciliation": "Recalculated 341 agrees to stored value 341 (tolerance \u00b10.01) [rating.row count]"
+   },
+   "consumed_by": "stg.rating",
+   "sourced_from": [
+    "raw.rating.cpty_id",
+    "raw.rating.rating_grade"
+   ],
+   "pipeline_type": "spark",
+   "business_rules": [
+    "Deduplicated: keeps the first-ranked row per key (latest delivery)"
+   ],
+   "transformation": "Copied from d.cpty_id; filtered to d.rn = 1.",
+   "statement_rules": [
+    "Deduplicated: keeps the first-ranked row per key (latest delivery)"
+   ],
+   "attribute_held_in": [
+    "stg.rating.cpty_id"
+   ],
+   "on_value_path": false
+  },
+  {
+   "n": 8,
+   "to": "fin_lake.core.dim_counterparty",
+   "from": "fin_lake.stg.counterparty",
+   "status": "proven",
+   "purpose": null,
+   "evidence": {
+    "log": "OpenLineage job efr_credit_risk.execute_save_into_data_source_command.core_dim_counterparty",
+    "sql": "(\"core.dim_counterparty\", \"\"\"\n-- portfolio derived from the sector code\nSELECT CAST(ROW_NUMBER() OVER (ORDER BY c.cpty_id) AS INT) AS cpty_key,\n       c.cpty_id, c.cpty_name, c.country, c.sector_code,\n       CASE c.sector_code WHEN 'SOV' THEN 'Sovereigns' WHEN 'BNK' THEN 'Banks' WHEN 'CORP' THEN 'Corporates'\n                          WHEN 'RET' THEN 'Retail' ELSE 'Other' END AS portfolio,\n       c.is_intragroup\nFROM stg_counterparty c\"\"\"),",
+    "code": "pipelines/spark/efr_job.py lines 77\u201384",
+    "version": null,
+    "reconciliation": "Recalculated 220 agrees to stored value 220 (tolerance \u00b10.01) [dim_counterparty.row count]"
+   },
+   "consumed_by": "core.dim_counterparty",
+   "sourced_from": [
+    "stg.counterparty.sector_code",
+    "stg.counterparty.cpty_id",
+    "stg.counterparty.is_intragroup"
+   ],
+   "pipeline_type": "spark",
+   "business_rules": [
+    "Counterparty sector mapped by lookup: 'SOV' \u2192 'Sovereigns', 'BNK' \u2192 'Banks', 'CORP' \u2192 'Corporates', 'RET' \u2192 'Retail'"
+   ],
+   "transformation": "Calculated as CASE c.sector_code WHEN 'SOV' THEN 'Sovereigns' WHEN 'BNK' THEN 'Banks' WHEN 'CORP' THEN 'Corporates' WHEN 'RET' THEN 'Retail' ELSE 'Other' END; mapped through a CASE with 4 branches.",
+   "statement_rules": [
+    "Counterparty sector mapped by lookup: 'SOV' \u2192 'Sovereigns', 'BNK' \u2192 'Banks', 'CORP' \u2192 'Corporates', 'RET' \u2192 'Retail'"
+   ],
+   "attribute_held_in": [
+    "core.dim_counterparty.portfolio"
+   ],
+   "on_value_path": false
+  },
+  {
+   "n": 9,
+   "to": "fin_lake.core.dim_entity",
+   "from": "fin_lake.stg.entity",
+   "status": "proven",
+   "purpose": null,
+   "evidence": {
+    "log": "OpenLineage job efr_credit_risk.execute_save_into_data_source_command.core_dim_entity",
+    "sql": "(\"core.dim_entity\", \"\"\"\nSELECT CAST(ROW_NUMBER() OVER (ORDER BY e.entity_code) AS INT) AS entity_key,\n       e.entity_code, e.entity_name, e.country, e.consolidation_group\nFROM stg_entity e\"\"\"),",
+    "code": "pipelines/spark/efr_job.py lines 72\u201375",
+    "version": null,
+    "reconciliation": "Recalculated 1 agrees to stored value 1 (tolerance \u00b10.01) [dim_entity.row count]"
+   },
+   "consumed_by": "core.dim_entity",
+   "sourced_from": [
+    "stg.entity.entity_code"
+   ],
+   "pipeline_type": "spark",
+   "business_rules": [],
+   "transformation": "Copied from e.entity_code.",
+   "statement_rules": [],
+   "attribute_held_in": [
+    "core.dim_entity.entity_code"
+   ],
+   "on_value_path": false
+  },
+  {
+   "n": 10,
+   "to": "fin_lake.core.dim_product",
+   "from": "fin_lake.stg.loan",
+   "status": "proven",
+   "purpose": null,
+   "evidence": {
+    "log": "OpenLineage job efr_credit_risk.execute_save_into_data_source_command.core_dim_product",
+    "sql": "(\"core.dim_product\", \"\"\"\nSELECT CAST(ROW_NUMBER() OVER (ORDER BY p.product_code) AS INT) AS product_key, p.product_code,\n       CAST(CASE p.product_code WHEN 'RCF' THEN 0.50 WHEN 'TRADE' THEN 0.20 ELSE 1.00 END AS DECIMAL(9,4)) AS ccf,\n       CAST(CASE p.product_code WHEN 'GUAR' THEN 1.00 WHEN 'TRADE' THEN 0.50 WHEN 'RCF' THEN 0.80 ELSE 0.90 END AS DECIMAL(9,4)) AS risk_weight_base\nFROM (SELECT DISTINCT l.product_code FROM stg_loan l) p\"\"\"),",
+    "code": "pipelines/spark/efr_job.py lines 95\u201399",
+    "version": null,
+    "reconciliation": "Recalculated 2.7 agrees to stored value 2.7 (tolerance \u00b10.01) [dim_product.ccf]"
+   },
+   "consumed_by": "core.dim_product",
+   "sourced_from": [
+    "stg.loan.product_code"
+   ],
+   "pipeline_type": "spark",
+   "business_rules": [
+    "Product type mapped by lookup: 'RCF' \u2192 0.50, 'TRADE' \u2192 0.20"
+   ],
+   "transformation": "Calculated as CAST(CASE p.product_code WHEN 'RCF' THEN 0.50 WHEN 'TRADE' THEN 0.20 ELSE 1.00 END AS DECIMAL(9, 4)); mapped through a CASE with 2 branches.",
+   "statement_rules": [
+    "Product type mapped by lookup: 'RCF' \u2192 0.50, 'TRADE' \u2192 0.20"
+   ],
+   "attribute_held_in": [
+    "core.dim_product.ccf"
+   ],
+   "on_value_path": true
+  },
+  {
+   "n": 11,
+   "to": "fin_lake.core.dim_rating",
+   "from": "fin_lake.stg.rating",
+   "status": "proven",
+   "purpose": null,
+   "evidence": {
+    "log": "OpenLineage job efr_credit_risk.execute_save_into_data_source_command.core_dim_rating",
+    "sql": "(\"core.dim_rating\", \"\"\"\n-- grade -> probability of default and loss-given-default band ('NR' = not rated)\nSELECT CAST(ROW_NUMBER() OVER (ORDER BY g.rating_grade) AS INT) AS rating_key, g.rating_grade,\n       CAST(CASE g.rating_grade WHEN 'AAA' THEN 0.0003 WHEN 'AA' THEN 0.0006 WHEN 'A' THEN 0.0015 WHEN 'BBB' THEN 0.0050\n                                WHEN 'BB' THEN 0.0200 WHEN 'B' THEN 0.0600 WHEN 'CCC' THEN 0.2000 ELSE 0.0300 END AS DECIMAL(9,6)) AS pd,\n       CAST(CASE WHEN g.rating_grade IN ('AAA', 'AA', 'A') THEN 0.35 WHEN g.rating_grade IN ('BBB', 'BB') THEN 0.45\n                 ELSE 0.55 END AS DECIMAL(9,6)) AS lgd\nFROM (SELECT r.rating_grade FROM stg_rating r UNION SELECT 'NR' AS rating_grade) g\"\"\"),",
+    "code": "pipelines/spark/efr_job.py lines 86\u201393",
+    "version": null,
+    "reconciliation": "Recalculated 8 agrees to stored value 8 (tolerance \u00b10.01) [dim_rating.row count]"
+   },
+   "consumed_by": "core.dim_rating",
+   "sourced_from": [
+    "stg.rating.rating_grade"
+   ],
+   "pipeline_type": "spark",
+   "business_rules": [],
+   "transformation": "Copied from g.rating_grade.",
+   "statement_rules": [],
+   "attribute_held_in": [
+    "core.dim_rating.rating_grade"
+   ],
+   "on_value_path": false
+  },
+  {
+   "n": 12,
+   "to": "fin_lake.core.fact_exposure",
+   "from": "fin_lake.core.dim_counterparty",
+   "status": "proven",
+   "purpose": null,
+   "evidence": {
+    "log": "OpenLineage job efr_credit_risk.execute_save_into_data_source_command.core_fact_exposure",
+    "sql": "(\"core.fact_exposure\", \"\"\"\n-- EAD = drawn + CCF x undrawn (USD at the 30-Jun-2026 rate); RWA = EAD x risk weight; EL = PD x LGD x EAD; intragroup excluded\nWITH base AS (\n    SELECT e.entity_key, c.cpty_key, p.product_key, dr.rating_key, l.contract_id,\n           ROUND(l.drawn_amt   * fx.rate_to_usd, 2) AS drawn_usd,\n           ROUND(l.undrawn_amt * fx.rate_to_usd, 2) AS undrawn_usd,\n           p.ccf, p.risk_weight_base AS risk_weight, dr.pd, dr.lgd\n    FROM stg_loan l\n    JOIN stg_fx_rate fx          ON fx.ccy = l.ccy AND fx.rate_date = DATE '2026-06-30'\n    JOIN core_dim_entity e       ON e.entity_code = l.entity_code\n    JOIN core_dim_counterparty c ON c.cpty_id = l.cpty_id\n    JOIN core_dim_product p      ON p.product_code = l.product_code\n    LEFT JOIN stg_rating r       ON r.cpty_id = l.cpty_id\n    JOIN core_dim_rating dr      ON dr.rating_grade = COALESCE(r.rating_grade, 'NR')\n    WHERE c.is_intragroup = FALSE\n),\ncoll AS (\n    SELECT k.contract_id, SUM(ROUND(k.market_value * fx.rate_to_usd, 2)) AS collateral_usd\n    FROM stg_collateral k\n    JOIN stg_fx_rate fx ON fx.ccy = k.ccy AND fx.rate_date = DATE '2026-06-30'\n    GROUP BY k.contract_id\n)\nSELECT DATE '2026-06-30' AS as_of, b.entity_key, b.cpty_key, b.product_key, b.rating_key,\n       b.drawn_usd, b.undrawn_usd, b.ccf,\n       ROUND(b.drawn_usd + b.ccf * b.undrawn_usd, 2) AS ead_usd,\n       b.risk_weight,\n       ROUND((b.drawn_usd + b.ccf * b.undrawn_usd) * b.risk_weight, 2) AS rwa_usd,\n       b.pd, b.lgd,\n       ROUND(b.pd * b.lgd * (b.drawn_usd + b.ccf * b.undrawn_usd), 2) AS el_usd,\n       COALESCE(k.collateral_usd, 0) AS collateral_usd\nFROM base b LEFT JOIN coll k ON k.contract_id = b.contract_id\"\"\"),",
+    "code": "pipelines/spark/efr_job.py lines 101\u2013131",
+    "version": null,
+    "reconciliation": "Recalculated 278,353 agrees to stored value 278,353 (tolerance \u00b10.01) [fact_exposure.cpty_key]"
+   },
+   "consumed_by": "core.fact_exposure",
+   "sourced_from": [
+    "core.dim_counterparty.cpty_id",
+    "core.dim_counterparty.is_intragroup"
+   ],
+   "pipeline_type": "spark",
+   "business_rules": [
+    "Looks up dim_counterparty (matched on cpty_id)",
+    "Intragroup counterparties excluded"
+   ],
+   "transformation": "Calculated as ROUND(b.drawn_usd + b.ccf * b.undrawn_usd, 2).",
+   "statement_rules": [
+    "EAD (USD) = ROUND(Drawn balance \u00d7 FX rate to USD, 2) + CCF \u00d7 ROUND(Undrawn commitment \u00d7 FX rate to USD, 2), rounded to 2 dp",
+    "Converted to USD at the 30-Jun-2026 FX rate (rate_to_usd matched on ccy and rate_date)",
+    "Collateral (USD) and market_value looked up from collateral by contract_id",
+    "Looks up dim_entity (matched on entity_code)",
+    "Looks up dim_counterparty (matched on cpty_id)",
+    "CCF and base risk weight looked up from dim_product by product_code",
+    "Looks up rating (matched on cpty_id)",
+    "PD and LGD looked up from dim_rating by rating_grade = COALESCE(rating_grade, 'NR')",
+    "Intragroup counterparties excluded",
+    "Summed by contract_id"
+   ],
+   "attribute_held_in": [
+    "core.fact_exposure.ead_usd"
+   ],
+   "on_value_path": false
+  },
+  {
+   "n": 13,
+   "to": "fin_lake.core.fact_exposure",
+   "from": "fin_lake.core.dim_entity",
+   "status": "proven",
+   "purpose": null,
+   "evidence": {
+    "log": "OpenLineage job efr_credit_risk.execute_save_into_data_source_command.core_fact_exposure",
+    "sql": "(\"core.fact_exposure\", \"\"\"\n-- EAD = drawn + CCF x undrawn (USD at the 30-Jun-2026 rate); RWA = EAD x risk weight; EL = PD x LGD x EAD; intragroup excluded\nWITH base AS (\n    SELECT e.entity_key, c.cpty_key, p.product_key, dr.rating_key, l.contract_id,\n           ROUND(l.drawn_amt   * fx.rate_to_usd, 2) AS drawn_usd,\n           ROUND(l.undrawn_amt * fx.rate_to_usd, 2) AS undrawn_usd,\n           p.ccf, p.risk_weight_base AS risk_weight, dr.pd, dr.lgd\n    FROM stg_loan l\n    JOIN stg_fx_rate fx          ON fx.ccy = l.ccy AND fx.rate_date = DATE '2026-06-30'\n    JOIN core_dim_entity e       ON e.entity_code = l.entity_code\n    JOIN core_dim_counterparty c ON c.cpty_id = l.cpty_id\n    JOIN core_dim_product p      ON p.product_code = l.product_code\n    LEFT JOIN stg_rating r       ON r.cpty_id = l.cpty_id\n    JOIN core_dim_rating dr      ON dr.rating_grade = COALESCE(r.rating_grade, 'NR')\n    WHERE c.is_intragroup = FALSE\n),\ncoll AS (\n    SELECT k.contract_id, SUM(ROUND(k.market_value * fx.rate_to_usd, 2)) AS collateral_usd\n    FROM stg_collateral k\n    JOIN stg_fx_rate fx ON fx.ccy = k.ccy AND fx.rate_date = DATE '2026-06-30'\n    GROUP BY k.contract_id\n)\nSELECT DATE '2026-06-30' AS as_of, b.entity_key, b.cpty_key, b.product_key, b.rating_key,\n       b.drawn_usd, b.undrawn_usd, b.ccf,\n       ROUND(b.drawn_usd + b.ccf * b.undrawn_usd, 2) AS ead_usd,\n       b.risk_weight,\n       ROUND((b.drawn_usd + b.ccf * b.undrawn_usd) * b.risk_weight, 2) AS rwa_usd,\n       b.pd, b.lgd,\n       ROUND(b.pd * b.lgd * (b.drawn_usd + b.ccf * b.undrawn_usd), 2) AS el_usd,\n       COALESCE(k.collateral_usd, 0) AS collateral_usd\nFROM base b LEFT JOIN coll k ON k.contract_id = b.contract_id\"\"\"),",
+    "code": "pipelines/spark/efr_job.py lines 101\u2013131",
+    "version": null,
+    "reconciliation": "Recalculated 2,804 agrees to stored value 2,804 (tolerance \u00b10.01) [fact_exposure.entity_key]"
+   },
+   "consumed_by": "core.fact_exposure",
+   "sourced_from": [
+    "core.dim_entity.entity_code"
+   ],
+   "pipeline_type": "spark",
+   "business_rules": [
+    "Looks up dim_entity (matched on entity_code)"
+   ],
+   "transformation": "Calculated as ROUND(b.drawn_usd + b.ccf * b.undrawn_usd, 2).",
+   "statement_rules": [
+    "EAD (USD) = ROUND(Drawn balance \u00d7 FX rate to USD, 2) + CCF \u00d7 ROUND(Undrawn commitment \u00d7 FX rate to USD, 2), rounded to 2 dp",
+    "Converted to USD at the 30-Jun-2026 FX rate (rate_to_usd matched on ccy and rate_date)",
+    "Collateral (USD) and market_value looked up from collateral by contract_id",
+    "Looks up dim_entity (matched on entity_code)",
+    "Looks up dim_counterparty (matched on cpty_id)",
+    "CCF and base risk weight looked up from dim_product by product_code",
+    "Looks up rating (matched on cpty_id)",
+    "PD and LGD looked up from dim_rating by rating_grade = COALESCE(rating_grade, 'NR')",
+    "Intragroup counterparties excluded",
+    "Summed by contract_id"
+   ],
+   "attribute_held_in": [
+    "core.fact_exposure.ead_usd"
+   ],
+   "on_value_path": false
+  },
+  {
+   "n": 14,
+   "to": "fin_lake.core.fact_exposure",
+   "from": "fin_lake.core.dim_product",
+   "status": "proven",
+   "purpose": null,
+   "evidence": {
+    "log": "OpenLineage job efr_credit_risk.execute_save_into_data_source_command.core_fact_exposure",
+    "sql": "(\"core.fact_exposure\", \"\"\"\n-- EAD = drawn + CCF x undrawn (USD at the 30-Jun-2026 rate); RWA = EAD x risk weight; EL = PD x LGD x EAD; intragroup excluded\nWITH base AS (\n    SELECT e.entity_key, c.cpty_key, p.product_key, dr.rating_key, l.contract_id,\n           ROUND(l.drawn_amt   * fx.rate_to_usd, 2) AS drawn_usd,\n           ROUND(l.undrawn_amt * fx.rate_to_usd, 2) AS undrawn_usd,\n           p.ccf, p.risk_weight_base AS risk_weight, dr.pd, dr.lgd\n    FROM stg_loan l\n    JOIN stg_fx_rate fx          ON fx.ccy = l.ccy AND fx.rate_date = DATE '2026-06-30'\n    JOIN core_dim_entity e       ON e.entity_code = l.entity_code\n    JOIN core_dim_counterparty c ON c.cpty_id = l.cpty_id\n    JOIN core_dim_product p      ON p.product_code = l.product_code\n    LEFT JOIN stg_rating r       ON r.cpty_id = l.cpty_id\n    JOIN core_dim_rating dr      ON dr.rating_grade = COALESCE(r.rating_grade, 'NR')\n    WHERE c.is_intragroup = FALSE\n),\ncoll AS (\n    SELECT k.contract_id, SUM(ROUND(k.market_value * fx.rate_to_usd, 2)) AS collateral_usd\n    FROM stg_collateral k\n    JOIN stg_fx_rate fx ON fx.ccy = k.ccy AND fx.rate_date = DATE '2026-06-30'\n    GROUP BY k.contract_id\n)\nSELECT DATE '2026-06-30' AS as_of, b.entity_key, b.cpty_key, b.product_key, b.rating_key,\n       b.drawn_usd, b.undrawn_usd, b.ccf,\n       ROUND(b.drawn_usd + b.ccf * b.undrawn_usd, 2) AS ead_usd,\n       b.risk_weight,\n       ROUND((b.drawn_usd + b.ccf * b.undrawn_usd) * b.risk_weight, 2) AS rwa_usd,\n       b.pd, b.lgd,\n       ROUND(b.pd * b.lgd * (b.drawn_usd + b.ccf * b.undrawn_usd), 2) AS el_usd,\n       COALESCE(k.collateral_usd, 0) AS collateral_usd\nFROM base b LEFT JOIN coll k ON k.contract_id = b.contract_id\"\"\"),",
+    "code": "pipelines/spark/efr_job.py lines 101\u2013131",
+    "version": null,
+    "reconciliation": "Recalculated 3,538 agrees to stored value 3,538 (tolerance \u00b10.01) [fact_exposure.product_key] (+2 more columns agree)"
+   },
+   "consumed_by": "core.fact_exposure",
+   "sourced_from": [
+    "core.dim_product.ccf"
+   ],
+   "pipeline_type": "spark",
+   "business_rules": [
+    "CCF and base risk weight looked up from dim_product by product_code"
+   ],
+   "transformation": "Calculated as ROUND(b.drawn_usd + b.ccf * b.undrawn_usd, 2).",
+   "statement_rules": [
+    "EAD (USD) = ROUND(Drawn balance \u00d7 FX rate to USD, 2) + CCF \u00d7 ROUND(Undrawn commitment \u00d7 FX rate to USD, 2), rounded to 2 dp",
+    "Converted to USD at the 30-Jun-2026 FX rate (rate_to_usd matched on ccy and rate_date)",
+    "Collateral (USD) and market_value looked up from collateral by contract_id",
+    "Looks up dim_entity (matched on entity_code)",
+    "Looks up dim_counterparty (matched on cpty_id)",
+    "CCF and base risk weight looked up from dim_product by product_code",
+    "Looks up rating (matched on cpty_id)",
+    "PD and LGD looked up from dim_rating by rating_grade = COALESCE(rating_grade, 'NR')",
+    "Intragroup counterparties excluded",
+    "Summed by contract_id"
+   ],
+   "attribute_held_in": [
+    "core.fact_exposure.ead_usd"
+   ],
+   "on_value_path": true
+  },
+  {
+   "n": 15,
+   "to": "fin_lake.core.fact_exposure",
+   "from": "fin_lake.core.dim_rating",
+   "status": "proven",
+   "purpose": null,
+   "evidence": {
+    "log": "OpenLineage job efr_credit_risk.execute_save_into_data_source_command.core_fact_exposure",
+    "sql": "(\"core.fact_exposure\", \"\"\"\n-- EAD = drawn + CCF x undrawn (USD at the 30-Jun-2026 rate); RWA = EAD x risk weight; EL = PD x LGD x EAD; intragroup excluded\nWITH base AS (\n    SELECT e.entity_key, c.cpty_key, p.product_key, dr.rating_key, l.contract_id,\n           ROUND(l.drawn_amt   * fx.rate_to_usd, 2) AS drawn_usd,\n           ROUND(l.undrawn_amt * fx.rate_to_usd, 2) AS undrawn_usd,\n           p.ccf, p.risk_weight_base AS risk_weight, dr.pd, dr.lgd\n    FROM stg_loan l\n    JOIN stg_fx_rate fx          ON fx.ccy = l.ccy AND fx.rate_date = DATE '2026-06-30'\n    JOIN core_dim_entity e       ON e.entity_code = l.entity_code\n    JOIN core_dim_counterparty c ON c.cpty_id = l.cpty_id\n    JOIN core_dim_product p      ON p.product_code = l.product_code\n    LEFT JOIN stg_rating r       ON r.cpty_id = l.cpty_id\n    JOIN core_dim_rating dr      ON dr.rating_grade = COALESCE(r.rating_grade, 'NR')\n    WHERE c.is_intragroup = FALSE\n),\ncoll AS (\n    SELECT k.contract_id, SUM(ROUND(k.market_value * fx.rate_to_usd, 2)) AS collateral_usd\n    FROM stg_collateral k\n    JOIN stg_fx_rate fx ON fx.ccy = k.ccy AND fx.rate_date = DATE '2026-06-30'\n    GROUP BY k.contract_id\n)\nSELECT DATE '2026-06-30' AS as_of, b.entity_key, b.cpty_key, b.product_key, b.rating_key,\n       b.drawn_usd, b.undrawn_usd, b.ccf,\n       ROUND(b.drawn_usd + b.ccf * b.undrawn_usd, 2) AS ead_usd,\n       b.risk_weight,\n       ROUND((b.drawn_usd + b.ccf * b.undrawn_usd) * b.risk_weight, 2) AS rwa_usd,\n       b.pd, b.lgd,\n       ROUND(b.pd * b.lgd * (b.drawn_usd + b.ccf * b.undrawn_usd), 2) AS el_usd,\n       COALESCE(k.collateral_usd, 0) AS collateral_usd\nFROM base b LEFT JOIN coll k ON k.contract_id = b.contract_id\"\"\"),",
+    "code": "pipelines/spark/efr_job.py lines 101\u2013131",
+    "version": null,
+    "reconciliation": "Recalculated 6,748 agrees to stored value 6,748 (tolerance \u00b10.01) [fact_exposure.rating_key] (+2 more columns agree)"
+   },
+   "consumed_by": "core.fact_exposure",
+   "sourced_from": [
+    "core.dim_rating.rating_grade"
+   ],
+   "pipeline_type": "spark",
+   "business_rules": [
+    "PD and LGD looked up from dim_rating by rating_grade = COALESCE(rating_grade, 'NR')"
+   ],
+   "transformation": "Calculated as ROUND(b.drawn_usd + b.ccf * b.undrawn_usd, 2).",
+   "statement_rules": [
+    "EAD (USD) = ROUND(Drawn balance \u00d7 FX rate to USD, 2) + CCF \u00d7 ROUND(Undrawn commitment \u00d7 FX rate to USD, 2), rounded to 2 dp",
+    "Converted to USD at the 30-Jun-2026 FX rate (rate_to_usd matched on ccy and rate_date)",
+    "Collateral (USD) and market_value looked up from collateral by contract_id",
+    "Looks up dim_entity (matched on entity_code)",
+    "Looks up dim_counterparty (matched on cpty_id)",
+    "CCF and base risk weight looked up from dim_product by product_code",
+    "Looks up rating (matched on cpty_id)",
+    "PD and LGD looked up from dim_rating by rating_grade = COALESCE(rating_grade, 'NR')",
+    "Intragroup counterparties excluded",
+    "Summed by contract_id"
+   ],
+   "attribute_held_in": [
+    "core.fact_exposure.ead_usd"
+   ],
+   "on_value_path": false
+  },
+  {
+   "n": 16,
+   "to": "fin_lake.core.fact_exposure",
+   "from": "fin_lake.stg.collateral",
+   "status": "proven",
+   "purpose": null,
+   "evidence": {
+    "log": "OpenLineage job efr_credit_risk.execute_save_into_data_source_command.core_fact_exposure",
+    "sql": "(\"core.fact_exposure\", \"\"\"\n-- EAD = drawn + CCF x undrawn (USD at the 30-Jun-2026 rate); RWA = EAD x risk weight; EL = PD x LGD x EAD; intragroup excluded\nWITH base AS (\n    SELECT e.entity_key, c.cpty_key, p.product_key, dr.rating_key, l.contract_id,\n           ROUND(l.drawn_amt   * fx.rate_to_usd, 2) AS drawn_usd,\n           ROUND(l.undrawn_amt * fx.rate_to_usd, 2) AS undrawn_usd,\n           p.ccf, p.risk_weight_base AS risk_weight, dr.pd, dr.lgd\n    FROM stg_loan l\n    JOIN stg_fx_rate fx          ON fx.ccy = l.ccy AND fx.rate_date = DATE '2026-06-30'\n    JOIN core_dim_entity e       ON e.entity_code = l.entity_code\n    JOIN core_dim_counterparty c ON c.cpty_id = l.cpty_id\n    JOIN core_dim_product p      ON p.product_code = l.product_code\n    LEFT JOIN stg_rating r       ON r.cpty_id = l.cpty_id\n    JOIN core_dim_rating dr      ON dr.rating_grade = COALESCE(r.rating_grade, 'NR')\n    WHERE c.is_intragroup = FALSE\n),\ncoll AS (\n    SELECT k.contract_id, SUM(ROUND(k.market_value * fx.rate_to_usd, 2)) AS collateral_usd\n    FROM stg_collateral k\n    JOIN stg_fx_rate fx ON fx.ccy = k.ccy AND fx.rate_date = DATE '2026-06-30'\n    GROUP BY k.contract_id\n)\nSELECT DATE '2026-06-30' AS as_of, b.entity_key, b.cpty_key, b.product_key, b.rating_key,\n       b.drawn_usd, b.undrawn_usd, b.ccf,\n       ROUND(b.drawn_usd + b.ccf * b.undrawn_usd, 2) AS ead_usd,\n       b.risk_weight,\n       ROUND((b.drawn_usd + b.ccf * b.undrawn_usd) * b.risk_weight, 2) AS rwa_usd,\n       b.pd, b.lgd,\n       ROUND(b.pd * b.lgd * (b.drawn_usd + b.ccf * b.undrawn_usd), 2) AS el_usd,\n       COALESCE(k.collateral_usd, 0) AS collateral_usd\nFROM base b LEFT JOIN coll k ON k.contract_id = b.contract_id\"\"\"),",
+    "code": "pipelines/spark/efr_job.py lines 101\u2013131",
+    "version": null,
+    "reconciliation": "Recalculated 5,822,029,359.1 agrees to stored value 5,822,029,359.1 (tolerance \u00b10.01) [fact_exposure.ead_usd]"
+   },
+   "consumed_by": "core.fact_exposure",
+   "sourced_from": [
+    "stg.collateral.contract_id",
+    "stg.collateral.ccy"
+   ],
+   "pipeline_type": "spark",
+   "business_rules": [
+    "Collateral (USD) and market_value looked up from collateral by contract_id",
+    "Summed by contract_id"
+   ],
+   "transformation": "Calculated as ROUND(b.drawn_usd + b.ccf * b.undrawn_usd, 2).",
+   "statement_rules": [
+    "EAD (USD) = ROUND(Drawn balance \u00d7 FX rate to USD, 2) + CCF \u00d7 ROUND(Undrawn commitment \u00d7 FX rate to USD, 2), rounded to 2 dp",
+    "Converted to USD at the 30-Jun-2026 FX rate (rate_to_usd matched on ccy and rate_date)",
+    "Collateral (USD) and market_value looked up from collateral by contract_id",
+    "Looks up dim_entity (matched on entity_code)",
+    "Looks up dim_counterparty (matched on cpty_id)",
+    "CCF and base risk weight looked up from dim_product by product_code",
+    "Looks up rating (matched on cpty_id)",
+    "PD and LGD looked up from dim_rating by rating_grade = COALESCE(rating_grade, 'NR')",
+    "Intragroup counterparties excluded",
+    "Summed by contract_id"
+   ],
+   "attribute_held_in": [
+    "core.fact_exposure.ead_usd"
+   ],
+   "on_value_path": false
+  },
+  {
+   "n": 17,
+   "to": "fin_lake.core.fact_exposure",
+   "from": "fin_lake.stg.fx_rate",
+   "status": "proven",
+   "purpose": null,
+   "evidence": {
+    "log": "OpenLineage job efr_credit_risk.execute_save_into_data_source_command.core_fact_exposure",
+    "sql": "(\"core.fact_exposure\", \"\"\"\n-- EAD = drawn + CCF x undrawn (USD at the 30-Jun-2026 rate); RWA = EAD x risk weight; EL = PD x LGD x EAD; intragroup excluded\nWITH base AS (\n    SELECT e.entity_key, c.cpty_key, p.product_key, dr.rating_key, l.contract_id,\n           ROUND(l.drawn_amt   * fx.rate_to_usd, 2) AS drawn_usd,\n           ROUND(l.undrawn_amt * fx.rate_to_usd, 2) AS undrawn_usd,\n           p.ccf, p.risk_weight_base AS risk_weight, dr.pd, dr.lgd\n    FROM stg_loan l\n    JOIN stg_fx_rate fx          ON fx.ccy = l.ccy AND fx.rate_date = DATE '2026-06-30'\n    JOIN core_dim_entity e       ON e.entity_code = l.entity_code\n    JOIN core_dim_counterparty c ON c.cpty_id = l.cpty_id\n    JOIN core_dim_product p      ON p.product_code = l.product_code\n    LEFT JOIN stg_rating r       ON r.cpty_id = l.cpty_id\n    JOIN core_dim_rating dr      ON dr.rating_grade = COALESCE(r.rating_grade, 'NR')\n    WHERE c.is_intragroup = FALSE\n),\ncoll AS (\n    SELECT k.contract_id, SUM(ROUND(k.market_value * fx.rate_to_usd, 2)) AS collateral_usd\n    FROM stg_collateral k\n    JOIN stg_fx_rate fx ON fx.ccy = k.ccy AND fx.rate_date = DATE '2026-06-30'\n    GROUP BY k.contract_id\n)\nSELECT DATE '2026-06-30' AS as_of, b.entity_key, b.cpty_key, b.product_key, b.rating_key,\n       b.drawn_usd, b.undrawn_usd, b.ccf,\n       ROUND(b.drawn_usd + b.ccf * b.undrawn_usd, 2) AS ead_usd,\n       b.risk_weight,\n       ROUND((b.drawn_usd + b.ccf * b.undrawn_usd) * b.risk_weight, 2) AS rwa_usd,\n       b.pd, b.lgd,\n       ROUND(b.pd * b.lgd * (b.drawn_usd + b.ccf * b.undrawn_usd), 2) AS el_usd,\n       COALESCE(k.collateral_usd, 0) AS collateral_usd\nFROM base b LEFT JOIN coll k ON k.contract_id = b.contract_id\"\"\"),",
+    "code": "pipelines/spark/efr_job.py lines 101\u2013131",
+    "version": null,
+    "reconciliation": "Recalculated 5,822,029,359.1 agrees to stored value 5,822,029,359.1 (tolerance \u00b10.01) [fact_exposure.ead_usd]"
+   },
+   "consumed_by": "core.fact_exposure",
+   "sourced_from": [
+    "stg.fx_rate.rate_to_usd"
+   ],
+   "pipeline_type": "spark",
+   "business_rules": [
+    "Converted to USD at the 30-Jun-2026 FX rate (rate_to_usd matched on ccy and rate_date)",
+    "Collateral (USD) and market_value looked up from collateral by contract_id"
+   ],
+   "transformation": "Calculated as ROUND(b.drawn_usd + b.ccf * b.undrawn_usd, 2).",
+   "statement_rules": [
+    "EAD (USD) = ROUND(Drawn balance \u00d7 FX rate to USD, 2) + CCF \u00d7 ROUND(Undrawn commitment \u00d7 FX rate to USD, 2), rounded to 2 dp",
+    "Converted to USD at the 30-Jun-2026 FX rate (rate_to_usd matched on ccy and rate_date)",
+    "Collateral (USD) and market_value looked up from collateral by contract_id",
+    "Looks up dim_entity (matched on entity_code)",
+    "Looks up dim_counterparty (matched on cpty_id)",
+    "CCF and base risk weight looked up from dim_product by product_code",
+    "Looks up rating (matched on cpty_id)",
+    "PD and LGD looked up from dim_rating by rating_grade = COALESCE(rating_grade, 'NR')",
+    "Intragroup counterparties excluded",
+    "Summed by contract_id"
+   ],
+   "attribute_held_in": [
+    "core.fact_exposure.ead_usd"
+   ],
+   "on_value_path": true
+  },
+  {
+   "n": 18,
+   "to": "fin_lake.core.fact_exposure",
+   "from": "fin_lake.stg.loan",
+   "status": "proven",
+   "purpose": null,
+   "evidence": {
+    "log": "OpenLineage job efr_credit_risk.execute_save_into_data_source_command.core_fact_exposure",
+    "sql": "(\"core.fact_exposure\", \"\"\"\n-- EAD = drawn + CCF x undrawn (USD at the 30-Jun-2026 rate); RWA = EAD x risk weight; EL = PD x LGD x EAD; intragroup excluded\nWITH base AS (\n    SELECT e.entity_key, c.cpty_key, p.product_key, dr.rating_key, l.contract_id,\n           ROUND(l.drawn_amt   * fx.rate_to_usd, 2) AS drawn_usd,\n           ROUND(l.undrawn_amt * fx.rate_to_usd, 2) AS undrawn_usd,\n           p.ccf, p.risk_weight_base AS risk_weight, dr.pd, dr.lgd\n    FROM stg_loan l\n    JOIN stg_fx_rate fx          ON fx.ccy = l.ccy AND fx.rate_date = DATE '2026-06-30'\n    JOIN core_dim_entity e       ON e.entity_code = l.entity_code\n    JOIN core_dim_counterparty c ON c.cpty_id = l.cpty_id\n    JOIN core_dim_product p      ON p.product_code = l.product_code\n    LEFT JOIN stg_rating r       ON r.cpty_id = l.cpty_id\n    JOIN core_dim_rating dr      ON dr.rating_grade = COALESCE(r.rating_grade, 'NR')\n    WHERE c.is_intragroup = FALSE\n),\ncoll AS (\n    SELECT k.contract_id, SUM(ROUND(k.market_value * fx.rate_to_usd, 2)) AS collateral_usd\n    FROM stg_collateral k\n    JOIN stg_fx_rate fx ON fx.ccy = k.ccy AND fx.rate_date = DATE '2026-06-30'\n    GROUP BY k.contract_id\n)\nSELECT DATE '2026-06-30' AS as_of, b.entity_key, b.cpty_key, b.product_key, b.rating_key,\n       b.drawn_usd, b.undrawn_usd, b.ccf,\n       ROUND(b.drawn_usd + b.ccf * b.undrawn_usd, 2) AS ead_usd,\n       b.risk_weight,\n       ROUND((b.drawn_usd + b.ccf * b.undrawn_usd) * b.risk_weight, 2) AS rwa_usd,\n       b.pd, b.lgd,\n       ROUND(b.pd * b.lgd * (b.drawn_usd + b.ccf * b.undrawn_usd), 2) AS el_usd,\n       COALESCE(k.collateral_usd, 0) AS collateral_usd\nFROM base b LEFT JOIN coll k ON k.contract_id = b.contract_id\"\"\"),",
+    "code": "pipelines/spark/efr_job.py lines 101\u2013131",
+    "version": null,
+    "reconciliation": "Recalculated 5,822,029,359.1 agrees to stored value 5,822,029,359.1 (tolerance \u00b10.01) [fact_exposure.ead_usd]"
+   },
+   "consumed_by": "core.fact_exposure",
+   "sourced_from": [
+    "stg.loan.undrawn_amt",
+    "stg.loan.drawn_amt"
+   ],
+   "pipeline_type": "spark",
+   "business_rules": [
+    "EAD (USD) = ROUND(Drawn balance \u00d7 FX rate to USD, 2) + CCF \u00d7 ROUND(Undrawn commitment \u00d7 FX rate to USD, 2), rounded to 2 dp"
+   ],
+   "transformation": "Calculated as ROUND(b.drawn_usd + b.ccf * b.undrawn_usd, 2).",
+   "statement_rules": [
+    "EAD (USD) = ROUND(Drawn balance \u00d7 FX rate to USD, 2) + CCF \u00d7 ROUND(Undrawn commitment \u00d7 FX rate to USD, 2), rounded to 2 dp",
+    "Converted to USD at the 30-Jun-2026 FX rate (rate_to_usd matched on ccy and rate_date)",
+    "Collateral (USD) and market_value looked up from collateral by contract_id",
+    "Looks up dim_entity (matched on entity_code)",
+    "Looks up dim_counterparty (matched on cpty_id)",
+    "CCF and base risk weight looked up from dim_product by product_code",
+    "Looks up rating (matched on cpty_id)",
+    "PD and LGD looked up from dim_rating by rating_grade = COALESCE(rating_grade, 'NR')",
+    "Intragroup counterparties excluded",
+    "Summed by contract_id"
+   ],
+   "attribute_held_in": [
+    "core.fact_exposure.ead_usd"
+   ],
+   "on_value_path": true
+  },
+  {
+   "n": 19,
+   "to": "fin_lake.core.fact_exposure",
+   "from": "fin_lake.stg.rating",
+   "status": "proven",
+   "purpose": null,
+   "evidence": {
+    "log": "OpenLineage job efr_credit_risk.execute_save_into_data_source_command.core_fact_exposure",
+    "sql": "(\"core.fact_exposure\", \"\"\"\n-- EAD = drawn + CCF x undrawn (USD at the 30-Jun-2026 rate); RWA = EAD x risk weight; EL = PD x LGD x EAD; intragroup excluded\nWITH base AS (\n    SELECT e.entity_key, c.cpty_key, p.product_key, dr.rating_key, l.contract_id,\n           ROUND(l.drawn_amt   * fx.rate_to_usd, 2) AS drawn_usd,\n           ROUND(l.undrawn_amt * fx.rate_to_usd, 2) AS undrawn_usd,\n           p.ccf, p.risk_weight_base AS risk_weight, dr.pd, dr.lgd\n    FROM stg_loan l\n    JOIN stg_fx_rate fx          ON fx.ccy = l.ccy AND fx.rate_date = DATE '2026-06-30'\n    JOIN core_dim_entity e       ON e.entity_code = l.entity_code\n    JOIN core_dim_counterparty c ON c.cpty_id = l.cpty_id\n    JOIN core_dim_product p      ON p.product_code = l.product_code\n    LEFT JOIN stg_rating r       ON r.cpty_id = l.cpty_id\n    JOIN core_dim_rating dr      ON dr.rating_grade = COALESCE(r.rating_grade, 'NR')\n    WHERE c.is_intragroup = FALSE\n),\ncoll AS (\n    SELECT k.contract_id, SUM(ROUND(k.market_value * fx.rate_to_usd, 2)) AS collateral_usd\n    FROM stg_collateral k\n    JOIN stg_fx_rate fx ON fx.ccy = k.ccy AND fx.rate_date = DATE '2026-06-30'\n    GROUP BY k.contract_id\n)\nSELECT DATE '2026-06-30' AS as_of, b.entity_key, b.cpty_key, b.product_key, b.rating_key,\n       b.drawn_usd, b.undrawn_usd, b.ccf,\n       ROUND(b.drawn_usd + b.ccf * b.undrawn_usd, 2) AS ead_usd,\n       b.risk_weight,\n       ROUND((b.drawn_usd + b.ccf * b.undrawn_usd) * b.risk_weight, 2) AS rwa_usd,\n       b.pd, b.lgd,\n       ROUND(b.pd * b.lgd * (b.drawn_usd + b.ccf * b.undrawn_usd), 2) AS el_usd,\n       COALESCE(k.collateral_usd, 0) AS collateral_usd\nFROM base b LEFT JOIN coll k ON k.contract_id = b.contract_id\"\"\"),",
+    "code": "pipelines/spark/efr_job.py lines 101\u2013131",
+    "version": null,
+    "reconciliation": "Recalculated 5,822,029,359.1 agrees to stored value 5,822,029,359.1 (tolerance \u00b10.01) [fact_exposure.ead_usd]"
+   },
+   "consumed_by": "core.fact_exposure",
+   "sourced_from": [
+    "stg.rating.cpty_id",
+    "stg.rating.rating_grade"
+   ],
+   "pipeline_type": "spark",
+   "business_rules": [
+    "Looks up rating (matched on cpty_id)"
+   ],
+   "transformation": "Calculated as ROUND(b.drawn_usd + b.ccf * b.undrawn_usd, 2).",
+   "statement_rules": [
+    "EAD (USD) = ROUND(Drawn balance \u00d7 FX rate to USD, 2) + CCF \u00d7 ROUND(Undrawn commitment \u00d7 FX rate to USD, 2), rounded to 2 dp",
+    "Converted to USD at the 30-Jun-2026 FX rate (rate_to_usd matched on ccy and rate_date)",
+    "Collateral (USD) and market_value looked up from collateral by contract_id",
+    "Looks up dim_entity (matched on entity_code)",
+    "Looks up dim_counterparty (matched on cpty_id)",
+    "CCF and base risk weight looked up from dim_product by product_code",
+    "Looks up rating (matched on cpty_id)",
+    "PD and LGD looked up from dim_rating by rating_grade = COALESCE(rating_grade, 'NR')",
+    "Intragroup counterparties excluded",
+    "Summed by contract_id"
+   ],
+   "attribute_held_in": [
+    "core.fact_exposure.ead_usd"
+   ],
+   "on_value_path": false
+  },
+  {
+   "n": 20,
+   "to": "fin_lake.core.fact_limit",
+   "from": "fin_lake.core.dim_entity",
+   "status": "proven",
+   "purpose": null,
+   "evidence": {
+    "log": "OpenLineage job efr_credit_risk.execute_save_into_data_source_command.core_fact_limit",
+    "sql": "(\"core.fact_limit\", \"\"\"\nSELECT DATE '2026-06-30' AS as_of, e.entity_key,\n       CASE l.sector_code WHEN 'SOV' THEN 'Sovereigns' WHEN 'BNK' THEN 'Banks' WHEN 'CORP' THEN 'Corporates'\n                          WHEN 'RET' THEN 'Retail' ELSE 'Other' END AS portfolio,\n       ROUND(l.limit_amount * fx.rate_to_usd, 2) AS limit_usd\nFROM stg_credit_limit l\nJOIN core_dim_entity e ON e.entity_code = l.entity_code\nJOIN stg_fx_rate fx    ON fx.ccy = l.ccy AND fx.rate_date = DATE '2026-06-30'\"\"\"),",
+    "code": "pipelines/spark/efr_job.py lines 133\u2013140",
+    "version": null,
+    "reconciliation": "Recalculated 24 agrees to stored value 24 (tolerance \u00b10.01) [fact_limit.entity_key]"
+   },
+   "consumed_by": "core.fact_limit",
+   "sourced_from": [
+    "core.dim_entity.entity_key"
+   ],
+   "pipeline_type": "spark",
+   "business_rules": [
+    "Looks up dim_entity (matched on entity_code)"
+   ],
+   "transformation": "Copied from e.entity_key.",
+   "statement_rules": [
+    "Looks up dim_entity (matched on entity_code)"
+   ],
+   "attribute_held_in": [
+    "core.fact_limit.entity_key"
+   ],
+   "on_value_path": false
+  },
+  {
+   "n": 21,
+   "to": "fin_lake.core.fact_limit",
+   "from": "fin_lake.stg.credit_limit",
+   "status": "proven",
+   "purpose": null,
+   "evidence": {
+    "log": "OpenLineage job efr_credit_risk.execute_save_into_data_source_command.core_fact_limit",
+    "sql": "(\"core.fact_limit\", \"\"\"\nSELECT DATE '2026-06-30' AS as_of, e.entity_key,\n       CASE l.sector_code WHEN 'SOV' THEN 'Sovereigns' WHEN 'BNK' THEN 'Banks' WHEN 'CORP' THEN 'Corporates'\n                          WHEN 'RET' THEN 'Retail' ELSE 'Other' END AS portfolio,\n       ROUND(l.limit_amount * fx.rate_to_usd, 2) AS limit_usd\nFROM stg_credit_limit l\nJOIN core_dim_entity e ON e.entity_code = l.entity_code\nJOIN stg_fx_rate fx    ON fx.ccy = l.ccy AND fx.rate_date = DATE '2026-06-30'\"\"\"),",
+    "code": "pipelines/spark/efr_job.py lines 133\u2013140",
+    "version": null,
+    "reconciliation": "Recalculated 24 agrees to stored value 24 (tolerance \u00b10.01) [fact_limit.entity_key]"
+   },
+   "consumed_by": "core.fact_limit",
+   "sourced_from": [
+    "stg.credit_limit.entity_code",
+    "stg.credit_limit.ccy"
+   ],
+   "pipeline_type": "spark",
+   "business_rules": [],
+   "transformation": "Copied from e.entity_key.",
+   "statement_rules": [
+    "Looks up dim_entity (matched on entity_code)"
+   ],
+   "attribute_held_in": [
+    "core.fact_limit.entity_key"
+   ],
+   "on_value_path": false
+  },
+  {
+   "n": 22,
+   "to": "fin_lake.core.fact_limit",
+   "from": "fin_lake.stg.fx_rate",
+   "status": "proven",
+   "purpose": null,
+   "evidence": {
+    "log": "OpenLineage job efr_credit_risk.execute_save_into_data_source_command.core_fact_limit",
+    "sql": "(\"core.fact_limit\", \"\"\"\nSELECT DATE '2026-06-30' AS as_of, e.entity_key,\n       CASE l.sector_code WHEN 'SOV' THEN 'Sovereigns' WHEN 'BNK' THEN 'Banks' WHEN 'CORP' THEN 'Corporates'\n                          WHEN 'RET' THEN 'Retail' ELSE 'Other' END AS portfolio,\n       ROUND(l.limit_amount * fx.rate_to_usd, 2) AS limit_usd\nFROM stg_credit_limit l\nJOIN core_dim_entity e ON e.entity_code = l.entity_code\nJOIN stg_fx_rate fx    ON fx.ccy = l.ccy AND fx.rate_date = DATE '2026-06-30'\"\"\"),",
+    "code": "pipelines/spark/efr_job.py lines 133\u2013140",
+    "version": null,
+    "reconciliation": "Recalculated 24 agrees to stored value 24 (tolerance \u00b10.01) [fact_limit.entity_key]"
+   },
+   "consumed_by": "core.fact_limit",
+   "sourced_from": [
+    "stg.fx_rate.ccy",
+    "stg.fx_rate.rate_date"
+   ],
+   "pipeline_type": "spark",
+   "business_rules": [],
+   "transformation": "Copied from e.entity_key.",
+   "statement_rules": [
+    "Looks up dim_entity (matched on entity_code)"
+   ],
+   "attribute_held_in": [
+    "core.fact_limit.entity_key"
+   ],
+   "on_value_path": false
+  },
+  {
+   "n": 23,
+   "to": "fin_lake.rpt.efr_credit_risk_summary",
+   "from": "fin_lake.core.dim_counterparty",
+   "status": "proven",
+   "purpose": null,
+   "evidence": {
+    "log": "OpenLineage job efr_credit_risk.execute_save_into_data_source_command.rpt_efr_credit_risk_summary",
+    "sql": "(\"rpt.efr_credit_risk_summary\", \"\"\"\n-- USD millions, 2 dp\nWITH expo AS (\n    SELECT f.entity_key, c.portfolio, SUM(f.ead_usd) AS ead_usd, SUM(f.rwa_usd) AS rwa_usd, SUM(f.el_usd) AS el_usd\n    FROM core_fact_exposure f JOIN core_dim_counterparty c ON c.cpty_key = f.cpty_key\n    GROUP BY f.entity_key, c.portfolio\n),\nlim AS (\n    SELECT l.entity_key, l.portfolio, SUM(l.limit_usd) AS limit_usd FROM core_fact_limit l GROUP BY l.entity_key, l.portfolio\n)\nSELECT e.entity_code AS entity, 'CREDIT' AS risk_type, x.portfolio,\n       ROUND(x.ead_usd / 1000000, 2) AS exposure_ead, ROUND(x.rwa_usd / 1000000, 2) AS rwa,\n       ROUND(x.el_usd / 1000000, 2) AS expected_loss, ROUND(l.limit_usd / 1000000, 2) AS limit_amount,\n       DATE '2026-06-30' AS as_of\nFROM expo x\nJOIN core_dim_entity e ON e.entity_key = x.entity_key\nLEFT JOIN lim l        ON l.entity_key = x.entity_key AND l.portfolio = x.portfolio\"\"\"),",
+    "code": "pipelines/spark/efr_job.py lines 143\u2013159",
+    "version": null,
+    "reconciliation": "Recalculated 1,277.32 agrees to stored value 1,277.32 (tolerance \u00b10.01) [efr_credit_risk_summary.exposure_ead]"
+   },
+   "consumed_by": "rpt.efr_credit_risk_summary",
+   "sourced_from": [
+    "core.dim_counterparty.portfolio"
+   ],
+   "pipeline_type": "spark",
+   "business_rules": [
+    "Portfolio looked up from dim_counterparty by cpty",
+    "Summed by entity_key and Portfolio"
+   ],
+   "transformation": "Calculated as ROUND(x.ead_usd / 1000000, 2).",
+   "statement_rules": [
+    "Sum of EAD (USD), expressed in millions (\u00f71,000,000), rounded to 2 dp",
+    "Entity looked up from dim_entity by entity",
+    "Limit (USD) looked up from fact_limit by entity and portfolio",
+    "Portfolio looked up from dim_counterparty by cpty",
+    "Summed by entity_key and Portfolio"
+   ],
+   "attribute_held_in": [
+    "rpt.efr_credit_risk_summary.exposure_ead"
+   ],
+   "on_value_path": false
+  },
+  {
+   "n": 24,
+   "to": "fin_lake.rpt.efr_credit_risk_summary",
+   "from": "fin_lake.core.dim_entity",
+   "status": "proven",
+   "purpose": null,
+   "evidence": {
+    "log": "OpenLineage job efr_credit_risk.execute_save_into_data_source_command.rpt_efr_credit_risk_summary",
+    "sql": "(\"rpt.efr_credit_risk_summary\", \"\"\"\n-- USD millions, 2 dp\nWITH expo AS (\n    SELECT f.entity_key, c.portfolio, SUM(f.ead_usd) AS ead_usd, SUM(f.rwa_usd) AS rwa_usd, SUM(f.el_usd) AS el_usd\n    FROM core_fact_exposure f JOIN core_dim_counterparty c ON c.cpty_key = f.cpty_key\n    GROUP BY f.entity_key, c.portfolio\n),\nlim AS (\n    SELECT l.entity_key, l.portfolio, SUM(l.limit_usd) AS limit_usd FROM core_fact_limit l GROUP BY l.entity_key, l.portfolio\n)\nSELECT e.entity_code AS entity, 'CREDIT' AS risk_type, x.portfolio,\n       ROUND(x.ead_usd / 1000000, 2) AS exposure_ead, ROUND(x.rwa_usd / 1000000, 2) AS rwa,\n       ROUND(x.el_usd / 1000000, 2) AS expected_loss, ROUND(l.limit_usd / 1000000, 2) AS limit_amount,\n       DATE '2026-06-30' AS as_of\nFROM expo x\nJOIN core_dim_entity e ON e.entity_key = x.entity_key\nLEFT JOIN lim l        ON l.entity_key = x.entity_key AND l.portfolio = x.portfolio\"\"\"),",
+    "code": "pipelines/spark/efr_job.py lines 143\u2013159",
+    "version": null,
+    "reconciliation": "Recalculated 1,277.32 agrees to stored value 1,277.32 (tolerance \u00b10.01) [efr_credit_risk_summary.exposure_ead]"
+   },
+   "consumed_by": "rpt.efr_credit_risk_summary",
+   "sourced_from": [
+    "core.dim_entity.entity_code"
+   ],
+   "pipeline_type": "spark",
+   "business_rules": [
+    "Entity looked up from dim_entity by entity"
+   ],
+   "transformation": "Calculated as ROUND(x.ead_usd / 1000000, 2).",
+   "statement_rules": [
+    "Sum of EAD (USD), expressed in millions (\u00f71,000,000), rounded to 2 dp",
+    "Entity looked up from dim_entity by entity",
+    "Limit (USD) looked up from fact_limit by entity and portfolio",
+    "Portfolio looked up from dim_counterparty by cpty",
+    "Summed by entity_key and Portfolio"
+   ],
+   "attribute_held_in": [
+    "rpt.efr_credit_risk_summary.exposure_ead"
+   ],
+   "on_value_path": false
+  },
+  {
+   "n": 25,
+   "to": "fin_lake.rpt.efr_credit_risk_summary",
+   "from": "fin_lake.core.fact_exposure",
+   "status": "proven",
+   "purpose": null,
+   "evidence": {
+    "log": "OpenLineage job efr_credit_risk.execute_save_into_data_source_command.rpt_efr_credit_risk_summary",
+    "sql": "(\"rpt.efr_credit_risk_summary\", \"\"\"\n-- USD millions, 2 dp\nWITH expo AS (\n    SELECT f.entity_key, c.portfolio, SUM(f.ead_usd) AS ead_usd, SUM(f.rwa_usd) AS rwa_usd, SUM(f.el_usd) AS el_usd\n    FROM core_fact_exposure f JOIN core_dim_counterparty c ON c.cpty_key = f.cpty_key\n    GROUP BY f.entity_key, c.portfolio\n),\nlim AS (\n    SELECT l.entity_key, l.portfolio, SUM(l.limit_usd) AS limit_usd FROM core_fact_limit l GROUP BY l.entity_key, l.portfolio\n)\nSELECT e.entity_code AS entity, 'CREDIT' AS risk_type, x.portfolio,\n       ROUND(x.ead_usd / 1000000, 2) AS exposure_ead, ROUND(x.rwa_usd / 1000000, 2) AS rwa,\n       ROUND(x.el_usd / 1000000, 2) AS expected_loss, ROUND(l.limit_usd / 1000000, 2) AS limit_amount,\n       DATE '2026-06-30' AS as_of\nFROM expo x\nJOIN core_dim_entity e ON e.entity_key = x.entity_key\nLEFT JOIN lim l        ON l.entity_key = x.entity_key AND l.portfolio = x.portfolio\"\"\"),",
+    "code": "pipelines/spark/efr_job.py lines 143\u2013159",
+    "version": null,
+    "reconciliation": "Recalculated 1,277.32 agrees to stored value 1,277.32 (tolerance \u00b10.01) [efr_credit_risk_summary.exposure_ead] (+2 more columns agree)"
+   },
+   "consumed_by": "rpt.efr_credit_risk_summary",
+   "sourced_from": [
+    "core.fact_exposure.ead_usd"
+   ],
+   "pipeline_type": "spark",
+   "business_rules": [
+    "Sum of EAD (USD), expressed in millions (\u00f71,000,000), rounded to 2 dp",
+    "Summed by entity_key and Portfolio"
+   ],
+   "transformation": "Calculated as ROUND(x.ead_usd / 1000000, 2).",
+   "statement_rules": [
+    "Sum of EAD (USD), expressed in millions (\u00f71,000,000), rounded to 2 dp",
+    "Entity looked up from dim_entity by entity",
+    "Limit (USD) looked up from fact_limit by entity and portfolio",
+    "Portfolio looked up from dim_counterparty by cpty",
+    "Summed by entity_key and Portfolio"
+   ],
+   "attribute_held_in": [
+    "rpt.efr_credit_risk_summary.exposure_ead"
+   ],
+   "on_value_path": true
+  },
+  {
+   "n": 26,
+   "to": "fin_lake.rpt.efr_credit_risk_summary",
+   "from": "fin_lake.core.fact_limit",
+   "status": "proven",
+   "purpose": null,
+   "evidence": {
+    "log": "OpenLineage job efr_credit_risk.execute_save_into_data_source_command.rpt_efr_credit_risk_summary",
+    "sql": "(\"rpt.efr_credit_risk_summary\", \"\"\"\n-- USD millions, 2 dp\nWITH expo AS (\n    SELECT f.entity_key, c.portfolio, SUM(f.ead_usd) AS ead_usd, SUM(f.rwa_usd) AS rwa_usd, SUM(f.el_usd) AS el_usd\n    FROM core_fact_exposure f JOIN core_dim_counterparty c ON c.cpty_key = f.cpty_key\n    GROUP BY f.entity_key, c.portfolio\n),\nlim AS (\n    SELECT l.entity_key, l.portfolio, SUM(l.limit_usd) AS limit_usd FROM core_fact_limit l GROUP BY l.entity_key, l.portfolio\n)\nSELECT e.entity_code AS entity, 'CREDIT' AS risk_type, x.portfolio,\n       ROUND(x.ead_usd / 1000000, 2) AS exposure_ead, ROUND(x.rwa_usd / 1000000, 2) AS rwa,\n       ROUND(x.el_usd / 1000000, 2) AS expected_loss, ROUND(l.limit_usd / 1000000, 2) AS limit_amount,\n       DATE '2026-06-30' AS as_of\nFROM expo x\nJOIN core_dim_entity e ON e.entity_key = x.entity_key\nLEFT JOIN lim l        ON l.entity_key = x.entity_key AND l.portfolio = x.portfolio\"\"\"),",
+    "code": "pipelines/spark/efr_job.py lines 143\u2013159",
+    "version": null,
+    "reconciliation": "Recalculated 1,840.85 agrees to stored value 1,840.85 (tolerance \u00b10.01) [efr_credit_risk_summary.limit_amount]"
+   },
+   "consumed_by": "rpt.efr_credit_risk_summary",
+   "sourced_from": [
+    "core.fact_limit.entity_key",
+    "core.fact_limit.portfolio"
+   ],
+   "pipeline_type": "spark",
+   "business_rules": [
+    "Limit (USD) looked up from fact_limit by entity and portfolio"
+   ],
+   "transformation": "Calculated as ROUND(x.ead_usd / 1000000, 2).",
+   "statement_rules": [
+    "Sum of EAD (USD), expressed in millions (\u00f71,000,000), rounded to 2 dp",
+    "Entity looked up from dim_entity by entity",
+    "Limit (USD) looked up from fact_limit by entity and portfolio",
+    "Portfolio looked up from dim_counterparty by cpty",
+    "Summed by entity_key and Portfolio"
+   ],
+   "attribute_held_in": [
+    "rpt.efr_credit_risk_summary.exposure_ead"
+   ],
+   "on_value_path": false
+  },
+  {
+   "n": 27,
+   "to": "fin_lake.rpt.v_efr_credit_risk_summary",
+   "from": "fin_lake.rpt.efr_credit_risk_summary",
+   "status": "proven",
+   "purpose": "EFR Credit Risk Summary as published: entity/portfolio rows plus the GROUP total row, with limit utilisation.",
+   "evidence": {
+    "log": null,
+    "sql": "CREATE VIEW \"rpt\".\"v_efr_credit_risk_summary\" AS SELECT entity,\n    risk_type,\n    portfolio,\n    exposure_ead,\n    rwa,\n    expected_loss,\n    limit_amount,\n    utilisation_pct\n   FROM ( SELECT s.entity,\n            s.risk_type,\n            s.portfolio,\n            s.exposure_ead,\n            s.rwa,\n            s.expected_loss,\n            s.limit_amount,\n            round(((s.exposure_ead / NULLIF(s.limit_amount, (0)::numeric)) * (100)::numeric), 2) AS utilisation_pct\n           FROM rpt.efr_credit_risk_summary s\n        UNION ALL\n         SELECT 'GROUP'::text AS entity,\n            'CREDIT'::text AS risk_type,\n            'ALL'::text AS portfolio,\n            sum(s.exposure_ead) AS sum,\n            sum(s.rwa) AS sum,\n            sum(s.expected_loss) AS sum,\n            sum(s.limit_amount) AS sum,\n            round(((sum(s.exposure_ead) / NULLIF(sum(s.limit_amount), (0)::numeric)) * (100)::numeric), 2) AS utilisation_pct\n           FROM rpt.efr_credit_risk_summary s) u\n  ORDER BY (entity = 'GROUP'::text), entity, portfolio",
+    "code": "fin_lake: view rpt.v_efr_credit_risk_summary",
+    "version": "definition sha256 bb2aeceb14f3\u2026 \u00b7 captured 2026-10-16",
+    "reconciliation": "Recalculated 1,277.32 agrees to stored value 1,277.32 (tolerance \u00b10.01) [v_efr_credit_risk_summary.exposure_ead]"
+   },
+   "consumed_by": "rpt.v_efr_credit_risk_summary",
+   "sourced_from": [
+    "rpt.efr_credit_risk_summary.exposure_ead",
+    "rpt.efr_credit_risk_summary.entity",
+    "rpt.efr_credit_risk_summary.portfolio",
+    "rpt.efr_credit_risk_summary.risk_type"
+   ],
+   "pipeline_type": "view",
+   "business_rules": [
+    "Total row GROUP/ALL = sum of the detail rows"
+   ],
+   "transformation": "Copied from exposure_ead.",
+   "statement_rules": [
+    "Total row GROUP/ALL = sum of the detail rows"
+   ],
+   "attribute_held_in": [
+    "rpt.v_efr_credit_risk_summary.exposure_ead"
+   ],
+   "on_value_path": true
+  },
+  {
+   "n": 28,
+   "to": "superset.EFR Credit Risk Summary",
+   "from": "fin_lake.rpt.v_efr_credit_risk_summary",
+   "status": "proven",
+   "evidence": {
+    "sql": "SELECT entity, risk_type, portfolio, exposure_ead, rwa, expected_loss, limit_amount, utilisation_pct FROM rpt.v_efr_credit_risk_summary",
+    "code": "Superset chart 23 'EFR Credit Risk Summary' \u2192 dataset efr_credit_risk_summary",
+    "reconciliation": "Superset chart data re-run returned 1,277.32 for the selected keys; rpt.v_efr_credit_risk_summary.exposure_ead sums to 1277.32"
+   },
+   "consumed_by": "Report EFR Credit Risk Summary",
+   "sourced_from": [
+    "rpt.v_efr_credit_risk_summary.exposure_ead"
+   ],
+   "pipeline_type": "bi_tool",
+   "business_rules": [
+    "Displayed as a table in Superset chart 'EFR Credit Risk Summary'"
+   ],
+   "transformation": "Superset dataset 'efr_credit_risk_summary' is a virtual dataset over SQL; the chart displays it as a table.",
+   "attribute_held_in": [
+    "EFR Credit Risk Summary"
+   ],
+   "on_value_path": true
+  }
+ ],
+ "default_hop": 28,
+ "column_edges": [
+  {
+   "from_node": "fin_lake.raw.collateral",
+   "from_column": "collateral_id",
+   "to_node": "fin_lake.stg.collateral",
+   "to_column": "collateral_id",
+   "hop": 1,
+   "transformation": "pass-through",
+   "kind": "value"
+  },
+  {
+   "from_node": "fin_lake.raw.collateral",
+   "from_column": "contract_id",
+   "to_node": "fin_lake.stg.collateral",
+   "to_column": "contract_id",
+   "hop": 1,
+   "transformation": "pass-through",
+   "kind": "value"
+  },
+  {
+   "from_node": "fin_lake.raw.collateral",
+   "from_column": "collateral_type",
+   "to_node": "fin_lake.stg.collateral",
+   "to_column": "collateral_type",
+   "hop": 1,
+   "transformation": "pass-through",
+   "kind": "value"
+  },
+  {
+   "from_node": "fin_lake.raw.collateral",
+   "from_column": "ccy",
+   "to_node": "fin_lake.stg.collateral",
+   "to_column": "ccy",
+   "hop": 1,
+   "transformation": "pass-through",
+   "kind": "value"
+  },
+  {
+   "from_node": "fin_lake.raw.collateral",
+   "from_column": "market_value",
+   "to_node": "fin_lake.stg.collateral",
+   "to_column": "market_value",
+   "hop": 1,
+   "transformation": "pass-through",
+   "kind": "value"
+  },
+  {
+   "from_node": "fin_lake.raw.counterparty",
+   "from_column": "cpty_id",
+   "to_node": "fin_lake.stg.counterparty",
+   "to_column": "cpty_id",
+   "hop": 2,
+   "transformation": "pass-through",
+   "kind": "value"
+  },
+  {
+   "from_node": "fin_lake.raw.counterparty",
+   "from_column": "cpty_name",
+   "to_node": "fin_lake.stg.counterparty",
+   "to_column": "cpty_name",
+   "hop": 2,
+   "transformation": "TRIM(cpty_name)",
+   "kind": "value",
+   "business_rule": "cpty_name = cpty_name cleansed (trimmed)"
+  },
+  {
+   "from_node": "fin_lake.raw.counterparty",
+   "from_column": "country",
+   "to_node": "fin_lake.stg.counterparty",
+   "to_column": "country",
+   "hop": 2,
+   "transformation": "pass-through",
+   "kind": "value"
+  },
+  {
+   "from_node": "fin_lake.raw.counterparty",
+   "from_column": "sector_code",
+   "to_node": "fin_lake.stg.counterparty",
+   "to_column": "sector_code",
+   "hop": 2,
+   "transformation": "UPPER(sector_code)",
+   "kind": "value",
+   "business_rule": "Counterparty sector = Counterparty sector cleansed (upper-cased)"
+  },
+  {
+   "from_node": "fin_lake.raw.counterparty",
+   "from_column": "is_intragroup",
+   "to_node": "fin_lake.stg.counterparty",
+   "to_column": "is_intragroup",
+   "hop": 2,
+   "transformation": "(is_intragroup = 'Y')",
+   "kind": "value",
+   "business_rule": "Intragroup flag = Intragroup flag = 'Y'"
+  },
+  {
+   "from_node": "fin_lake.raw.credit_limit",
+   "from_column": "entity_code",
+   "to_node": "fin_lake.stg.credit_limit",
+   "to_column": "entity_code",
+   "hop": 3,
+   "transformation": "UPPER(entity_code)",
+   "kind": "value",
+   "business_rule": "entity_code = entity_code cleansed (upper-cased)"
+  },
+  {
+   "from_node": "fin_lake.raw.credit_limit",
+   "from_column": "sector_code",
+   "to_node": "fin_lake.stg.credit_limit",
+   "to_column": "sector_code",
+   "hop": 3,
+   "transformation": "UPPER(sector_code)",
+   "kind": "value",
+   "business_rule": "sector_code = sector_code cleansed (upper-cased)"
+  },
+  {
+   "from_node": "fin_lake.raw.credit_limit",
+   "from_column": "limit_amount",
+   "to_node": "fin_lake.stg.credit_limit",
+   "to_column": "limit_amount",
+   "hop": 3,
+   "transformation": "pass-through",
+   "kind": "value"
+  },
+  {
+   "from_node": "fin_lake.raw.credit_limit",
+   "from_column": "ccy",
+   "to_node": "fin_lake.stg.credit_limit",
+   "to_column": "ccy",
+   "hop": 3,
+   "transformation": "pass-through",
+   "kind": "value"
+  },
+  {
+   "from_node": "fin_lake.raw.entity",
+   "from_column": "entity_code",
+   "to_node": "fin_lake.stg.entity",
+   "to_column": "entity_code",
+   "hop": 4,
+   "transformation": "UPPER(TRIM(entity_code))",
+   "kind": "value",
+   "business_rule": "entity_code = entity_code cleansed (trimmed, upper-cased)"
+  },
+  {
+   "from_node": "fin_lake.raw.entity",
+   "from_column": "entity_name",
+   "to_node": "fin_lake.stg.entity",
+   "to_column": "entity_name",
+   "hop": 4,
+   "transformation": "TRIM(entity_name)",
+   "kind": "value",
+   "business_rule": "entity_name = entity_name cleansed (trimmed)"
+  },
+  {
+   "from_node": "fin_lake.raw.entity",
+   "from_column": "country",
+   "to_node": "fin_lake.stg.entity",
+   "to_column": "country",
+   "hop": 4,
+   "transformation": "pass-through",
+   "kind": "value"
+  },
+  {
+   "from_node": "fin_lake.raw.entity",
+   "from_column": "consolidation_group",
+   "to_node": "fin_lake.stg.entity",
+   "to_column": "consolidation_group",
+   "hop": 4,
+   "transformation": "pass-through",
+   "kind": "value"
+  },
+  {
+   "from_node": "fin_lake.raw.fx_rate",
+   "from_column": "ccy",
+   "to_node": "fin_lake.stg.fx_rate",
+   "to_column": "ccy",
+   "hop": 5,
+   "transformation": "pass-through",
+   "kind": "value"
+  },
+  {
+   "from_node": "fin_lake.raw.fx_rate",
+   "from_column": "rate_date",
+   "to_node": "fin_lake.stg.fx_rate",
+   "to_column": "rate_date",
+   "hop": 5,
+   "transformation": "pass-through",
+   "kind": "value"
+  },
+  {
+   "from_node": "fin_lake.raw.fx_rate",
+   "from_column": "rate_to_usd",
+   "to_node": "fin_lake.stg.fx_rate",
+   "to_column": "rate_to_usd",
+   "hop": 5,
+   "transformation": "pass-through",
+   "kind": "value"
+  },
+  {
+   "from_node": "fin_lake.raw.loan_contract",
+   "from_column": "contract_id",
+   "to_node": "fin_lake.stg.loan",
+   "to_column": "contract_id",
+   "hop": 6,
+   "transformation": "pass-through",
+   "kind": "value"
+  },
+  {
+   "from_node": "fin_lake.raw.loan_contract",
+   "from_column": "entity_code",
+   "to_node": "fin_lake.stg.loan",
+   "to_column": "entity_code",
+   "hop": 6,
+   "transformation": "UPPER(entity_code)",
+   "kind": "value",
+   "business_rule": "entity_code = entity_code cleansed (upper-cased)"
+  },
+  {
+   "from_node": "fin_lake.raw.loan_contract",
+   "from_column": "cpty_id",
+   "to_node": "fin_lake.stg.loan",
+   "to_column": "cpty_id",
+   "hop": 6,
+   "transformation": "pass-through",
+   "kind": "value"
+  },
+  {
+   "from_node": "fin_lake.raw.loan_contract",
+   "from_column": "product_code",
+   "to_node": "fin_lake.stg.loan",
+   "to_column": "product_code",
+   "hop": 6,
+   "transformation": "UPPER(product_code)",
+   "kind": "value",
+   "business_rule": "Product type = Product type cleansed (upper-cased)"
+  },
+  {
+   "from_node": "fin_lake.raw.loan_contract",
+   "from_column": "ccy",
+   "to_node": "fin_lake.stg.loan",
+   "to_column": "ccy",
+   "hop": 6,
+   "transformation": "pass-through",
+   "kind": "value"
+  },
+  {
+   "from_node": "fin_lake.raw.loan_contract",
+   "from_column": "impairment",
+   "to_node": "fin_lake.stg.loan",
+   "to_column": "drawn_amt",
+   "hop": 6,
+   "transformation": "l.principal + l.accrued_int - l.impairment",
+   "kind": "value",
+   "business_rule": "Drawn balance = Principal + Accrued interest - Impairment"
+  },
+  {
+   "from_node": "fin_lake.raw.loan_contract",
+   "from_column": "accrued_int",
+   "to_node": "fin_lake.stg.loan",
+   "to_column": "drawn_amt",
+   "hop": 6,
+   "transformation": "l.principal + l.accrued_int - l.impairment",
+   "kind": "value",
+   "business_rule": "Drawn balance = Principal + Accrued interest - Impairment"
+  },
+  {
+   "from_node": "fin_lake.raw.loan_contract",
+   "from_column": "principal",
+   "to_node": "fin_lake.stg.loan",
+   "to_column": "drawn_amt",
+   "hop": 6,
+   "transformation": "l.principal + l.accrued_int - l.impairment",
+   "kind": "value",
+   "business_rule": "Drawn balance = Principal + Accrued interest - Impairment"
+  },
+  {
+   "from_node": "fin_lake.raw.loan_contract",
+   "from_column": "undrawn_limit",
+   "to_node": "fin_lake.stg.loan",
+   "to_column": "undrawn_amt",
+   "hop": 6,
+   "transformation": "pass-through",
+   "kind": "value"
+  },
+  {
+   "from_node": "fin_lake.raw.loan_contract",
+   "from_column": "start_date",
+   "to_node": "fin_lake.stg.loan",
+   "to_column": "start_date",
+   "hop": 6,
+   "transformation": "pass-through",
+   "kind": "value"
+  },
+  {
+   "from_node": "fin_lake.raw.loan_contract",
+   "from_column": "maturity_date",
+   "to_node": "fin_lake.stg.loan",
+   "to_column": "maturity_date",
+   "hop": 6,
+   "transformation": "pass-through",
+   "kind": "value"
+  },
+  {
+   "from_node": "fin_lake.raw.rating",
+   "from_column": "cpty_id",
+   "to_node": "fin_lake.stg.rating",
+   "to_column": "cpty_id",
+   "hop": 7,
+   "transformation": "pass-through",
+   "kind": "value"
+  },
+  {
+   "from_node": "fin_lake.raw.rating",
+   "from_column": "rating_grade",
+   "to_node": "fin_lake.stg.rating",
+   "to_column": "rating_grade",
+   "hop": 7,
+   "transformation": "UPPER(rating_grade)",
+   "kind": "value",
+   "business_rule": "rating_grade = rating_grade cleansed (upper-cased)"
+  },
+  {
+   "from_node": "fin_lake.raw.rating",
+   "from_column": "rating_date",
+   "to_node": "fin_lake.stg.rating",
+   "to_column": "rating_date",
+   "hop": 7,
+   "transformation": "pass-through",
+   "kind": "value"
+  },
+  {
+   "from_node": "fin_lake.raw.rating",
+   "from_column": "agency",
+   "to_node": "fin_lake.stg.rating",
+   "to_column": "agency",
+   "hop": 7,
+   "transformation": "pass-through",
+   "kind": "value"
+  },
+  {
+   "from_node": "fin_lake.stg.counterparty",
+   "from_column": "cpty_id",
+   "to_node": "fin_lake.core.dim_counterparty",
+   "to_column": "cpty_key",
+   "hop": 8,
+   "transformation": "ROW_NUMBER() OVER (ORDER BY c.cpty_id)",
+   "kind": "value",
+   "business_rule": "ROW_NUMBER() OVER (ORDER BY cpty_id)"
+  },
+  {
+   "from_node": "fin_lake.stg.counterparty",
+   "from_column": "cpty_id",
+   "to_node": "fin_lake.core.dim_counterparty",
+   "to_column": "cpty_id",
+   "hop": 8,
+   "transformation": "pass-through",
+   "kind": "value"
+  },
+  {
+   "from_node": "fin_lake.stg.counterparty",
+   "from_column": "cpty_name",
+   "to_node": "fin_lake.core.dim_counterparty",
+   "to_column": "cpty_name",
+   "hop": 8,
+   "transformation": "pass-through",
+   "kind": "value"
+  },
+  {
+   "from_node": "fin_lake.stg.counterparty",
+   "from_column": "country",
+   "to_node": "fin_lake.core.dim_counterparty",
+   "to_column": "country",
+   "hop": 8,
+   "transformation": "pass-through",
+   "kind": "value"
+  },
+  {
+   "from_node": "fin_lake.stg.counterparty",
+   "from_column": "sector_code",
+   "to_node": "fin_lake.core.dim_counterparty",
+   "to_column": "sector_code",
+   "hop": 8,
+   "transformation": "pass-through",
+   "kind": "value"
+  },
+  {
+   "from_node": "fin_lake.stg.counterparty",
+   "from_column": "sector_code",
+   "to_node": "fin_lake.core.dim_counterparty",
+   "to_column": "portfolio",
+   "hop": 8,
+   "transformation": "CASE sector_code WHEN 'SOV' THEN 'Sovereigns' WHEN 'BNK' THEN 'Banks' WHEN 'CORP' THEN 'Corporates' WHEN 'RET' THEN 'Retail' ELSE 'Other' END",
+   "kind": "value",
+   "business_rule": "Counterparty sector mapped by lookup: 'SOV' \u2192 'Sovereigns', 'BNK' \u2192 'Banks', 'CORP' \u2192 'Corporates', 'RET' \u2192 'Retail'"
+  },
+  {
+   "from_node": "fin_lake.stg.counterparty",
+   "from_column": "is_intragroup",
+   "to_node": "fin_lake.core.dim_counterparty",
+   "to_column": "is_intragroup",
+   "hop": 8,
+   "transformation": "pass-through",
+   "kind": "value"
+  },
+  {
+   "from_node": "fin_lake.stg.entity",
+   "from_column": "entity_code",
+   "to_node": "fin_lake.core.dim_entity",
+   "to_column": "entity_key",
+   "hop": 9,
+   "transformation": "ROW_NUMBER() OVER (ORDER BY e.entity_code)",
+   "kind": "value",
+   "business_rule": "ROW_NUMBER() OVER (ORDER BY Entity)"
+  },
+  {
+   "from_node": "fin_lake.stg.entity",
+   "from_column": "entity_code",
+   "to_node": "fin_lake.core.dim_entity",
+   "to_column": "entity_code",
+   "hop": 9,
+   "transformation": "pass-through",
+   "kind": "value"
+  },
+  {
+   "from_node": "fin_lake.stg.entity",
+   "from_column": "entity_name",
+   "to_node": "fin_lake.core.dim_entity",
+   "to_column": "entity_name",
+   "hop": 9,
+   "transformation": "pass-through",
+   "kind": "value"
+  },
+  {
+   "from_node": "fin_lake.stg.entity",
+   "from_column": "country",
+   "to_node": "fin_lake.core.dim_entity",
+   "to_column": "country",
+   "hop": 9,
+   "transformation": "pass-through",
+   "kind": "value"
+  },
+  {
+   "from_node": "fin_lake.stg.entity",
+   "from_column": "consolidation_group",
+   "to_node": "fin_lake.core.dim_entity",
+   "to_column": "consolidation_group",
+   "hop": 9,
+   "transformation": "pass-through",
+   "kind": "value"
+  },
+  {
+   "from_node": "fin_lake.stg.loan",
+   "from_column": "product_code",
+   "to_node": "fin_lake.core.dim_product",
+   "to_column": "product_key",
+   "hop": 10,
+   "transformation": "ROW_NUMBER() OVER (ORDER BY l.product_code)",
+   "kind": "value",
+   "business_rule": "ROW_NUMBER() OVER (ORDER BY Product type)"
+  },
+  {
+   "from_node": "fin_lake.stg.loan",
+   "from_column": "product_code",
+   "to_node": "fin_lake.core.dim_product",
+   "to_column": "product_code",
+   "hop": 10,
+   "transformation": "pass-through",
+   "kind": "value"
+  },
+  {
+   "from_node": "fin_lake.stg.loan",
+   "from_column": "product_code",
+   "to_node": "fin_lake.core.dim_product",
+   "to_column": "ccf",
+   "hop": 10,
+   "transformation": "CASE l.product_code WHEN 'RCF' THEN 0.50 WHEN 'TRADE' THEN 0.20 ELSE 1.00 END",
+   "kind": "value",
+   "business_rule": "Product type mapped by lookup: 'RCF' \u2192 0.50, 'TRADE' \u2192 0.20"
+  },
+  {
+   "from_node": "fin_lake.stg.loan",
+   "from_column": "product_code",
+   "to_node": "fin_lake.core.dim_product",
+   "to_column": "risk_weight_base",
+   "hop": 10,
+   "transformation": "CASE l.product_code WHEN 'GUAR' THEN 1.00 WHEN 'TRADE' THEN 0.50 WHEN 'RCF' THEN 0.80 ELSE 0.90 END",
+   "kind": "value",
+   "business_rule": "Product type mapped by lookup: 'GUAR' \u2192 1.00, 'TRADE' \u2192 0.50, 'RCF' \u2192 0.80"
+  },
+  {
+   "from_node": "fin_lake.stg.rating",
+   "from_column": "rating_grade",
+   "to_node": "fin_lake.core.dim_rating",
+   "to_column": "rating_key",
+   "hop": 11,
+   "transformation": "ROW_NUMBER() OVER (ORDER BY g.rating_grade)",
+   "kind": "value",
+   "business_rule": "ROW_NUMBER() OVER (ORDER BY rating_grade)"
+  },
+  {
+   "from_node": "fin_lake.stg.rating",
+   "from_column": "rating_grade",
+   "to_node": "fin_lake.core.dim_rating",
+   "to_column": "rating_grade",
+   "hop": 11,
+   "transformation": "pass-through",
+   "kind": "value"
+  },
+  {
+   "from_node": "fin_lake.stg.rating",
+   "from_column": "rating_grade",
+   "to_node": "fin_lake.core.dim_rating",
+   "to_column": "pd",
+   "hop": 11,
+   "transformation": "CASE g.rating_grade WHEN 'AAA' THEN 0.0003 WHEN 'AA' THEN 0.0006 WHEN 'A' THEN 0.0015 WHEN 'BBB' THEN 0.0050 WHEN 'BB' THEN 0.0200 WHEN 'B' THEN 0.0600 WHEN 'CC",
+   "kind": "value",
+   "business_rule": "rating_grade mapped by lookup: 'AAA' \u2192 0.0003, 'AA' \u2192 0.0006, 'A' \u2192 0.0015, 'BBB' \u2192 0.0050 \u2026"
+  },
+  {
+   "from_node": "fin_lake.stg.rating",
+   "from_column": "rating_grade",
+   "to_node": "fin_lake.core.dim_rating",
+   "to_column": "lgd",
+   "hop": 11,
+   "transformation": "CASE WHEN g.rating_grade IN ('AAA', 'AA', 'A') THEN 0.35 WHEN g.rating_grade IN ('BBB', 'BB') THEN 0.45 ELSE 0.55 END",
+   "kind": "value",
+   "business_rule": "rating_grade mapped by lookup: g.rating_grade IN ('AAA', 'AA', 'A') \u2192 0.35, g.rating_grade IN ('BBB', 'BB') \u2192 0.45"
+  },
+  {
+   "from_node": "fin_lake.core.dim_counterparty",
+   "from_column": "cpty_key",
+   "to_node": "fin_lake.core.fact_exposure",
+   "to_column": "cpty_key",
+   "hop": 12,
+   "transformation": "pass-through",
+   "kind": "value"
+  },
+  {
+   "from_node": "fin_lake.core.dim_counterparty",
+   "from_column": "cpty_id",
+   "to_node": "fin_lake.core.fact_exposure",
+   "to_column": "ead_usd",
+   "hop": 12,
+   "transformation": "join/filter on cpty_id",
+   "kind": "filter",
+   "business_rule": "cpty_id used to match rows to the lookup"
+  },
+  {
+   "from_node": "fin_lake.core.dim_counterparty",
+   "from_column": "is_intragroup",
+   "to_node": "fin_lake.core.fact_exposure",
+   "to_column": "ead_usd",
+   "hop": 12,
+   "transformation": "join/filter on is_intragroup",
+   "kind": "filter",
+   "business_rule": "Intragroup counterparties excluded"
+  },
+  {
+   "from_node": "fin_lake.core.dim_entity",
+   "from_column": "entity_key",
+   "to_node": "fin_lake.core.fact_exposure",
+   "to_column": "entity_key",
+   "hop": 13,
+   "transformation": "pass-through",
+   "kind": "value"
+  },
+  {
+   "from_node": "fin_lake.core.dim_entity",
+   "from_column": "entity_code",
+   "to_node": "fin_lake.core.fact_exposure",
+   "to_column": "ead_usd",
+   "hop": 13,
+   "transformation": "join/filter on entity_code",
+   "kind": "filter",
+   "business_rule": "Entity used to match rows to the lookup"
+  },
+  {
+   "from_node": "fin_lake.core.dim_product",
+   "from_column": "product_key",
+   "to_node": "fin_lake.core.fact_exposure",
+   "to_column": "product_key",
+   "hop": 14,
+   "transformation": "pass-through",
+   "kind": "value"
+  },
+  {
+   "from_node": "fin_lake.core.dim_product",
+   "from_column": "ccf",
+   "to_node": "fin_lake.core.fact_exposure",
+   "to_column": "ccf",
+   "hop": 14,
+   "transformation": "pass-through",
+   "kind": "value"
+  },
+  {
+   "from_node": "fin_lake.core.dim_product",
+   "from_column": "ccf",
+   "to_node": "fin_lake.core.fact_exposure",
+   "to_column": "ead_usd",
+   "hop": 14,
+   "transformation": "ROUND(ROUND(drawn_amt * rate_to_usd, 2) + ccf * ROUND(undrawn_amt * rate_to_usd, 2), 2)",
+   "kind": "value",
+   "business_rule": "EAD (USD) = ROUND(Drawn balance \u00d7 FX rate to USD, 2) + CCF \u00d7 ROUND(Undrawn commitment \u00d7 FX rate to USD, 2), rounded to 2 dp"
+  },
+  {
+   "from_node": "fin_lake.core.dim_product",
+   "from_column": "risk_weight_base",
+   "to_node": "fin_lake.core.fact_exposure",
+   "to_column": "risk_weight",
+   "hop": 14,
+   "transformation": "pass-through",
+   "kind": "value"
+  },
+  {
+   "from_node": "fin_lake.core.dim_product",
+   "from_column": "risk_weight_base",
+   "to_node": "fin_lake.core.fact_exposure",
+   "to_column": "rwa_usd",
+   "hop": 14,
+   "transformation": "ROUND((ROUND(drawn_amt * rate_to_usd, 2) + ccf * ROUND(undrawn_amt * rate_to_usd, 2)) * risk_weight_base, 2)",
+   "kind": "value",
+   "business_rule": "RWA (USD) = (ROUND(Drawn balance \u00d7 FX rate to USD, 2) + CCF \u00d7 ROUND(Undrawn commitment \u00d7 FX rate to USD, 2)) \u00d7 Base risk weight, rounded to 2 dp"
+  },
+  {
+   "from_node": "fin_lake.core.dim_product",
+   "from_column": "ccf",
+   "to_node": "fin_lake.core.fact_exposure",
+   "to_column": "rwa_usd",
+   "hop": 14,
+   "transformation": "ROUND((ROUND(drawn_amt * rate_to_usd, 2) + ccf * ROUND(undrawn_amt * rate_to_usd, 2)) * risk_weight_base, 2)",
+   "kind": "value",
+   "business_rule": "RWA (USD) = (ROUND(Drawn balance \u00d7 FX rate to USD, 2) + CCF \u00d7 ROUND(Undrawn commitment \u00d7 FX rate to USD, 2)) \u00d7 Base risk weight, rounded to 2 dp"
+  },
+  {
+   "from_node": "fin_lake.core.dim_product",
+   "from_column": "ccf",
+   "to_node": "fin_lake.core.fact_exposure",
+   "to_column": "el_usd",
+   "hop": 14,
+   "transformation": "ROUND(pd * lgd * (ROUND(drawn_amt * rate_to_usd, 2) + ccf * ROUND(undrawn_amt * rate_to_usd, 2)), 2)",
+   "kind": "value",
+   "business_rule": "Expected loss (USD) = PD \u00d7 LGD \u00d7 (ROUND(Drawn balance \u00d7 FX rate to USD, 2) + CCF \u00d7 ROUND(Undrawn commitment \u00d7 FX rate to USD, 2)), rounded to 2 dp"
+  },
+  {
+   "from_node": "fin_lake.core.dim_rating",
+   "from_column": "rating_key",
+   "to_node": "fin_lake.core.fact_exposure",
+   "to_column": "rating_key",
+   "hop": 15,
+   "transformation": "pass-through",
+   "kind": "value"
+  },
+  {
+   "from_node": "fin_lake.core.dim_rating",
+   "from_column": "pd",
+   "to_node": "fin_lake.core.fact_exposure",
+   "to_column": "pd",
+   "hop": 15,
+   "transformation": "pass-through",
+   "kind": "value"
+  },
+  {
+   "from_node": "fin_lake.core.dim_rating",
+   "from_column": "lgd",
+   "to_node": "fin_lake.core.fact_exposure",
+   "to_column": "lgd",
+   "hop": 15,
+   "transformation": "pass-through",
+   "kind": "value"
+  },
+  {
+   "from_node": "fin_lake.core.dim_rating",
+   "from_column": "lgd",
+   "to_node": "fin_lake.core.fact_exposure",
+   "to_column": "el_usd",
+   "hop": 15,
+   "transformation": "ROUND(pd * lgd * (ROUND(drawn_amt * rate_to_usd, 2) + ccf * ROUND(undrawn_amt * rate_to_usd, 2)), 2)",
+   "kind": "value",
+   "business_rule": "Expected loss (USD) = PD \u00d7 LGD \u00d7 (ROUND(Drawn balance \u00d7 FX rate to USD, 2) + CCF \u00d7 ROUND(Undrawn commitment \u00d7 FX rate to USD, 2)), rounded to 2 dp"
+  },
+  {
+   "from_node": "fin_lake.core.dim_rating",
+   "from_column": "pd",
+   "to_node": "fin_lake.core.fact_exposure",
+   "to_column": "el_usd",
+   "hop": 15,
+   "transformation": "ROUND(pd * lgd * (ROUND(drawn_amt * rate_to_usd, 2) + ccf * ROUND(undrawn_amt * rate_to_usd, 2)), 2)",
+   "kind": "value",
+   "business_rule": "Expected loss (USD) = PD \u00d7 LGD \u00d7 (ROUND(Drawn balance \u00d7 FX rate to USD, 2) + CCF \u00d7 ROUND(Undrawn commitment \u00d7 FX rate to USD, 2)), rounded to 2 dp"
+  },
+  {
+   "from_node": "fin_lake.core.dim_rating",
+   "from_column": "rating_grade",
+   "to_node": "fin_lake.core.fact_exposure",
+   "to_column": "ead_usd",
+   "hop": 15,
+   "transformation": "join/filter on rating_grade",
+   "kind": "filter",
+   "business_rule": "rating_grade used to match rows to the lookup"
+  },
+  {
+   "from_node": "fin_lake.stg.collateral",
+   "from_column": "market_value",
+   "to_node": "fin_lake.core.fact_exposure",
+   "to_column": "collateral_usd",
+   "hop": 16,
+   "transformation": "COALESCE(SUM(ROUND(market_value * rate_to_usd, 2)), 0)",
+   "kind": "value",
+   "business_rule": "SUM(ROUND(market_value \u00d7 FX rate to USD, 2)), defaulting to 0 when missing"
+  },
+  {
+   "from_node": "fin_lake.stg.collateral",
+   "from_column": "contract_id",
+   "to_node": "fin_lake.core.fact_exposure",
+   "to_column": "ead_usd",
+   "hop": 16,
+   "transformation": "join/filter on contract_id",
+   "kind": "filter",
+   "business_rule": "Grouping key: contract_id"
+  },
+  {
+   "from_node": "fin_lake.stg.collateral",
+   "from_column": "ccy",
+   "to_node": "fin_lake.core.fact_exposure",
+   "to_column": "ead_usd",
+   "hop": 16,
+   "transformation": "join/filter on ccy",
+   "kind": "filter",
+   "business_rule": "ccy used to match rows to the lookup"
+  },
+  {
+   "from_node": "fin_lake.stg.fx_rate",
+   "from_column": "rate_to_usd",
+   "to_node": "fin_lake.core.fact_exposure",
+   "to_column": "drawn_usd",
+   "hop": 17,
+   "transformation": "ROUND(drawn_amt * rate_to_usd, 2)",
+   "kind": "value",
+   "business_rule": "Drawn (USD) = Drawn balance \u00d7 FX rate to USD, rounded to 2 dp"
+  },
+  {
+   "from_node": "fin_lake.stg.fx_rate",
+   "from_column": "rate_to_usd",
+   "to_node": "fin_lake.core.fact_exposure",
+   "to_column": "undrawn_usd",
+   "hop": 17,
+   "transformation": "ROUND(undrawn_amt * rate_to_usd, 2)",
+   "kind": "value",
+   "business_rule": "Undrawn (USD) = Undrawn commitment \u00d7 FX rate to USD, rounded to 2 dp"
+  },
+  {
+   "from_node": "fin_lake.stg.fx_rate",
+   "from_column": "rate_to_usd",
+   "to_node": "fin_lake.core.fact_exposure",
+   "to_column": "ead_usd",
+   "hop": 17,
+   "transformation": "ROUND(ROUND(drawn_amt * rate_to_usd, 2) + ccf * ROUND(undrawn_amt * rate_to_usd, 2), 2)",
+   "kind": "value",
+   "business_rule": "EAD (USD) = ROUND(Drawn balance \u00d7 FX rate to USD, 2) + CCF \u00d7 ROUND(Undrawn commitment \u00d7 FX rate to USD, 2), rounded to 2 dp"
+  },
+  {
+   "from_node": "fin_lake.stg.fx_rate",
+   "from_column": "rate_to_usd",
+   "to_node": "fin_lake.core.fact_exposure",
+   "to_column": "rwa_usd",
+   "hop": 17,
+   "transformation": "ROUND((ROUND(drawn_amt * rate_to_usd, 2) + ccf * ROUND(undrawn_amt * rate_to_usd, 2)) * risk_weight_base, 2)",
+   "kind": "value",
+   "business_rule": "RWA (USD) = (ROUND(Drawn balance \u00d7 FX rate to USD, 2) + CCF \u00d7 ROUND(Undrawn commitment \u00d7 FX rate to USD, 2)) \u00d7 Base risk weight, rounded to 2 dp"
+  },
+  {
+   "from_node": "fin_lake.stg.fx_rate",
+   "from_column": "rate_to_usd",
+   "to_node": "fin_lake.core.fact_exposure",
+   "to_column": "el_usd",
+   "hop": 17,
+   "transformation": "ROUND(pd * lgd * (ROUND(drawn_amt * rate_to_usd, 2) + ccf * ROUND(undrawn_amt * rate_to_usd, 2)), 2)",
+   "kind": "value",
+   "business_rule": "Expected loss (USD) = PD \u00d7 LGD \u00d7 (ROUND(Drawn balance \u00d7 FX rate to USD, 2) + CCF \u00d7 ROUND(Undrawn commitment \u00d7 FX rate to USD, 2)), rounded to 2 dp"
+  },
+  {
+   "from_node": "fin_lake.stg.fx_rate",
+   "from_column": "rate_to_usd",
+   "to_node": "fin_lake.core.fact_exposure",
+   "to_column": "collateral_usd",
+   "hop": 17,
+   "transformation": "COALESCE(SUM(ROUND(market_value * rate_to_usd, 2)), 0)",
+   "kind": "value",
+   "business_rule": "SUM(ROUND(market_value \u00d7 FX rate to USD, 2)), defaulting to 0 when missing"
+  },
+  {
+   "from_node": "fin_lake.stg.loan",
+   "from_column": "drawn_amt",
+   "to_node": "fin_lake.core.fact_exposure",
+   "to_column": "drawn_usd",
+   "hop": 18,
+   "transformation": "ROUND(drawn_amt * rate_to_usd, 2)",
+   "kind": "value",
+   "business_rule": "Drawn (USD) = Drawn balance \u00d7 FX rate to USD, rounded to 2 dp"
+  },
+  {
+   "from_node": "fin_lake.stg.loan",
+   "from_column": "undrawn_amt",
+   "to_node": "fin_lake.core.fact_exposure",
+   "to_column": "undrawn_usd",
+   "hop": 18,
+   "transformation": "ROUND(undrawn_amt * rate_to_usd, 2)",
+   "kind": "value",
+   "business_rule": "Undrawn (USD) = Undrawn commitment \u00d7 FX rate to USD, rounded to 2 dp"
+  },
+  {
+   "from_node": "fin_lake.stg.loan",
+   "from_column": "undrawn_amt",
+   "to_node": "fin_lake.core.fact_exposure",
+   "to_column": "ead_usd",
+   "hop": 18,
+   "transformation": "ROUND(ROUND(drawn_amt * rate_to_usd, 2) + ccf * ROUND(undrawn_amt * rate_to_usd, 2), 2)",
+   "kind": "value",
+   "business_rule": "EAD (USD) = ROUND(Drawn balance \u00d7 FX rate to USD, 2) + CCF \u00d7 ROUND(Undrawn commitment \u00d7 FX rate to USD, 2), rounded to 2 dp"
+  },
+  {
+   "from_node": "fin_lake.stg.loan",
+   "from_column": "drawn_amt",
+   "to_node": "fin_lake.core.fact_exposure",
+   "to_column": "ead_usd",
+   "hop": 18,
+   "transformation": "ROUND(ROUND(drawn_amt * rate_to_usd, 2) + ccf * ROUND(undrawn_amt * rate_to_usd, 2), 2)",
+   "kind": "value",
+   "business_rule": "EAD (USD) = ROUND(Drawn balance \u00d7 FX rate to USD, 2) + CCF \u00d7 ROUND(Undrawn commitment \u00d7 FX rate to USD, 2), rounded to 2 dp"
+  },
+  {
+   "from_node": "fin_lake.stg.loan",
+   "from_column": "undrawn_amt",
+   "to_node": "fin_lake.core.fact_exposure",
+   "to_column": "rwa_usd",
+   "hop": 18,
+   "transformation": "ROUND((ROUND(drawn_amt * rate_to_usd, 2) + ccf * ROUND(undrawn_amt * rate_to_usd, 2)) * risk_weight_base, 2)",
+   "kind": "value",
+   "business_rule": "RWA (USD) = (ROUND(Drawn balance \u00d7 FX rate to USD, 2) + CCF \u00d7 ROUND(Undrawn commitment \u00d7 FX rate to USD, 2)) \u00d7 Base risk weight, rounded to 2 dp"
+  },
+  {
+   "from_node": "fin_lake.stg.loan",
+   "from_column": "drawn_amt",
+   "to_node": "fin_lake.core.fact_exposure",
+   "to_column": "rwa_usd",
+   "hop": 18,
+   "transformation": "ROUND((ROUND(drawn_amt * rate_to_usd, 2) + ccf * ROUND(undrawn_amt * rate_to_usd, 2)) * risk_weight_base, 2)",
+   "kind": "value",
+   "business_rule": "RWA (USD) = (ROUND(Drawn balance \u00d7 FX rate to USD, 2) + CCF \u00d7 ROUND(Undrawn commitment \u00d7 FX rate to USD, 2)) \u00d7 Base risk weight, rounded to 2 dp"
+  },
+  {
+   "from_node": "fin_lake.stg.loan",
+   "from_column": "drawn_amt",
+   "to_node": "fin_lake.core.fact_exposure",
+   "to_column": "el_usd",
+   "hop": 18,
+   "transformation": "ROUND(pd * lgd * (ROUND(drawn_amt * rate_to_usd, 2) + ccf * ROUND(undrawn_amt * rate_to_usd, 2)), 2)",
+   "kind": "value",
+   "business_rule": "Expected loss (USD) = PD \u00d7 LGD \u00d7 (ROUND(Drawn balance \u00d7 FX rate to USD, 2) + CCF \u00d7 ROUND(Undrawn commitment \u00d7 FX rate to USD, 2)), rounded to 2 dp"
+  },
+  {
+   "from_node": "fin_lake.stg.loan",
+   "from_column": "undrawn_amt",
+   "to_node": "fin_lake.core.fact_exposure",
+   "to_column": "el_usd",
+   "hop": 18,
+   "transformation": "ROUND(pd * lgd * (ROUND(drawn_amt * rate_to_usd, 2) + ccf * ROUND(undrawn_amt * rate_to_usd, 2)), 2)",
+   "kind": "value",
+   "business_rule": "Expected loss (USD) = PD \u00d7 LGD \u00d7 (ROUND(Drawn balance \u00d7 FX rate to USD, 2) + CCF \u00d7 ROUND(Undrawn commitment \u00d7 FX rate to USD, 2)), rounded to 2 dp"
+  },
+  {
+   "from_node": "fin_lake.stg.rating",
+   "from_column": "cpty_id",
+   "to_node": "fin_lake.core.fact_exposure",
+   "to_column": "ead_usd",
+   "hop": 19,
+   "transformation": "join/filter on cpty_id",
+   "kind": "filter",
+   "business_rule": "cpty_id used to match rows to the lookup"
+  },
+  {
+   "from_node": "fin_lake.stg.rating",
+   "from_column": "rating_grade",
+   "to_node": "fin_lake.core.fact_exposure",
+   "to_column": "ead_usd",
+   "hop": 19,
+   "transformation": "join/filter on rating_grade",
+   "kind": "filter",
+   "business_rule": "rating_grade used to match rows to the lookup"
+  },
+  {
+   "from_node": "fin_lake.core.dim_entity",
+   "from_column": "entity_key",
+   "to_node": "fin_lake.core.fact_limit",
+   "to_column": "entity_key",
+   "hop": 20,
+   "transformation": "pass-through",
+   "kind": "value"
+  },
+  {
+   "from_node": "fin_lake.stg.credit_limit",
+   "from_column": "sector_code",
+   "to_node": "fin_lake.core.fact_limit",
+   "to_column": "portfolio",
+   "hop": 21,
+   "transformation": "CASE sector_code WHEN 'SOV' THEN 'Sovereigns' WHEN 'BNK' THEN 'Banks' WHEN 'CORP' THEN 'Corporates' WHEN 'RET' THEN 'Retail' ELSE 'Other' END",
+   "kind": "value",
+   "business_rule": "sector_code mapped by lookup: 'SOV' \u2192 'Sovereigns', 'BNK' \u2192 'Banks', 'CORP' \u2192 'Corporates', 'RET' \u2192 'Retail'"
+  },
+  {
+   "from_node": "fin_lake.stg.credit_limit",
+   "from_column": "limit_amount",
+   "to_node": "fin_lake.core.fact_limit",
+   "to_column": "limit_usd",
+   "hop": 21,
+   "transformation": "ROUND(limit_amount * rate_to_usd, 2)",
+   "kind": "value",
+   "business_rule": "Limit (USD) = Approved limit \u00d7 FX rate to USD, rounded to 2 dp"
+  },
+  {
+   "from_node": "fin_lake.stg.credit_limit",
+   "from_column": "entity_code",
+   "to_node": "fin_lake.core.fact_limit",
+   "to_column": "entity_key",
+   "hop": 21,
+   "transformation": "join/filter on entity_code",
+   "kind": "filter",
+   "business_rule": "Entity used to match rows to the lookup"
+  },
+  {
+   "from_node": "fin_lake.stg.credit_limit",
+   "from_column": "ccy",
+   "to_node": "fin_lake.core.fact_limit",
+   "to_column": "entity_key",
+   "hop": 21,
+   "transformation": "join/filter on ccy",
+   "kind": "filter",
+   "business_rule": "ccy used to match rows to the lookup"
+  },
+  {
+   "from_node": "fin_lake.stg.fx_rate",
+   "from_column": "rate_to_usd",
+   "to_node": "fin_lake.core.fact_limit",
+   "to_column": "limit_usd",
+   "hop": 22,
+   "transformation": "ROUND(limit_amount * rate_to_usd, 2)",
+   "kind": "value",
+   "business_rule": "Limit (USD) = Approved limit \u00d7 FX rate to USD, rounded to 2 dp"
+  },
+  {
+   "from_node": "fin_lake.stg.fx_rate",
+   "from_column": "ccy",
+   "to_node": "fin_lake.core.fact_limit",
+   "to_column": "entity_key",
+   "hop": 22,
+   "transformation": "join/filter on ccy",
+   "kind": "filter",
+   "business_rule": "ccy used to match rows to the lookup"
+  },
+  {
+   "from_node": "fin_lake.stg.fx_rate",
+   "from_column": "rate_date",
+   "to_node": "fin_lake.core.fact_limit",
+   "to_column": "entity_key",
+   "hop": 22,
+   "transformation": "join/filter on rate_date",
+   "kind": "filter",
+   "business_rule": "rate_date used to match rows to the lookup"
+  },
+  {
+   "from_node": "fin_lake.core.dim_counterparty",
+   "from_column": "portfolio",
+   "to_node": "fin_lake.rpt.efr_credit_risk_summary",
+   "to_column": "portfolio",
+   "hop": 23,
+   "transformation": "pass-through",
+   "kind": "value"
+  },
+  {
+   "from_node": "fin_lake.core.dim_entity",
+   "from_column": "entity_code",
+   "to_node": "fin_lake.rpt.efr_credit_risk_summary",
+   "to_column": "entity",
+   "hop": 24,
+   "transformation": "pass-through",
+   "kind": "value"
+  },
+  {
+   "from_node": "fin_lake.core.fact_exposure",
+   "from_column": "ead_usd",
+   "to_node": "fin_lake.rpt.efr_credit_risk_summary",
+   "to_column": "exposure_ead",
+   "hop": 25,
+   "transformation": "ROUND(SUM(ead_usd) / 1000000, 2)",
+   "kind": "value",
+   "business_rule": "Sum of EAD (USD), expressed in millions (\u00f71,000,000), rounded to 2 dp"
+  },
+  {
+   "from_node": "fin_lake.core.fact_exposure",
+   "from_column": "rwa_usd",
+   "to_node": "fin_lake.rpt.efr_credit_risk_summary",
+   "to_column": "rwa",
+   "hop": 25,
+   "transformation": "ROUND(SUM(rwa_usd) / 1000000, 2)",
+   "kind": "value",
+   "business_rule": "Sum of RWA (USD), expressed in millions (\u00f71,000,000), rounded to 2 dp"
+  },
+  {
+   "from_node": "fin_lake.core.fact_exposure",
+   "from_column": "el_usd",
+   "to_node": "fin_lake.rpt.efr_credit_risk_summary",
+   "to_column": "expected_loss",
+   "hop": 25,
+   "transformation": "ROUND(SUM(el_usd) / 1000000, 2)",
+   "kind": "value",
+   "business_rule": "Sum of Expected loss (USD), expressed in millions (\u00f71,000,000), rounded to 2 dp"
+  },
+  {
+   "from_node": "fin_lake.core.fact_limit",
+   "from_column": "limit_usd",
+   "to_node": "fin_lake.rpt.efr_credit_risk_summary",
+   "to_column": "limit_amount",
+   "hop": 26,
+   "transformation": "ROUND(SUM(limit_usd) / 1000000, 2)",
+   "kind": "value",
+   "business_rule": "Sum of Limit (USD), expressed in millions (\u00f71,000,000), rounded to 2 dp"
+  },
+  {
+   "from_node": "fin_lake.core.fact_limit",
+   "from_column": "entity_key",
+   "to_node": "fin_lake.rpt.efr_credit_risk_summary",
+   "to_column": "exposure_ead",
+   "hop": 26,
+   "transformation": "join/filter on entity_key",
+   "kind": "filter",
+   "business_rule": "Grouping key: entity_key"
+  },
+  {
+   "from_node": "fin_lake.core.fact_limit",
+   "from_column": "portfolio",
+   "to_node": "fin_lake.rpt.efr_credit_risk_summary",
+   "to_column": "exposure_ead",
+   "hop": 26,
+   "transformation": "join/filter on portfolio",
+   "kind": "filter",
+   "business_rule": "Grouping key: Portfolio"
+  },
+  {
+   "from_node": "fin_lake.rpt.efr_credit_risk_summary",
+   "from_column": "entity",
+   "to_node": "fin_lake.rpt.v_efr_credit_risk_summary",
+   "to_column": "entity",
+   "hop": 27,
+   "transformation": "pass-through",
+   "kind": "value"
+  },
+  {
+   "from_node": "fin_lake.rpt.efr_credit_risk_summary",
+   "from_column": "risk_type",
+   "to_node": "fin_lake.rpt.v_efr_credit_risk_summary",
+   "to_column": "risk_type",
+   "hop": 27,
+   "transformation": "pass-through",
+   "kind": "value"
+  },
+  {
+   "from_node": "fin_lake.rpt.efr_credit_risk_summary",
+   "from_column": "portfolio",
+   "to_node": "fin_lake.rpt.v_efr_credit_risk_summary",
+   "to_column": "portfolio",
+   "hop": 27,
+   "transformation": "pass-through",
+   "kind": "value"
+  },
+  {
+   "from_node": "fin_lake.rpt.efr_credit_risk_summary",
+   "from_column": "exposure_ead",
+   "to_node": "fin_lake.rpt.v_efr_credit_risk_summary",
+   "to_column": "exposure_ead",
+   "hop": 27,
+   "transformation": "pass-through",
+   "kind": "value"
+  },
+  {
+   "from_node": "fin_lake.rpt.efr_credit_risk_summary",
+   "from_column": "rwa",
+   "to_node": "fin_lake.rpt.v_efr_credit_risk_summary",
+   "to_column": "rwa",
+   "hop": 27,
+   "transformation": "pass-through",
+   "kind": "value"
+  },
+  {
+   "from_node": "fin_lake.rpt.efr_credit_risk_summary",
+   "from_column": "expected_loss",
+   "to_node": "fin_lake.rpt.v_efr_credit_risk_summary",
+   "to_column": "expected_loss",
+   "hop": 27,
+   "transformation": "pass-through",
+   "kind": "value"
+  },
+  {
+   "from_node": "fin_lake.rpt.efr_credit_risk_summary",
+   "from_column": "limit_amount",
+   "to_node": "fin_lake.rpt.v_efr_credit_risk_summary",
+   "to_column": "limit_amount",
+   "hop": 27,
+   "transformation": "pass-through",
+   "kind": "value"
+  },
+  {
+   "from_node": "fin_lake.rpt.efr_credit_risk_summary",
+   "from_column": "exposure_ead",
+   "to_node": "fin_lake.rpt.v_efr_credit_risk_summary",
+   "to_column": "utilisation_pct",
+   "hop": 27,
+   "transformation": "pass-through",
+   "kind": "value"
+  },
+  {
+   "from_node": "fin_lake.rpt.efr_credit_risk_summary",
+   "from_column": "limit_amount",
+   "to_node": "fin_lake.rpt.v_efr_credit_risk_summary",
+   "to_column": "utilisation_pct",
+   "hop": 27,
+   "transformation": "pass-through",
+   "kind": "value"
+  },
+  {
+   "from_node": "fin_lake.rpt.v_efr_credit_risk_summary",
+   "from_column": "exposure_ead",
+   "to_node": "superset.EFR Credit Risk Summary",
+   "to_column": "exposure_ead",
+   "hop": 28,
+   "transformation": "pass-through",
+   "kind": "value"
+  }
+ ]
+}

@@ -1,0 +1,261 @@
+{
+ "trace_id": "5e3883faded4",
+ "status": "complete",
+ "header": {
+  "mode": "data_point",
+  "unit": "USD m",
+  "label": "LCR Liquidity Coverage \u00b7 ENT-UK lcr_pct",
+  "value": 150.0,
+  "ref_date": "2026-06-30",
+  "template": null,
+  "direction": "reverse"
+ },
+ "stats": {
+  "systems_connected": 1,
+  "sor_reached": 5,
+  "sor_known": 5,
+  "branches_outstanding": 0
+ },
+ "steps": [
+  {
+   "n": 1,
+   "status": "identified",
+   "system": "superset",
+   "consumed_by": [
+    "Report LCR Liquidity Coverage"
+   ],
+   "system_type": "superset",
+   "sourced_from": [
+    "lcr_mart.lcr_liquidity_summary"
+   ],
+   "attribute_held_in": [
+    "LCR Liquidity Coverage \u00b7 lcr_pct"
+   ]
+  },
+  {
+   "n": 2,
+   "status": "identified",
+   "system": "lcr_mart",
+   "consumed_by": [
+    "LCR Liquidity Coverage"
+   ],
+   "system_type": "postgresql",
+   "sourced_from": [
+    "lcr_mart.rpt.lcr_summary"
+   ],
+   "attribute_held_in": [
+    "v_lcr_summary.lcr_pct"
+   ]
+  },
+  {
+   "n": 3,
+   "status": "identified",
+   "system": "lcr_mart",
+   "consumed_by": [
+    "rpt.v_lcr_summary"
+   ],
+   "system_type": "postgresql",
+   "sourced_from": [
+    "lcr_mart.core.fact_inflow",
+    "lcr_mart.core.fact_hqla",
+    "lcr_mart.core.fact_outflow"
+   ],
+   "attribute_held_in": [
+    "lcr_summary.lcr_pct"
+   ]
+  },
+  {
+   "n": 4,
+   "status": "identified",
+   "system": "lcr_mart",
+   "consumed_by": [
+    "rpt.lcr_summary"
+   ],
+   "system_type": "postgresql",
+   "sourced_from": [
+    "lcr_mart.stg.lcr_param",
+    "lcr_mart.stg.cashflow"
+   ],
+   "attribute_held_in": [
+    "fact_inflow.inflow_usd"
+   ]
+  },
+  {
+   "n": 5,
+   "status": "identified",
+   "system": "lcr_mart",
+   "consumed_by": [
+    "rpt.lcr_summary"
+   ],
+   "system_type": "postgresql",
+   "sourced_from": [
+    "lcr_mart.stg.security_holding",
+    "lcr_mart.stg.lcr_param"
+   ],
+   "attribute_held_in": [
+    "fact_hqla.weighted_usd"
+   ]
+  },
+  {
+   "n": 6,
+   "status": "identified",
+   "system": "lcr_mart",
+   "consumed_by": [
+    "rpt.lcr_summary"
+   ],
+   "system_type": "postgresql",
+   "sourced_from": [
+    "lcr_mart.stg.lcr_param",
+    "lcr_mart.stg.cashflow",
+    "lcr_mart.stg.lcr_param",
+    "lcr_mart.stg.deposit_account"
+   ],
+   "attribute_held_in": [
+    "fact_outflow.outflow_usd"
+   ]
+  },
+  {
+   "n": 7,
+   "status": "identified",
+   "system": "lcr_mart",
+   "consumed_by": [
+    "core.fact_inflow"
+   ],
+   "system_type": "postgresql",
+   "sourced_from": [
+    "lcr_mart.raw.lcr_param"
+   ],
+   "attribute_held_in": [
+    "lcr_param.factor"
+   ]
+  },
+  {
+   "n": 8,
+   "status": "identified",
+   "system": "lcr_mart",
+   "consumed_by": [
+    "core.fact_inflow"
+   ],
+   "system_type": "postgresql",
+   "sourced_from": [
+    "lcr_mart.raw.cashflow",
+    "lcr_mart.raw.fx_rate"
+   ],
+   "attribute_held_in": [
+    "cashflow.amount_usd"
+   ]
+  },
+  {
+   "n": 9,
+   "status": "identified",
+   "system": "lcr_mart",
+   "consumed_by": [
+    "core.fact_hqla"
+   ],
+   "system_type": "postgresql",
+   "sourced_from": [
+    "lcr_mart.raw.security_holding",
+    "lcr_mart.raw.fx_rate"
+   ],
+   "attribute_held_in": [
+    "security_holding.mv_usd"
+   ]
+  },
+  {
+   "n": 10,
+   "status": "identified",
+   "system": "lcr_mart",
+   "consumed_by": [
+    "core.fact_outflow"
+   ],
+   "system_type": "postgresql",
+   "sourced_from": [
+    "lcr_mart.raw.deposit_account",
+    "lcr_mart.raw.fx_rate"
+   ],
+   "attribute_held_in": [
+    "deposit_account.balance_usd"
+   ]
+  },
+  {
+   "n": 11,
+   "status": "identified",
+   "system": "lcr_mart",
+   "consumed_by": [
+    "stg.lcr_param"
+   ],
+   "system_type": "postgresql",
+   "sourced_from": [
+    "System of record"
+   ],
+   "attribute_held_in": [
+    "lcr_param.factor"
+   ],
+   "sourced_from_is_sor": true
+  },
+  {
+   "n": 12,
+   "status": "identified",
+   "system": "lcr_mart",
+   "consumed_by": [
+    "stg.cashflow"
+   ],
+   "system_type": "postgresql",
+   "sourced_from": [
+    "System of record"
+   ],
+   "attribute_held_in": [
+    "cashflow.amount"
+   ],
+   "sourced_from_is_sor": true
+  },
+  {
+   "n": 13,
+   "status": "identified",
+   "system": "lcr_mart",
+   "consumed_by": [
+    "stg.cashflow"
+   ],
+   "system_type": "postgresql",
+   "sourced_from": [
+    "System of record"
+   ],
+   "attribute_held_in": [
+    "fx_rate.rate_to_usd"
+   ],
+   "sourced_from_is_sor": true
+  },
+  {
+   "n": 14,
+   "status": "identified",
+   "system": "lcr_mart",
+   "consumed_by": [
+    "stg.security_holding"
+   ],
+   "system_type": "postgresql",
+   "sourced_from": [
+    "System of record"
+   ],
+   "attribute_held_in": [
+    "security_holding.market_value"
+   ],
+   "sourced_from_is_sor": true
+  },
+  {
+   "n": 15,
+   "status": "identified",
+   "system": "lcr_mart",
+   "consumed_by": [
+    "stg.deposit_account"
+   ],
+   "system_type": "postgresql",
+   "sourced_from": [
+    "System of record"
+   ],
+   "attribute_held_in": [
+    "deposit_account.balance"
+   ],
+   "sourced_from_is_sor": true
+  }
+ ]
+}

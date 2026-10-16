@@ -1,0 +1,83 @@
+[
+ {
+  "trace_id": "9aea7778c2ff",
+  "title": "USD 1,277.32m traced to 7 systems of record",
+  "label": "EFR Credit Risk Summary \u00b7 ENT-UK \u00b7 CREDIT \u00b7 Corporates exposure_ead",
+  "kind": "EFR data point",
+  "report": "EFR Credit Risk Summary",
+  "captured": "2026-10-16",
+  "pipeline_types": [
+   "bi_tool",
+   "spark",
+   "view"
+  ],
+  "hops": 28,
+  "proven": 27,
+  "code_derived": 1
+ },
+ {
+  "trace_id": "1dcff6924a45",
+  "title": "Whole report (5 value columns) traced to 7 systems of record",
+  "label": "EFR Credit Risk Summary \u00b7 whole report",
+  "kind": "EFR whole report",
+  "report": "EFR Credit Risk Summary",
+  "captured": "2026-10-16",
+  "pipeline_types": [
+   "bi_tool",
+   "spark",
+   "view"
+  ],
+  "hops": 28,
+  "proven": 27,
+  "code_derived": 1
+ },
+ {
+  "trace_id": "5e3883faded4",
+  "title": "USD 150m traced to 5 systems of record",
+  "label": "LCR Liquidity Coverage \u00b7 ENT-UK lcr_pct",
+  "kind": "LCR",
+  "report": "LCR Liquidity Coverage",
+  "captured": "2026-10-16",
+  "pipeline_types": [
+   "bi_tool",
+   "sql_script",
+   "view"
+  ],
+  "hops": 20,
+  "proven": 20,
+  "code_derived": 0
+ },
+ {
+  "trace_id": "031528de976e",
+  "title": "USD 3,867.06 traced to 3 systems of record",
+  "label": "C90 \u00b7 GROUP-01 \u00b7 FX \u00b7 DELTA",
+  "kind": "C90",
+  "report": "C90",
+  "captured": "2026-10-16",
+  "pipeline_types": [
+   "bi_tool",
+   "informatica",
+   "openlineage",
+   "view"
+  ],
+  "hops": 9,
+  "proven": 4,
+  "code_derived": 5
+ },
+ {
+  "trace_id": "1306d51424e1",
+  "title": "EUR 1,240.5m traced to 3 systems of record",
+  "label": "C 07.00 \u00b7 Corporates \u00b7 r0010 c0200",
+  "kind": "C 07.00",
+  "report": "C 07.00",
+  "captured": "2026-10-16",
+  "pipeline_types": [
+   "foreign_table",
+   "openlineage",
+   "stored_procedure"
+  ],
+  "hops": 10,
+  "proven": 7,
+  "code_derived": 3
+ }
+]

@@ -1,0 +1,176 @@
+{
+ "trace_id": "031528de976e",
+ "status": "complete",
+ "header": {
+  "mode": "data_point",
+  "unit": "USD",
+  "label": "C90 \u00b7 GROUP-01 \u00b7 FX \u00b7 DELTA",
+  "value": 3867.06,
+  "ref_date": "2026-06-30",
+  "template": "C90",
+  "direction": "reverse"
+ },
+ "stats": {
+  "systems_connected": 6,
+  "sor_reached": 3,
+  "sor_known": 3,
+  "branches_outstanding": 0
+ },
+ "steps": [
+  {
+   "n": 1,
+   "status": "identified",
+   "system": "superset",
+   "consumed_by": [
+    "Report COREP C90 Report"
+   ],
+   "system_type": "superset",
+   "sourced_from": [
+    "reporting_db.corep_c90_report"
+   ],
+   "attribute_held_in": [
+    "COREP C90 Report \u00b7 reported_value_usd"
+   ]
+  },
+  {
+   "n": 2,
+   "status": "identified",
+   "system": "reporting_db",
+   "consumed_by": [
+    "COREP C90 Report"
+   ],
+   "system_type": "postgresql",
+   "sourced_from": [
+    "reporting_db.rpt.c90_facts"
+   ],
+   "attribute_held_in": [
+    "v_corep_c90.reported_value_usd"
+   ]
+  },
+  {
+   "n": 3,
+   "status": "identified",
+   "system": "reporting_db",
+   "consumed_by": [
+    "rpt.v_corep_c90"
+   ],
+   "system_type": "postgresql",
+   "sourced_from": [
+    "frtb_engine.public.calc_sbm_charge"
+   ],
+   "attribute_held_in": [
+    "c90_facts.reported_value_usd"
+   ]
+  },
+  {
+   "n": 4,
+   "status": "identified",
+   "system": "frtb_engine",
+   "consumed_by": [
+    "rpt.c90_facts"
+   ],
+   "system_type": "postgresql",
+   "sourced_from": [
+    "frtb_engine.public.ref_risk_weight",
+    "dwh.public.dw_sensitivity_usd"
+   ],
+   "attribute_held_in": [
+    "calc_sbm_charge.sbm_charge_usd"
+   ]
+  },
+  {
+   "n": 5,
+   "status": "identified",
+   "system": "frtb_engine",
+   "consumed_by": [
+    "public.calc_sbm_charge"
+   ],
+   "system_type": "postgresql",
+   "sourced_from": [
+    "System of record"
+   ],
+   "attribute_held_in": [
+    "ref_risk_weight.risk_weight"
+   ],
+   "sourced_from_is_sor": true
+  },
+  {
+   "n": 6,
+   "status": "identified",
+   "system": "dwh",
+   "consumed_by": [
+    "public.calc_sbm_charge"
+   ],
+   "system_type": "postgresql",
+   "sourced_from": [
+    "staging.public.ref_fx_rates",
+    "staging.public.stg_sensitivity"
+   ],
+   "attribute_held_in": [
+    "dw_sensitivity_usd.sensitivity_usd"
+   ]
+  },
+  {
+   "n": 7,
+   "status": "identified",
+   "system": "staging",
+   "consumed_by": [
+    "public.dw_sensitivity_usd"
+   ],
+   "system_type": "postgresql",
+   "sourced_from": [
+    "market_data.db.fx_rates"
+   ],
+   "attribute_held_in": [
+    "ref_fx_rates.rate_to_usd"
+   ]
+  },
+  {
+   "n": 8,
+   "status": "identified",
+   "system": "staging",
+   "consumed_by": [
+    "public.dw_sensitivity_usd"
+   ],
+   "system_type": "postgresql",
+   "sourced_from": [
+    "trading_db.trd.trade_sensitivity"
+   ],
+   "attribute_held_in": [
+    "stg_sensitivity.sensitivity_amount"
+   ]
+  },
+  {
+   "n": 9,
+   "status": "identified",
+   "system": "market_data.db",
+   "consumed_by": [
+    "public.ref_fx_rates"
+   ],
+   "system_type": "sqlite",
+   "sourced_from": [
+    "System of record"
+   ],
+   "attribute_held_in": [
+    "fx_rates.rate_to_usd"
+   ],
+   "sourced_from_is_sor": true
+  },
+  {
+   "n": 10,
+   "status": "identified",
+   "system": "trading_db",
+   "consumed_by": [
+    "public.stg_sensitivity"
+   ],
+   "system_type": "postgresql",
+   "sourced_from": [
+    "System of record"
+   ],
+   "attribute_held_in": [
+    "trade_sensitivity.sensitivity_amount"
+   ],
+   "sourced_from_is_sor": true
+  }
+ ]
+}

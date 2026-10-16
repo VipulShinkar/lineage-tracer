@@ -4,6 +4,7 @@ import type { ReactFlowInstance } from '@xyflow/react'
 import LineageGraph, { views, type CE, type ColSel } from './LineageGraph'
 import { api, saveBlob, useApi } from '../api'
 import { dates } from '../format'
+import { DEMO } from './demo'
 import { disp, tracer, type Hop, type HopStatus, type LineageData } from './api'
 
 const STATUS: Record<HopStatus, string> = { proven: 'Proven', code_derived: 'Code-derived', unresolved: 'Unresolved' }
@@ -103,7 +104,7 @@ export default function Lineage() {
     setBusy(true); setXerr(undefined)
     try {
       const p = await tracer.pack(id, 'pdf')
-      saveBlob(await api.download(p.download_url), `${p.ref}.pdf`)
+      saveBlob(await (DEMO ? fetch(p.download_url).then(r => r.blob()) : api.download(p.download_url)), `${p.ref}.pdf`)
     } catch (e) { setXerr((e as Error).message) } finally { setBusy(false) }
   }
 
@@ -115,7 +116,7 @@ export default function Lineage() {
           <p className="t-subm mono">{sub}</p>
         </div>
         <div className="t-actions">
-          <Link to="/" className="t-textbtn">New trace</Link>
+          {DEMO ? <Link to="/" className="t-textbtn">All snapshot traces</Link> : <Link to="/" className="t-textbtn">New trace</Link>}
           <button className="t-btn" onClick={exportPack} disabled={busy}>{busy ? 'Exporting…' : 'Export evidence pack'}</button>
         </div>
       </div>

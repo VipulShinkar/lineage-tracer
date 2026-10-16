@@ -139,7 +139,7 @@ let sub = ''
 export const getSub = () => sub
 export const setSubId = (id: string) => { sub = id }
 
-const USE_FIXTURES = import.meta.env.VITE_USE_FIXTURES === 'true'
+const USE_FIXTURES = import.meta.env.VITE_USE_FIXTURES === 'true' || import.meta.env.VITE_DEMO_SNAPSHOT === 'true'
 
 function withSub(path: string) {
   if (!sub || path.startsWith('/contexts') || /[?&]sub=/.test(path)) return path

@@ -1,0 +1,6 @@
+{
+  "framework": "vite",
+  "buildCommand": "npm run build:demo",
+  "outputDirectory": "dist",
+  "rewrites": [{ "source": "/((?!snapshot/|assets/|.*\..*).*)", "destination": "/index.html" }]
+}
