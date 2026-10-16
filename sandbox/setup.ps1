@@ -18,8 +18,6 @@ Step 'build estate (roles, DBs, seed, ETL, late collateral reload)'
 Run $py @('sandbox/build.py')
 Step 'EFR financial lake (port 5433: cluster, build, verify, report)'
 Run powershell @('-File', 'sandbox/finlake/setup.ps1', '-SkipSuperset')
-Step 'verify as lineage_ro (5432 sandbox + lake)'
-Run $py @('sandbox/verify.py')
 if (-not $SkipSuperset) {
     Step 'superset install / service'
     Run wsl.exe @('-d', 'Ubuntu-AGE', '-u', 'root', '--', 'bash', "$wslRepo/sandbox/wsl/install_superset.sh")
@@ -27,6 +25,15 @@ if (-not $SkipSuperset) {
     Run $py @('sandbox/superset/bootstrap.py')
     Run $py @('sandbox/finlake/bootstrap_superset.py')
 }
+Step 'C90 as Informatica-style mappings (drops C90 procedures + foreign tables)'
+Run powershell @('-File', 'sandbox/pipelines/informatica/setup.ps1')
+Step 'EFR lake ETL as PySpark + OpenLineage (drops etl procedures)'
+Run powershell @('-File', 'sandbox/pipelines/spark/setup.ps1')
+Step 'LCR mart (shell scripts)'
+$lcrArgs = @('-File', 'sandbox/pipelines/lcr/setup.ps1'); if ($SkipSuperset) { $lcrArgs += '-SkipSuperset' }
+Run powershell $lcrArgs
+Step 'verify as lineage_ro (all pipelines)'
+Run $py @('sandbox/verify.py')
 Step 'report files'
 Run $py @('sandbox/reports/make_reports.py')
 Write-Host "`nSandbox ready." -ForegroundColor Green

@@ -36,7 +36,7 @@ def _lit(v) -> str:
         return "[" + ", ".join(_lit(x) for x in v) + "]"
     if isinstance(v, dict):
         return "{" + ", ".join(f"{k}: {_lit(x)}" for k, x in v.items()) + "}"
-    return "'" + str(v).replace("\\", "\\\\").replace("'", "\'") + "'"
+    return "'" + str(v).replace("\\", "\\\\").replace("'", "\\'") + "'"
 
 
 _SUFFIX = re.compile(r"::(vertex|edge|path|numeric)\b")

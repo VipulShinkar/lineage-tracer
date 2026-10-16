@@ -12,3 +12,4 @@ sandbox/data/
 sandbox/openlineage/
 .env
 .claude/
+*.log

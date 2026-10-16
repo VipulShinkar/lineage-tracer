@@ -1,0 +1,8 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<CONNECTIONS DESCRIPTION="PowerCenter relational connection objects (sandbox credentials)">
+  <CONNECTION NAME="trading_db" TYPE="Relational" SUBTYPE="PostgreSQL" HOST="127.0.0.1" PORT="5432" DBNAME="trading_db" USER="etl_owner" PASSWORD="etl_owner"/>
+  <CONNECTION NAME="staging" TYPE="Relational" SUBTYPE="PostgreSQL" HOST="127.0.0.1" PORT="5432" DBNAME="staging" USER="etl_owner" PASSWORD="etl_owner"/>
+  <CONNECTION NAME="dwh" TYPE="Relational" SUBTYPE="PostgreSQL" HOST="127.0.0.1" PORT="5432" DBNAME="dwh" USER="etl_owner" PASSWORD="etl_owner"/>
+  <CONNECTION NAME="frtb_engine" TYPE="Relational" SUBTYPE="PostgreSQL" HOST="127.0.0.1" PORT="5432" DBNAME="frtb_engine" USER="etl_owner" PASSWORD="etl_owner"/>
+  <CONNECTION NAME="reporting_db" TYPE="Relational" SUBTYPE="PostgreSQL" HOST="127.0.0.1" PORT="5432" DBNAME="reporting_db" USER="etl_owner" PASSWORD="etl_owner"/>
+</CONNECTIONS>

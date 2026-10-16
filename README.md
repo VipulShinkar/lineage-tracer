@@ -8,13 +8,13 @@ Architecture, components and decisions: [docs/ARCHITECTURE.md](docs/ARCHITECTURE
 
 ## Quick start (Windows 11 + WSL2)
 
-Requires WSL2 Ubuntu with PostgreSQL + Apache AGE (see ARCHITECTURE section 7), `uv`, Node.js.
+Requires WSL2 Ubuntu with PostgreSQL + Apache AGE (see ARCHITECTURE section 7), `uv`, Node.js. The sandbox setup installs Apache Spark (PySpark) inside WSL for the Spark pipeline.
 
 ```powershell
 uv venv
 uv pip install -e ".[dev]"
 powershell -File scripts/db.ps1                      # start Postgres (WSL)
-powershell -File sandbox/setup.ps1                   # one-off: build demo estate + lake + Superset
+powershell -File sandbox/setup.ps1                   # one-off: demo estate + lake + Superset + pipelines (shell LCR, Informatica C90, PySpark EFR)
 .venv\Scripts\python -m lineage_store.seed --reset   # Explorer seed data
 .venv\Scripts\uvicorn lineage_api.app:app --host 127.0.0.1 --port 8000
 cd web; npm ci; npx vite --host 127.0.0.1            # http://127.0.0.1:5173

@@ -1,0 +1,409 @@
+{
+ "report": "lcr_liquidity_2026-06-30.pdf",
+ "data_point": {
+  "entity": "ENT-UK",
+  "column": "lcr_pct",
+  "value": "150.00",
+  "unit": "percent",
+  "hqla_usd_m": "414.60",
+  "net_outflows_usd_m": "276.40"
+ },
+ "report_source": {
+  "type": "superset",
+  "url": "http://127.0.0.1:8088",
+  "chart": "LCR Liquidity Coverage",
+  "dataset": "lcr_liquidity_summary (virtual: SELECT ... FROM rpt.v_lcr_summary)",
+  "database": {
+   "type": "postgresql",
+   "host": "127.0.0.1:5432",
+   "database": "lcr_mart",
+   "user": "lineage_ro",
+   "password": "lineage_ro"
+  }
+ },
+ "pipeline_type": "sql_script",
+ "pipeline": "sandbox/pipelines/lcr/run_lcr.sh (psql -f NN_*.sql, application_name=lcr_shell, user etl_owner)",
+ "lineage_sources": {
+  "query_history": "pg_stat_statements (db lcr_mart)",
+  "server_log": "/var/lib/postgresql/18/main/log/postgresql-YYYY-MM-DD_HHMMSS.csv (csvlog, read via pg_read_file('log/<file>') as lineage_ro)",
+  "code": "sandbox/pipelines/lcr/*.sql"
+ },
+ "node_id_format": "lcr_mart.<schema>.<table>",
+ "status_values": "proven | code_derived | unresolved",
+ "note": "All hops reconcile (reproducible from current source data); no code_derived hop.",
+ "hops": [
+  {
+   "n": 1,
+   "from": "lcr_mart.raw.deposit_account",
+   "to": "lcr_mart.stg.deposit_account",
+   "status": "proven",
+   "pipeline_type": "sql_script",
+   "code": [
+    {
+     "file": "sandbox/pipelines/lcr/10_stg_deposit_account.sql",
+     "lines": "3-13"
+    }
+   ],
+   "via": "balance * rate_to_usd, flags to boolean"
+  },
+  {
+   "n": 2,
+   "from": "lcr_mart.raw.fx_rate",
+   "to": "lcr_mart.stg.deposit_account",
+   "status": "proven",
+   "pipeline_type": "sql_script",
+   "code": [
+    {
+     "file": "sandbox/pipelines/lcr/10_stg_deposit_account.sql",
+     "lines": "3-13"
+    }
+   ],
+   "via": "same INSERT...SELECT (rate at 2026-06-30)"
+  },
+  {
+   "n": 3,
+   "from": "lcr_mart.raw.security_holding",
+   "to": "lcr_mart.stg.security_holding",
+   "status": "proven",
+   "pipeline_type": "sql_script",
+   "code": [
+    {
+     "file": "sandbox/pipelines/lcr/11_stg_security_holding.sql",
+     "lines": "3-12"
+    }
+   ],
+   "via": "market_value * rate_to_usd"
+  },
+  {
+   "n": 4,
+   "from": "lcr_mart.raw.fx_rate",
+   "to": "lcr_mart.stg.security_holding",
+   "status": "proven",
+   "pipeline_type": "sql_script",
+   "code": [
+    {
+     "file": "sandbox/pipelines/lcr/11_stg_security_holding.sql",
+     "lines": "3-12"
+    }
+   ],
+   "via": "same INSERT...SELECT"
+  },
+  {
+   "n": 5,
+   "from": "lcr_mart.raw.cashflow",
+   "to": "lcr_mart.stg.cashflow",
+   "status": "proven",
+   "pipeline_type": "sql_script",
+   "code": [
+    {
+     "file": "sandbox/pipelines/lcr/12_stg_cashflow.sql",
+     "lines": "3-11"
+    }
+   ],
+   "via": "amount * rate_to_usd"
+  },
+  {
+   "n": 6,
+   "from": "lcr_mart.raw.fx_rate",
+   "to": "lcr_mart.stg.cashflow",
+   "status": "proven",
+   "pipeline_type": "sql_script",
+   "code": [
+    {
+     "file": "sandbox/pipelines/lcr/12_stg_cashflow.sql",
+     "lines": "3-11"
+    }
+   ],
+   "via": "same INSERT...SELECT"
+  },
+  {
+   "n": 7,
+   "from": "lcr_mart.raw.lcr_param",
+   "to": "lcr_mart.stg.lcr_param",
+   "status": "proven",
+   "pipeline_type": "sql_script",
+   "code": [
+    {
+     "file": "sandbox/pipelines/lcr/13_stg_lcr_param.sql",
+     "lines": "3-6"
+    }
+   ],
+   "via": "factor::numeric"
+  },
+  {
+   "n": 8,
+   "from": "lcr_mart.stg.security_holding",
+   "to": "lcr_mart.core.fact_hqla",
+   "status": "proven",
+   "pipeline_type": "sql_script",
+   "code": [
+    {
+     "file": "sandbox/pipelines/lcr/20_core_fact_hqla.sql",
+     "lines": "3-22"
+    }
+   ],
+   "via": "SUM(mv_usd)*(1-haircut) by HQLA level, unencumbered HQLA classes"
+  },
+  {
+   "n": 9,
+   "from": "lcr_mart.stg.lcr_param",
+   "to": "lcr_mart.core.fact_hqla",
+   "status": "proven",
+   "pipeline_type": "sql_script",
+   "code": [
+    {
+     "file": "sandbox/pipelines/lcr/20_core_fact_hqla.sql",
+     "lines": "3-22"
+    }
+   ],
+   "via": "haircut by level"
+  },
+  {
+   "n": 10,
+   "from": "lcr_mart.stg.deposit_account",
+   "to": "lcr_mart.core.fact_outflow",
+   "status": "proven",
+   "pipeline_type": "sql_script",
+   "code": [
+    {
+     "file": "sandbox/pipelines/lcr/21_core_fact_outflow.sql",
+     "lines": "3-24"
+    }
+   ],
+   "via": "SUM(balance_usd)*runoff_rate by deposit category"
+  },
+  {
+   "n": 11,
+   "from": "lcr_mart.stg.cashflow",
+   "to": "lcr_mart.core.fact_outflow",
+   "status": "proven",
+   "pipeline_type": "sql_script",
+   "code": [
+    {
+     "file": "sandbox/pipelines/lcr/21_core_fact_outflow.sql",
+     "lines": "26-38"
+    }
+   ],
+   "via": "wholesale funding maturing within 30 days"
+  },
+  {
+   "n": 12,
+   "from": "lcr_mart.stg.lcr_param",
+   "to": "lcr_mart.core.fact_outflow",
+   "status": "proven",
+   "pipeline_type": "sql_script",
+   "code": [
+    {
+     "file": "sandbox/pipelines/lcr/21_core_fact_outflow.sql",
+     "lines": "3-24"
+    },
+    {
+     "file": "sandbox/pipelines/lcr/21_core_fact_outflow.sql",
+     "lines": "26-38"
+    }
+   ],
+   "via": "run-off rates"
+  },
+  {
+   "n": 13,
+   "from": "lcr_mart.stg.cashflow",
+   "to": "lcr_mart.core.fact_inflow",
+   "status": "proven",
+   "pipeline_type": "sql_script",
+   "code": [
+    {
+     "file": "sandbox/pipelines/lcr/22_core_fact_inflow.sql",
+     "lines": "3-15"
+    }
+   ],
+   "via": "SUM(amount_usd)*inflow_rate, maturing within 30 days"
+  },
+  {
+   "n": 14,
+   "from": "lcr_mart.stg.lcr_param",
+   "to": "lcr_mart.core.fact_inflow",
+   "status": "proven",
+   "pipeline_type": "sql_script",
+   "code": [
+    {
+     "file": "sandbox/pipelines/lcr/22_core_fact_inflow.sql",
+     "lines": "3-15"
+    }
+   ],
+   "via": "inflow rates"
+  },
+  {
+   "n": 15,
+   "from": "lcr_mart.core.fact_hqla",
+   "to": "lcr_mart.rpt.lcr_summary",
+   "status": "proven",
+   "pipeline_type": "sql_script",
+   "code": [
+    {
+     "file": "sandbox/pipelines/lcr/30_rpt_lcr_summary.sql",
+     "lines": "3-14"
+    }
+   ],
+   "via": "ROUND(SUM(weighted_usd)/1e6,2) as hqla_usd"
+  },
+  {
+   "n": 16,
+   "from": "lcr_mart.core.fact_outflow",
+   "to": "lcr_mart.rpt.lcr_summary",
+   "status": "proven",
+   "pipeline_type": "sql_script",
+   "code": [
+    {
+     "file": "sandbox/pipelines/lcr/30_rpt_lcr_summary.sql",
+     "lines": "3-14"
+    }
+   ],
+   "via": "SUM(outflow_usd)"
+  },
+  {
+   "n": 17,
+   "from": "lcr_mart.core.fact_inflow",
+   "to": "lcr_mart.rpt.lcr_summary",
+   "status": "proven",
+   "pipeline_type": "sql_script",
+   "code": [
+    {
+     "file": "sandbox/pipelines/lcr/30_rpt_lcr_summary.sql",
+     "lines": "3-14"
+    }
+   ],
+   "via": "SUM(inflow_usd), capped at 75% of outflows"
+  },
+  {
+   "n": 18,
+   "from": "lcr_mart.rpt.lcr_summary",
+   "to": "lcr_mart.rpt.v_lcr_summary",
+   "status": "proven",
+   "pipeline_type": "sql_script",
+   "code": [
+    {
+     "file": "sandbox/pipelines/lcr/31_rpt_v_lcr_summary.sql",
+     "lines": "1-14"
+    }
+   ],
+   "via": "view: passes entity rows, adds GROUP total row"
+  }
+ ],
+ "systems_of_record_reached": [
+  "lcr_mart.raw.deposit_account",
+  "lcr_mart.raw.security_holding",
+  "lcr_mart.raw.cashflow",
+  "lcr_mart.raw.fx_rate",
+  "lcr_mart.raw.lcr_param"
+ ],
+ "column_edges": [
+  {
+   "hop": 1,
+   "from": "lcr_mart.raw.deposit_account.balance",
+   "to": "lcr_mart.stg.deposit_account.balance_usd",
+   "transformation": "ROUND(balance * rate_to_usd, 2)"
+  },
+  {
+   "hop": 2,
+   "from": "lcr_mart.raw.fx_rate.rate_to_usd",
+   "to": "lcr_mart.stg.deposit_account.balance_usd",
+   "transformation": "ROUND(balance * rate_to_usd, 2)"
+  },
+  {
+   "hop": 3,
+   "from": "lcr_mart.raw.security_holding.market_value",
+   "to": "lcr_mart.stg.security_holding.mv_usd",
+   "transformation": "ROUND(market_value * rate_to_usd, 2)"
+  },
+  {
+   "hop": 4,
+   "from": "lcr_mart.raw.fx_rate.rate_to_usd",
+   "to": "lcr_mart.stg.security_holding.mv_usd",
+   "transformation": "ROUND(market_value * rate_to_usd, 2)"
+  },
+  {
+   "hop": 5,
+   "from": "lcr_mart.raw.cashflow.amount",
+   "to": "lcr_mart.stg.cashflow.amount_usd",
+   "transformation": "ROUND(amount * rate_to_usd, 2)"
+  },
+  {
+   "hop": 6,
+   "from": "lcr_mart.raw.fx_rate.rate_to_usd",
+   "to": "lcr_mart.stg.cashflow.amount_usd",
+   "transformation": "ROUND(amount * rate_to_usd, 2)"
+  },
+  {
+   "hop": 7,
+   "from": "lcr_mart.raw.lcr_param.factor",
+   "to": "lcr_mart.stg.lcr_param.factor",
+   "transformation": "factor::numeric"
+  },
+  {
+   "hop": 8,
+   "from": "lcr_mart.stg.security_holding.mv_usd",
+   "to": "lcr_mart.core.fact_hqla.weighted_usd",
+   "transformation": "SUM(mv_usd) * (1 - haircut)"
+  },
+  {
+   "hop": 9,
+   "from": "lcr_mart.stg.lcr_param.factor",
+   "to": "lcr_mart.core.fact_hqla.weighted_usd",
+   "transformation": "SUM(mv_usd) * (1 - haircut)"
+  },
+  {
+   "hop": 10,
+   "from": "lcr_mart.stg.deposit_account.balance_usd",
+   "to": "lcr_mart.core.fact_outflow.outflow_usd",
+   "transformation": "SUM(balance_usd) * runoff_rate"
+  },
+  {
+   "hop": 11,
+   "from": "lcr_mart.stg.cashflow.amount_usd",
+   "to": "lcr_mart.core.fact_outflow.outflow_usd",
+   "transformation": "SUM(amount_usd) * runoff_rate"
+  },
+  {
+   "hop": 12,
+   "from": "lcr_mart.stg.lcr_param.factor",
+   "to": "lcr_mart.core.fact_outflow.outflow_usd",
+   "transformation": "SUM(balance_usd) * runoff_rate"
+  },
+  {
+   "hop": 13,
+   "from": "lcr_mart.stg.cashflow.amount_usd",
+   "to": "lcr_mart.core.fact_inflow.inflow_usd",
+   "transformation": "SUM(amount_usd) * inflow_rate"
+  },
+  {
+   "hop": 14,
+   "from": "lcr_mart.stg.lcr_param.factor",
+   "to": "lcr_mart.core.fact_inflow.inflow_usd",
+   "transformation": "SUM(amount_usd) * inflow_rate"
+  },
+  {
+   "hop": 15,
+   "from": "lcr_mart.core.fact_hqla.weighted_usd",
+   "to": "lcr_mart.rpt.lcr_summary.lcr_pct",
+   "transformation": "ROUND(SUM(weighted_usd) / (outflows - LEAST(inflows, 0.75 * outflows)) * 100, 2)"
+  },
+  {
+   "hop": 16,
+   "from": "lcr_mart.core.fact_outflow.outflow_usd",
+   "to": "lcr_mart.rpt.lcr_summary.lcr_pct",
+   "transformation": "ROUND(SUM(weighted_usd) / (outflows - LEAST(inflows, 0.75 * outflows)) * 100, 2)"
+  },
+  {
+   "hop": 17,
+   "from": "lcr_mart.core.fact_inflow.inflow_usd",
+   "to": "lcr_mart.rpt.lcr_summary.lcr_pct",
+   "transformation": "ROUND(SUM(weighted_usd) / (outflows - LEAST(inflows, 0.75 * outflows)) * 100, 2)"
+  },
+  {
+   "hop": 18,
+   "from": "lcr_mart.rpt.lcr_summary.lcr_pct",
+   "to": "lcr_mart.rpt.v_lcr_summary.lcr_pct",
+   "transformation": "pass-through (entity rows); GROUP row = ROUND(SUM(hqla_usd)/SUM(net_outflows_usd)*100, 2)"
+  }
+ ]
+}

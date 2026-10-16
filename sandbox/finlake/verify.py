@@ -28,11 +28,9 @@ def run() -> bool:
         except psycopg.errors.InsufficientPrivilege:
             check("no write: " + stmt[:30], True)
     check("pg_stat_statements INSERT texts", one("SELECT count(*) FROM pg_stat_statements WHERE query ILIKE 'INSERT INTO%'") >= 15)
-    check("pg_proc.prosrc (etl)", one("SELECT count(*) FROM pg_proc p JOIN pg_namespace n ON n.oid=p.pronamespace WHERE n.nspname='etl' AND p.prosrc ILIKE '%INSERT INTO%'") >= 15)
     check("pg_views", one("SELECT count(*) FROM pg_views WHERE viewname='v_efr_credit_risk_summary'") == 1)
     check("every table/view in raw/stg/core/rpt has a description", one("SELECT count(*) FROM pg_class c JOIN pg_namespace n ON n.oid=c.relnamespace WHERE n.nspname IN ('raw','stg','core','rpt') AND c.relkind IN ('r','v') AND obj_description(c.oid,'pg_class') IS NULL") == 0)
     check("glossary: ead_usd column comment", "Exposure at Default" in (one("SELECT col_description('core.fact_exposure'::regclass, (SELECT attnum FROM pg_attribute WHERE attrelid='core.fact_exposure'::regclass AND attname='ead_usd'))") or ""))
-    check("glossary: procedure comment", one("SELECT obj_description('etl.sp_load_core_fact_exposure()'::regprocedure, 'pg_proc')") is not None)
     check("memory: shared_buffers=128MB", one("SHOW shared_buffers") == "128MB")
     # report values
     rows = c.execute("SELECT entity, portfolio, exposure_ead, rwa, expected_loss, limit_amount, utilisation_pct FROM rpt.v_efr_credit_risk_summary").fetchall()

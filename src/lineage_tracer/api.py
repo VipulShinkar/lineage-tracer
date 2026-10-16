@@ -299,3 +299,27 @@ def delete_system(system: str):
         return {"removed": n}
     finally:
         conn.close()
+
+
+@router.post("/harvest")
+def harvest_history():
+    """Copy pg_stat_statements of every known PostgreSQL system into query_history (read-only on the sources)."""
+    from lineage_tracer import harvest
+
+    conn = _conn()
+    try:
+        return harvest.run(conn)
+    finally:
+        conn.close()
+
+
+@router.post("/pipelines/scan")
+def scan_pipelines():
+    """Index the code roots and ingest PowerCenter mapping exports as pipeline jobs."""
+    from lineage_tracer import pipelines
+
+    conn = _conn()
+    try:
+        return {"code_files": len(pipelines.files()), "statements": len(pipelines.index()), **pipelines.sync_mappings(conn)}
+    finally:
+        conn.close()

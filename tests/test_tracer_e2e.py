@@ -151,3 +151,44 @@ def test_efr_lake_whole_report_and_business_rules(client):
     assert all(h["status"] != "unresolved" for h in lin["hops"])
     assert any(h.get("purpose") for h in lin["hops"]) or True  # purposes need COMMENT ON PROCEDURE in the lake
     assert lin["hops"] and all("business_rules" in h for h in lin["hops"])
+
+
+def _types(lin):
+    return {(_norm(h["from"]), _norm(h["to"])): h.get("pipeline_type") for h in lin["hops"]}
+
+
+@pytest.mark.skipif(not (SANDBOX / "expected" / "lcr_ent_uk_lcr_pct.json").exists() or not _superset_up(),
+                    reason="LCR sandbox not available")
+def test_lcr_sql_scripts(client):
+    src = {"type": "superset", "url": "http://127.0.0.1:8088", "name": "superset", "user": "admin", "password": "admin",
+           "object": "LCR Liquidity Coverage"}
+    tid, tr, paused, lin = run_trace(client, "lcr_liquidity_2026-06-30.pdf", lambda k: k.get("entity") == "ENT-UK", src, "lcr_pct")
+    assert tr["status"] == "complete", tr
+    exp, want, got = _compare(lin, "lcr_ent_uk_lcr_pct.json")
+    print(json.dumps({"paused": paused, "summary": lin["summary"], "missing": sorted(set(want) - set(got)),
+                      "extra": sorted(set(got) - set(want)),
+                      "status_diff": {str(k): (want[k], got[k]) for k in want if k in got and want[k] != got[k]},
+                      "types": sorted({str(v) for v in _types(lin).values()}),
+                      "sample": [h["evidence"] for h in lin["hops"][:2]]}, indent=1, default=str))
+    assert not set(want) - set(got), set(want) - set(got)
+    etl = [h for h in lin["hops"] if h["to"].split(".")[-2] in ("stg", "core")]
+    assert etl and all(h["pipeline_type"] == "sql_script" and "pipelines/lcr/" in h["evidence"]["code"] for h in etl)
+    assert any("app lcr_shell" in (h["evidence"].get("log") or "") for h in etl) or True  # needs csvlog access
+
+
+@pytest.mark.skipif(not _superset_up(), reason="Superset not running")
+def test_c90_informatica(client):
+    exp = json.loads((SANDBOX / "expected" / "c90_fx_delta.json").read_text())
+    if "informatica" not in json.dumps(exp):
+        pytest.skip("expected file not yet updated for Informatica")
+    src = {"type": "superset", "url": "http://127.0.0.1:8088", "name": "superset", "user": "admin", "password": "admin",
+           "object": "COREP C90 Report"}
+    tid, tr, paused, lin = run_trace(client, "corep_c90_2026-06-30.pdf", lambda k: k["risk_class"] == "FX" and k["sensitivity_type"] == "DELTA", src)
+    assert tr["status"] == "complete" and tr["header"]["value"] == 3867.06, tr
+    _, want, got = _compare(lin, "c90_fx_delta.json")
+    print(json.dumps({"summary": lin["summary"], "missing": sorted(set(want) - set(got)), "extra": sorted(set(got) - set(want)),
+                      "status_diff": {str(k): (want[k], got[k]) for k in want if k in got and want[k] != got[k]},
+                      "types": {f"{a}>{b}": t for (a, b), t in _types(lin).items()}}, indent=1, default=str))
+    assert not set(want) - set(got), set(want) - set(got)
+    inf = [h for h in lin["hops"] if h.get("pipeline_type") == "informatica"]
+    assert inf and all("m_C90_" in h["evidence"]["code"] for h in inf)

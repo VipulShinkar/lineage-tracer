@@ -1,23 +1,299 @@
 {
-  "report": "corep_c90_2026-06-30.pdf",
-  "data_point": {"consolidation_group": "GROUP-01", "risk_class": "FX", "sensitivity_type": "DELTA", "reported_value_usd": "3867.06"},
-  "report_source": {
-    "type": "superset", "url": "http://127.0.0.1:8088", "chart": "COREP C90 Report",
-    "dataset": "corep_c90_report (virtual: SELECT ... FROM rpt.v_corep_c90)",
-    "database": {"type": "postgresql", "host": "127.0.0.1:5432", "database": "reporting_db", "user": "lineage_ro"}
+ "report": "corep_c90_2026-06-30.pdf",
+ "data_point": {
+  "consolidation_group": "GROUP-01",
+  "risk_class": "FX",
+  "sensitivity_type": "DELTA",
+  "reported_value_usd": "3867.06"
+ },
+ "report_source": {
+  "type": "superset",
+  "url": "http://127.0.0.1:8088",
+  "chart": "COREP C90 Report",
+  "dataset": "corep_c90_report (virtual: SELECT ... FROM rpt.v_corep_c90)",
+  "database": {
+   "type": "postgresql",
+   "host": "127.0.0.1:5432",
+   "database": "reporting_db",
+   "user": "lineage_ro"
+  }
+ },
+ "credentials_needed_during_trace": [
+  "reporting_db (lineage_ro/lineage_ro, one pause)"
+ ],
+ "note": "status values: proven | code_derived | unresolved. Order of hops is not significant; from/to are system.schema.table.",
+ "hops": [
+  {
+   "from": "frtb_engine.public.calc_sbm_charge",
+   "to": "reporting_db.rpt.c90_facts",
+   "status": "proven",
+   "pipeline": "informatica",
+   "mapping_file": "sandbox/pipelines/informatica/m_C90_rpt_c90_facts.xml",
+   "mapping": "m_C90_rpt_c90_facts",
+   "transformations": [
+    "SQ_calc_sbm_charge (Source Qualifier)",
+    "EXP_REPORTED_VALUE (Expression)"
+   ],
+   "column_edges": [
+    {
+     "from": "calc_sbm_charge.sbm_charge_usd",
+     "to": "c90_facts.reported_value_usd",
+     "expression": "sbm_charge_usd"
+    },
+    {
+     "from": "calc_sbm_charge.consolidation_group",
+     "to": "c90_facts.consolidation_group",
+     "expression": null
+    },
+    {
+     "from": "calc_sbm_charge.risk_class",
+     "to": "c90_facts.risk_class",
+     "expression": null
+    },
+    {
+     "from": "calc_sbm_charge.sensitivity_type",
+     "to": "c90_facts.sensitivity_type",
+     "expression": null
+    },
+    {
+     "from": "calc_sbm_charge.as_of_date",
+     "to": "c90_facts.as_of_date",
+     "expression": null
+    }
+   ]
   },
-  "credentials_needed_during_trace": ["reporting_db (lineage_ro/lineage_ro, one pause)"],
-  "note": "status values: proven | code_derived | unresolved. Order of hops is not significant; from/to are system.schema.table.",
-  "hops": [
-    {"from": "frtb_engine.public.calc_sbm_charge", "to": "reporting_db.rpt.c90_facts", "status": "proven", "via": "procedure etl.sp_load_c90_facts + foreign table fdw_frtb.calc_sbm_charge"},
-    {"from": "reporting_db.rpt.c90_facts", "to": "reporting_db.rpt.v_corep_c90", "status": "proven", "via": "view (adds ALL/ALL total row)"},
-    {"from": "dwh.public.dw_sensitivity_usd", "to": "frtb_engine.public.calc_sbm_charge", "status": "proven", "via": "procedure etl.sp_calc_sbm_charge + foreign table fdw_dwh.dw_sensitivity_usd; SUM(sensitivity_usd * risk_weight)"},
-    {"from": "staging.public.stg_sensitivity", "to": "dwh.public.dw_sensitivity_usd", "status": "proven", "via": "procedure etl.sp_load_sensitivity_usd + foreign table fdw_stg.stg_sensitivity"},
-    {"from": "staging.public.ref_fx_rates", "to": "dwh.public.dw_sensitivity_usd", "status": "proven", "via": "same INSERT ... SELECT (FX to USD)"},
-    {"from": "trading_db.trd.trade_sensitivity", "to": "staging.public.stg_sensitivity", "status": "proven", "via": "procedure etl.sp_load_stg_sensitivity + foreign table fdw_trd.trade_sensitivity"},
-    {"from": "sqlite:market_data.db.fx_rates", "to": "staging.public.ref_fx_rates", "status": "code_derived", "via": "OpenLineage event job load_fx_rates (no SQL logic in any scanned catalog)"}
-  ],
-  "reference_branch": {"from": "frtb_engine.public.ref_risk_weight", "to": "frtb_engine.public.calc_sbm_charge", "note": "static parameter table with no writer and no foreign source -> treated as a system of record; same INSERT...SELECT join"},
-  "systems_of_record": ["trading_db.trd.trade_sensitivity", "sqlite:market_data.db.fx_rates", "frtb_engine.public.ref_risk_weight"],
-  "summary": {"proven": 6, "code_derived": 1, "unresolved": 0}
+  {
+   "from": "reporting_db.rpt.c90_facts",
+   "to": "reporting_db.rpt.v_corep_c90",
+   "status": "proven",
+   "via": "view (adds ALL/ALL total row)"
+  },
+  {
+   "from": "dwh.public.dw_sensitivity_usd",
+   "to": "frtb_engine.public.calc_sbm_charge",
+   "status": "proven",
+   "pipeline": "informatica",
+   "mapping_file": "sandbox/pipelines/informatica/m_C90_calc_sbm_charge.xml",
+   "mapping": "m_C90_calc_sbm_charge",
+   "transformations": [
+    "SQ_dw_sensitivity_usd (Source Qualifier)",
+    "LKP_RISK_WEIGHT (Lookup Procedure)",
+    "FIL_RW_FOUND (Filter)",
+    "EXP_WEIGHTED (Expression)",
+    "AGG_SBM (Aggregator)"
+   ],
+   "column_edges": [
+    {
+     "from": "dw_sensitivity_usd.sensitivity_usd",
+     "to": "calc_sbm_charge.sbm_charge_usd",
+     "expression": "ROUND(SUM(in_weighted_usd), 2), in_weighted_usd = sensitivity_usd * risk_weight  [EXP_WEIGHTED.weighted_usd]"
+    },
+    {
+     "from": "ref_risk_weight.risk_weight",
+     "to": "calc_sbm_charge.sbm_charge_usd",
+     "expression": "sensitivity_usd * risk_weight (LKP_RISK_WEIGHT.risk_weight)"
+    },
+    {
+     "from": "dw_sensitivity_usd.sensitivity_usd",
+     "to": "calc_sbm_charge.sensitivity_usd_total",
+     "expression": "SUM(in_sensitivity_usd)"
+    },
+    {
+     "from": "ref_risk_weight.risk_weight",
+     "to": "calc_sbm_charge.risk_weight",
+     "expression": "GROUP BY risk_weight"
+    },
+    {
+     "from": "dw_sensitivity_usd.as_of_date",
+     "to": "calc_sbm_charge.as_of_date",
+     "expression": "MAX(in_as_of_date)"
+    },
+    {
+     "from": "dw_sensitivity_usd.consolidation_group",
+     "to": "calc_sbm_charge.consolidation_group",
+     "expression": "GROUP BY"
+    },
+    {
+     "from": "dw_sensitivity_usd.risk_class",
+     "to": "calc_sbm_charge.risk_class",
+     "expression": "GROUP BY; lookup key risk_class = in_risk_class"
+    },
+    {
+     "from": "dw_sensitivity_usd.sensitivity_type",
+     "to": "calc_sbm_charge.sensitivity_type",
+     "expression": "GROUP BY; lookup key sensitivity_type = in_sensitivity_type"
+    }
+   ]
+  },
+  {
+   "from": "staging.public.stg_sensitivity",
+   "to": "dwh.public.dw_sensitivity_usd",
+   "status": "proven",
+   "pipeline": "informatica",
+   "mapping_file": "sandbox/pipelines/informatica/m_C90_dw_sensitivity_usd.xml",
+   "mapping": "m_C90_dw_sensitivity_usd",
+   "transformations": [
+    "SQ_stg_sensitivity (Source Qualifier)",
+    "LKP_FX_RATE (Lookup Procedure)",
+    "FIL_FX_FOUND (Filter)",
+    "EXP_SENSITIVITY_USD (Expression)"
+   ],
+   "column_edges": [
+    {
+     "from": "stg_sensitivity.sensitivity_amount",
+     "to": "dw_sensitivity_usd.sensitivity_usd",
+     "expression": "ROUND(sensitivity_amount * rate_to_usd, 6)"
+    },
+    {
+     "from": "ref_fx_rates.rate_to_usd",
+     "to": "dw_sensitivity_usd.sensitivity_usd",
+     "expression": "ROUND(sensitivity_amount * rate_to_usd, 6)"
+    },
+    {
+     "from": "ref_fx_rates.rate_to_usd",
+     "to": "dw_sensitivity_usd.fx_rate_to_usd",
+     "expression": "rate_to_usd"
+    },
+    {
+     "from": "stg_sensitivity.sensitivity_amount",
+     "to": "dw_sensitivity_usd.sensitivity_amount",
+     "expression": null
+    },
+    {
+     "from": "stg_sensitivity.consolidation_group",
+     "to": "dw_sensitivity_usd.consolidation_group",
+     "expression": null
+    },
+    {
+     "from": "stg_sensitivity.risk_class",
+     "to": "dw_sensitivity_usd.risk_class",
+     "expression": null
+    },
+    {
+     "from": "stg_sensitivity.sensitivity_type",
+     "to": "dw_sensitivity_usd.sensitivity_type",
+     "expression": null
+    },
+    {
+     "from": "stg_sensitivity.currency",
+     "to": "dw_sensitivity_usd.currency",
+     "expression": null
+    },
+    {
+     "from": "stg_sensitivity.as_of_date",
+     "to": "dw_sensitivity_usd.as_of_date",
+     "expression": null
+    }
+   ]
+  },
+  {
+   "from": "staging.public.ref_fx_rates",
+   "to": "dwh.public.dw_sensitivity_usd",
+   "status": "proven",
+   "pipeline": "informatica",
+   "mapping_file": "sandbox/pipelines/informatica/m_C90_dw_sensitivity_usd.xml",
+   "mapping": "m_C90_dw_sensitivity_usd",
+   "transformations": [
+    "LKP_FX_RATE (Lookup Procedure: ccy = in_currency AND rate_date = in_as_of_date)"
+   ],
+   "column_edges": [
+    {
+     "from": "ref_fx_rates.rate_to_usd",
+     "to": "dw_sensitivity_usd.fx_rate_to_usd",
+     "expression": "rate_to_usd"
+    }
+   ]
+  },
+  {
+   "from": "trading_db.trd.trade_sensitivity",
+   "to": "staging.public.stg_sensitivity",
+   "status": "proven",
+   "pipeline": "informatica",
+   "mapping_file": "sandbox/pipelines/informatica/m_C90_stg_sensitivity.xml",
+   "mapping": "m_C90_stg_sensitivity",
+   "transformations": [
+    "SQ_trade_sensitivity (Source Qualifier)"
+   ],
+   "column_edges": [
+    {
+     "from": "trade_sensitivity.trade_id",
+     "to": "stg_sensitivity.trade_id",
+     "expression": null
+    },
+    {
+     "from": "trade_sensitivity.book",
+     "to": "stg_sensitivity.book",
+     "expression": null
+    },
+    {
+     "from": "trade_sensitivity.desk",
+     "to": "stg_sensitivity.desk",
+     "expression": null
+    },
+    {
+     "from": "trade_sensitivity.consolidation_group",
+     "to": "stg_sensitivity.consolidation_group",
+     "expression": null
+    },
+    {
+     "from": "trade_sensitivity.risk_class",
+     "to": "stg_sensitivity.risk_class",
+     "expression": null
+    },
+    {
+     "from": "trade_sensitivity.sensitivity_type",
+     "to": "stg_sensitivity.sensitivity_type",
+     "expression": null
+    },
+    {
+     "from": "trade_sensitivity.risk_factor",
+     "to": "stg_sensitivity.risk_factor",
+     "expression": null
+    },
+    {
+     "from": "trade_sensitivity.currency",
+     "to": "stg_sensitivity.currency",
+     "expression": null
+    },
+    {
+     "from": "trade_sensitivity.sensitivity_amount",
+     "to": "stg_sensitivity.sensitivity_amount",
+     "expression": null
+    },
+    {
+     "from": "trade_sensitivity.as_of_date",
+     "to": "stg_sensitivity.as_of_date",
+     "expression": null
+    }
+   ]
+  },
+  {
+   "from": "sqlite:market_data.db.fx_rates",
+   "to": "staging.public.ref_fx_rates",
+   "status": "code_derived",
+   "via": "OpenLineage event job load_fx_rates (no SQL logic in any scanned catalog)"
+  }
+ ],
+ "reference_branch": {
+  "from": "frtb_engine.public.ref_risk_weight",
+  "to": "frtb_engine.public.calc_sbm_charge",
+  "note": "Lookup Procedure LKP_RISK_WEIGHT in m_C90_calc_sbm_charge; static parameter table with no writer -> system of record"
+ },
+ "systems_of_record": [
+  "trading_db.trd.trade_sensitivity",
+  "sqlite:market_data.db.fx_rates",
+  "frtb_engine.public.ref_risk_weight"
+ ],
+ "summary": {
+  "proven": 6,
+  "code_derived": 1,
+  "unresolved": 0
+ },
+ "pipeline": {
+  "type": "informatica",
+  "folder": "COREP_C90",
+  "files": "sandbox/pipelines/informatica/",
+  "connections_file": "sandbox/pipelines/informatica/connections.xml",
+  "note": "Mapping XML (PowerCenter export) is the code evidence; source/target DBDNAME = connection name resolved via connections.xml (host 127.0.0.1:5432, db = connection name). The query log shows only SELECT reads and INSERT VALUES writes by application_name 'pmdtm' (no procedures, no foreign tables); those are unlinked, so hops are proven by reconciliation + the mapping XML."
+ }
 }

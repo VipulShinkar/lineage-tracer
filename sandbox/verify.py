@@ -1,4 +1,6 @@
 """Checks the estate as the read-only scanning user and recomputes every hop to show which reconcile."""
+import sys
+
 import psycopg
 
 RO = "host=127.0.0.1 port=5432 user={u} password={u} dbname={d}"
@@ -46,9 +48,9 @@ for db, t in tables.items():
         check(f"no write {db}", True)
 n = q("reporting_db", "SELECT count(*) FROM pg_stat_statements WHERE query ILIKE 'INSERT INTO%'")[0][0]
 check("pg_stat_statements INSERT texts", n >= 10, f"({n})")
-check("pg_proc.prosrc", q("dwh", "SELECT count(*) FROM pg_proc WHERE prosrc ILIKE '%INSERT INTO%'")[0][0] >= 4)
+check("pg_proc.prosrc", q("dwh", "SELECT count(*) FROM pg_proc WHERE prosrc ILIKE '%INSERT INTO%'")[0][0] >= 3)
 check("pg_views", q("reporting_db", "SELECT count(*) FROM pg_views WHERE viewname='v_corep_c90'")[0][0] == 1)
-check("pg_foreign_server/table", q("dwh", "SELECT count(*) FROM pg_foreign_server s JOIN pg_foreign_table t ON t.ftserver=s.oid")[0][0] >= 4)
+check("pg_foreign_server/table", q("dwh", "SELECT count(*) FROM pg_foreign_server s JOIN pg_foreign_table t ON t.ftserver=s.oid")[0][0] >= 3)  # C 07.00 only; C90 foreign tables dropped by Informatica setup
 check("foreign table readable as lineage_ro", q("dwh", "SELECT count(*) FROM fdw_stg.stg_facilities")[0][0] > 0)
 
 # report values
@@ -76,16 +78,16 @@ hops = {
  "8 mart_sa_exposure -> calc_sa_exposure (orig on+off)": (total("sa_engine", "SELECT sum(on_bal_eur+off_bal_eur) FROM fdw_dwh.mart_sa_exposure"), total("sa_engine", "SELECT sum(orig_on_eur+orig_off_eur) FROM calc_sa_exposure")),
  "9 calc_sa_exposure -> c0700 r0010 c0010": (total("reporting_db", "SELECT round(sum(orig_on_eur+orig_off_eur)/1e6,1) FROM fdw_sa.calc_sa_exposure WHERE exposure_class='Corporates'"), total("reporting_db", "SELECT value FROM rpt.c0700_facts WHERE sheet='Corporates' AND row_code='0010' AND col_code='0010'")),
  "C90 trade_sensitivity -> stg": (total("trading_db", "SELECT sum(sensitivity_amount) FROM trd.trade_sensitivity"), total("staging", "SELECT sum(sensitivity_amount) FROM stg_sensitivity")),
- "C90 stg -> dw_sensitivity_usd": (total("dwh", "SELECT sum(round(s.sensitivity_amount*fx.rate_to_usd,6)) FROM fdw_stg.stg_sensitivity s JOIN fdw_stg.ref_fx_rates fx ON fx.ccy=s.currency AND fx.rate_date=s.as_of_date"), total("dwh", "SELECT sum(sensitivity_usd) FROM dw_sensitivity_usd")),
- "C90 dw -> calc_sbm_charge FX/DELTA": (total("frtb_engine", "SELECT round(sum(s.sensitivity_usd*w.risk_weight),2) FROM fdw_dwh.dw_sensitivity_usd s JOIN ref_risk_weight w USING (risk_class, sensitivity_type) WHERE risk_class='FX' AND sensitivity_type='DELTA'"), total("frtb_engine", "SELECT sbm_charge_usd FROM calc_sbm_charge WHERE risk_class='FX' AND sensitivity_type='DELTA'")),
- "C90 calc_sbm_charge -> c90_facts": (total("reporting_db", "SELECT sbm_charge_usd FROM fdw_frtb.calc_sbm_charge WHERE risk_class='FX' AND sensitivity_type='DELTA'"), total("reporting_db", "SELECT reported_value_usd FROM rpt.c90_facts WHERE risk_class='FX' AND sensitivity_type='DELTA'")),
 }
 for k, (a, b) in hops.items():
     match = a == b
     check("hop " + k, match != ("MISMATCH" in k), f"recomputed={a} stored={b}")
-import sys
 sys.path.insert(0, str(__import__("pathlib").Path(__file__).parent / "finlake"))
 import verify as _lake  # noqa: E402  (sandbox/finlake/verify.py)
 ok &= _lake.run()
+import subprocess  # noqa: E402
+for p_ in ("informatica", "spark", "lcr"):
+    rc = subprocess.run([sys.executable, str(__import__("pathlib").Path(__file__).parent / "pipelines" / p_ / "verify.py")]).returncode
+    check(f"pipelines/{p_}/verify.py", rc == 0)
 print("ALL OK" if ok else "SOME FAILED")
 raise SystemExit(0 if ok else 1)

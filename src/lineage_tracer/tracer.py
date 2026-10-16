@@ -21,7 +21,7 @@ from sqlglot import exp
 from lineage_parser.graph import LineageGraph, NodeKind
 from lineage_store import audit, db, ingest_sql
 from lineage_store.store import NotFound
-from lineage_tracer import business_rules, reconcile, sql_lineage, vault
+from lineage_tracer import business_rules, pipelines, reconcile, sql_lineage, vault
 from lineage_tracer.connectors import postgres, sqlite, superset
 
 CON = {"postgresql": postgres, "sqlite": sqlite}
@@ -255,6 +255,10 @@ class Tracer:
     def loop(self) -> None:
         s = self.s
         if not s["started"]:
+            try:  # PowerCenter mapping exports in the code roots become pipeline jobs in the lineage graph
+                pipelines.sync_mappings(self.conn)
+            except Exception:  # noqa: BLE001 - optional evidence source
+                pass
             self.start_source()
             s["started"] = True
         while s["queue"]:
@@ -344,24 +348,51 @@ class Tracer:
             step["consumed_by"] = list(dict.fromkeys(step["consumed_by"] + mod.consumers(c, i.get("schema") or "", i["table"])[:4]))
         except Exception:  # noqa: BLE001
             pass
-        ws = mod.writers(c, i.get("schema") or "", i["table"])
+        ws = self.writers(i, c, mod)
         made = 0
-        for wr in ws:
-            made += self.from_writer(i, c, mod, wr, nid)
-        if not made:
-            ol = self.openlineage(i)
-            if ol:
-                made = self.from_openlineage(i, nid, ol)
+        # several statements load one table (e.g. deposits + wholesale): a replay must reproduce the union of all of them
+        cols_ = [x for x, _ in mod.columns(c, i.get("schema") or "", i["table"])]
+        ps = [sql_lineage.parse_writer(x["sql"], cols_, x["dialect"]) for x in ws if x["kind"] in ("log", "function")]
+        union = None
+        if len(ps) > 1 and all(p is not None and p.select is not None and p.out_cols == ps[0].out_cols for p in ps) and len(ws) == len(ps):
+            union = " UNION ALL ".join(f"({sql_lineage.select_sql(p)})" for p in ps)
+        qlog = [w["log"] for w in ws if w.get("log")][:1]
+
+        def pipeline() -> int:  # pipeline-tool jobs (Informatica mappings, OpenLineage / Spark)
+            ol = self.pipeline_rows(i)
+            if not ol:
+                return 0
+            return (self.from_spark_sql(i, c, mod, nid, ol) if self.is_spark(ol[0]) else 0) or self.from_pipeline(i, nid, ol, qlog)
+
+        # a tool-level job (mapping, Spark run) explains a table better than the raw statements the tool pushed to the DB
+        made = pipeline() if all(w["kind"] == "log" for w in ws) else 0
+        for wr in ([] if made else ws):
+            made += self.from_writer(i, c, mod, wr, nid, union)
+        made = made or pipeline()
         if made:
             step["status"] = "identified"
             step["sourced_from"] = [h["from"] for h in self.hops if h["to"] == nid]
-        elif not ws:
+        elif not ws or all(w["kind"] == "log" and re.search(r"\bvalues\b", w["sql"], re.I) and not re.search(r"\bselect\b", w["sql"], re.I)
+                           for w in ws):  # nothing, or only literal-row inserts (seed / app writes): the data enters here
             self.add_node(i, "system_of_record", "sor")
             step["status"], step["sourced_from"], step["sourced_from_is_sor"] = "identified", ["System of record"], True
         else:
             step["status"] = "unresolved"
             self.add_hop(f"{i['system']}.(unknown source)", nid, "unresolved", [obj(i)], [], "Writers were found but none could be parsed for this attribute.",
                          obj(i), {"code": "; ".join(w["ref"] for w in ws)})
+
+    def history(self, i: dict) -> list:
+        """Harvested pg_stat_statements rows (query_history) of this database."""
+        h, _, p = vault.norm_host(i["host"]).partition(":")
+        try:
+            return self.conn.execute("SELECT query, calls FROM query_history WHERE db_host=%s AND db_port=%s AND dbname=%s "
+                                     "ORDER BY calls DESC LIMIT 3000", (h, int(p), i["database"])).fetchall()
+        except psycopg.Error:
+            return []
+
+    def writers(self, i: dict, c, mod) -> list[dict]:
+        sch = i.get("schema") or ""
+        return mod.writers(c, sch, i["table"], self.history(i)) if i["type"] == "postgresql" else mod.writers(c, sch, i["table"])
 
     def stored(self, i: dict, c, mod) -> float | None:
         """Sum of the traced column under the item's filters; a non-numeric column (a join key or label) is
@@ -455,9 +486,10 @@ class Tracer:
                       "reconciliation": rec}, None,
                      [[d, v, "pass-through", True, "value", None] for v, d in (i.get("name_map") or {ctx["value_name"]: i["value_col"]}).items()])
         h["business_rules"] = [f"Displayed as a table in Superset chart '{ch['title']}'"]
+        h["pipeline_type"] = "bi_tool"
 
     # ---------------------------------------------------------------- writers -> hops
-    def from_writer(self, i: dict, c, mod, wr: dict, nid: str) -> int:
+    def from_writer(self, i: dict, c, mod, wr: dict, nid: str, union: str | None = None) -> int:
         if wr["kind"] == "foreign":
             return self.from_foreign(i, wr, nid)
         cols = [x for x, _ in mod.columns(c, i.get("schema") or "", i["table"])]
@@ -480,6 +512,8 @@ class Tracer:
         recon = {"kind": "select", "group": gid, "target": ref(i), "value_col": i["value_col"], "filters": i["filters"],
                  "stored": i.get("stored"), "select": sql_lineage.select_sql(w), "out_cols": w.out_cols} \
             if w.select is not None and len(w.out_cols) == len(w.select.selects) else None
+        if recon and union:
+            recon["select"] = union
         if recon and i.get("agg"):
             recon["checks"] = recon["full"] = [["*", i.get("stored")]]
         elif recon and self.ctx["mode"] == "report":  # whole report: reconcile the totals of every traced numeric column
@@ -503,7 +537,8 @@ class Tracer:
                              f"{text} Source table {tname} was not found in {i['system']}.", obj(i), {"code": wr["ref"], "sql": wr["sql"]})
                 made += 1
                 continue
-            code, rc = wr["ref"], recon
+            code, rc = wr.get("code") or wr["ref"], recon
+            ptype = wr.get("ptype") or {"function": "stored_procedure", "view": "view"}.get(wr["kind"]) or ("sql_script" if wr.get("code") else "query_log")
             if recon and len(by_src) > 1 and not i.get("agg"):  # several sources: reconcile on a column only this source feeds, when there is one
                 cs = self.exclusive_cols(c, mod, w, i, tname, sch)
                 if cs:
@@ -522,13 +557,21 @@ class Tracer:
                 code = f"{wr['ref']} · read through foreign table {r[0]}.{r[1]} ({fw[0]['ref'].split(': ', 1)[-1]})"
             nxt["columns"] = self.numeric_first(c, mod, r, scols)
             nxt["value_col"] = nxt["columns"][0]
+            lv = leaves.get(i["value_col"]) or []
+            if rc and wr.get("literal") is False and not i.get("agg") and self.ctx["mode"] == "data_point":
+                # the statement only exists with $n parameters (no literal SQL in the log): cannot be replayed -> totals
+                one = len(lv) == 1 and lv[0][0] == tname
+                rc = {"kind": "external", "target": ref(i), "stored": i.get("stored"), "filters": i["filters"], "source": ref(nxt),
+                      "source_col": lv[0][1] if one else nxt["value_col"],
+                      "factor": pipelines.totals_factor(None, None, sql_lineage.compact(w, i["value_col"], i["filters"])) if one else None}
             self.enqueue(nxt, i)
             h = self.add_hop(node_id(nxt), nid, "code_derived", [f"{obj(i)}.{i['value_col']}"], [f"{obj(nxt)}.{x}" for x in scols[:4]],
-                         text, obj(i), {"code": code, "sql": wr["sql"][:2500], "version": wr.get("version"), "log": wr.get("log")},
+                         text, obj(i), {"code": code, "sql": (wr.get("shown") or wr["sql"])[:2500], "version": wr.get("version"), "log": wr.get("log")},
                          rc, [[lc, col, sql_lineage.compact(w, col, i["filters"]), col in traced, "value", crule.get(col)]
                               for col, lv in leaves.items() for t, lc in lv if t == tname]
                          + [[x, i["value_col"], "join/filter on " + x, True, "filter", business_rules.filter_edge_rule(w, x, terms)]
                             for x in joined.get(tname, [])])
+            h["pipeline_type"] = "foreign_table" if " · read through foreign table " in code else ptype
             h["purpose"], h["statement_rules"] = wr.get("purpose"), [x for x, _ in items]
             h["business_rules"] = business_rules.rules_for(items, tname)
             self.add_node(nxt)
@@ -596,39 +639,62 @@ class Tracer:
                      f"{f['server']}; no transformation.", obj(i), {"code": wr["ref"], "version": wr["version"]}, recon,
                      [[i["value_col"], i["value_col"], "pass-through", True, "value", None]])
         h["business_rules"] = ["Read as-is through a foreign table; no transformation"]
+        h["pipeline_type"] = "foreign_table"
         return 1
 
-    # ---------------------------------------------------------------- OpenLineage
-    def openlineage(self, i: dict) -> list[dict]:
-        """OpenLineage jobs already ingested that wrote this table's column: [{job, dataset, field, namespace, run}]."""
-        t, col = i["table"], i["value_col"]
+    # ---------------------------------------------------------------- pipeline jobs (OpenLineage / Spark / Informatica)
+    @staticmethod
+    def ds_match(ds: str, i: dict) -> bool:
+        """Does the OpenLineage dataset name (table | schema.table | db.schema.table) denote this table?"""
+        parts = [p.strip('"').lower() for p in ds.split(".")]
+        if parts[-1] != i["table"].lower():
+            return False
+        if i["type"] == "postgresql" and len(parts) == 3:
+            return parts[0] == (i.get("database") or "").lower() and parts[1] == (i.get("schema") or "").lower()
+        if i["type"] == "postgresql" and len(parts) == 2:
+            return parts[0] == (i.get("schema") or "").lower()
+        return True
+
+    def pipeline_rows(self, i: dict) -> list[dict]:
+        """Column lineage reported by pipeline jobs (OpenLineage events, ingested Informatica mappings) into the traced
+        columns of this table: [{job, dataset, field, tcol, type, subtype, desc, producer, loc, via, namespace}]."""
+        traced = list(dict.fromkeys((i.get("columns") or [i["value_col"]]) + list(i["filters"]) + i.get("keycols", [])))
         try:
             rows = db.cypher(self.conn, "MATCH (s:Field)-[e:DERIVES]->(t:Field) WHERE e.job_id IS NOT NULL "
-                             "AND NOT e.job_id STARTS WITH 'job:hop' RETURN s.uid, t.uid, e.job_id", cols=3)
+                             "AND NOT e.job_id STARTS WITH 'job:hop' AND t.label IN $cols RETURN s.uid, t.uid, e.job_id, "
+                             "e.transform_type, e.subtype, e.description, e.producer, e.code_loc, e.via",
+                             {"cols": traced}, cols=9)
         except Exception:  # noqa: BLE001
             return []
-        out = []
-        for s, tg, job in rows:
-            ds = tg.removeprefix("field:").rsplit(".", 1)[0]
-            if tg.rsplit(".", 1)[1] == col and (ds == t or ds.endswith("." + t)):
-                sds, sf = s.removeprefix("field:").rsplit(".", 1)
-                ns = db.cypher(self.conn, "MATCH (d:Dataset {uid: $u}) RETURN d.namespace", {"u": f"dataset:{sds}"})
-                run = self.conn.execute("SELECT run_id FROM run WHERE job_id = %s ORDER BY ended DESC NULLS LAST LIMIT 1",
-                                        (job,)).fetchone()
-                out.append({"job": job.removeprefix("job:"), "dataset": sds, "field": sf, "namespace": (ns or [None])[0] or "",
-                            "run": run[0] if run else None})
-        return out
+        out, nsc = [], {}
+        for s_, tg, job, ty, sub, desc, prod, loc, via in rows:
+            ds, tcol = tg.removeprefix("field:").rsplit(".", 1)
+            if tcol not in traced or not self.ds_match(ds, i):
+                continue
+            sds, sf = s_.removeprefix("field:").rsplit(".", 1)
+            if sds not in nsc:
+                nsc[sds] = (db.cypher(self.conn, "MATCH (d:Dataset {uid: $u}) RETURN d.namespace", {"u": f"dataset:{sds}"}) or [None])[0] or ""
+            if any(o["job"] == job.removeprefix("job:") and o["dataset"] == sds and o["field"] == sf and o["tcol"] == tcol for o in out):
+                continue  # the same edge ingested under two uids
+            out.append({"job": job.removeprefix("job:"), "dataset": sds, "field": sf, "tcol": tcol, "type": ty or "DIRECT",
+                        "subtype": sub, "desc": desc, "producer": prod or "", "loc": loc, "via": via, "namespace": nsc[sds]})
+        if not out:
+            return []
+        want = next((r["job"] for r in out if r["tcol"] == i["value_col"]), out[0]["job"])
+        return [r for r in out if r["job"] == want]
 
     def upstream(self, o: dict, i: dict) -> dict:
-        """Frontier item for an OpenLineage input dataset. Location comes from its namespace; a sqlite file that exists
-        on this host needs no credentials and is registered automatically."""
+        """Frontier item for a pipeline job's input dataset. Location comes from its namespace (postgres://host:port with
+        name db.schema.table, as Spark JDBC reports it); a sqlite file that exists on this host needs no credentials and
+        is registered automatically."""
         parts, ns = o["dataset"].split("."), o["namespace"]
         base = {"value_col": o["field"], "columns": [o["field"]],
                 "filters": {k: v for k, v in i["filters"].items() if k != o["field"]},
                 "parent": {"table": i["table"], "value_col": i["value_col"]}}
-        if ns.startswith("postgres") and len(parts) == 3:
-            return {**base, "system": parts[0], "type": "postgresql", "host": urlparse(ns).netloc, "database": parts[0],
-                    "schema": parts[1], "table": parts[2]}
+        if re.match(r"(jdbc:)?postgres", ns):
+            netloc = urlparse(ns.removeprefix("jdbc:")).netloc or i.get("host") or ""
+            dbn, sch = (parts[0], parts[1]) if len(parts) == 3 else (i.get("database"), parts[-2] if len(parts) == 2 else "public")
+            return {**base, "system": dbn, "type": "postgresql", "host": netloc, "database": dbn, "schema": sch, "table": parts[-1]}
         path = ns.split("://", 1)[1] if ns.startswith("sqlite:") else None
         if path and re.match(r"^/[A-Za-z]:", path):
             path = path[1:]
@@ -640,20 +706,86 @@ class Tracer:
         return {**base, "system": os.path.basename(path or "") or ".".join(parts[:-1]) or parts[-1], "type": "sqlite",
                 "path": path, "schema": "", "table": parts[-1], "unknown": True}
 
-    def from_openlineage(self, i: dict, nid: str, ol: list[dict]) -> int:
-        o = ol[0]  # one upstream dataset per attribute is enough for the trace
-        nxt = self.upstream(o, i)
-        self.enqueue(nxt, i)
-        self.add_node(nxt)
-        log = f"OpenLineage job {o['job']}" + (f" · run {o['run']}" if o["run"] else "")
-        recon = {"kind": "openlineage", "target": ref(i), "stored": i.get("stored"), "filters": i["filters"],
-                 "source": ref(nxt), "source_col": o["field"]}
-        h = self.add_hop(node_id(nxt), nid, "code_derived", [f"{obj(i)}.{i['value_col']}"], [f"{obj(nxt)}.{o['field']}"],
-                     f"Loaded by ETL job {o['job']} from {o['dataset']}.{o['field']} (column lineage reported by OpenLineage).",
-                     obj(i), {"log": log, "code": f"OpenLineage job {o['job']}"}, recon,
-                     [[o["field"], i["value_col"], "pass-through", True, "value", None]])
-        h["business_rules"] = [f"Loaded by ETL job {o['job']}; the transformation is only known from OpenLineage"]
-        return 1
+    @staticmethod
+    def is_spark(r: dict) -> bool:
+        return "spark" in r["producer"].lower() or "save_into_data_source" in r["job"]
+
+    def from_spark_sql(self, i: dict, c, mod, nid: str, rows: list[dict]) -> int:
+        """Spark job whose PySpark source holds the load's SQL: treat it as a writer (column expressions, business rules and
+        a replay of the translated SQL against the current upstream data)."""
+        first = rows[0]
+        ld = pipelines.find_load(first["job"], first["loc"], f"{i['schema']}.{i['table']}")
+        if not ld or not ld["lines"]:
+            return 0
+        schemas = [r[0] for r in c.execute("SELECT nspname FROM pg_namespace WHERE nspname <> ALL(%s)", (list(postgres.SYSTEM),))]
+        sql = pipelines.spark_insert(ld["text"], i["schema"], i["table"], schemas)
+        if not sql:
+            return 0
+        run = self.conn.execute("SELECT run_id FROM run WHERE job_id = %s ORDER BY ended DESC NULLS LAST LIMIT 1", (f"job:{first['job']}",)).fetchone()
+        wr = {"kind": "spark", "dialect": "postgres", "sql": sql, "ptype": "spark", "literal": True, "version": None,
+              "ref": f"{ld['file']} lines {ld['lines'][0]}–{ld['lines'][1]}", "code": f"{ld['file']} lines {ld['lines'][0]}–{ld['lines'][1]}",
+              "log": f"OpenLineage job {first['job']}" + (f" · run {run[0]}" if run else ""), "shown": ld["text"]}
+        n0 = len(self.hops)
+        made = self.from_writer(i, c, mod, wr, nid)
+        if not made:
+            del self.hops[n0:]
+        return made
+
+    def from_pipeline(self, i: dict, nid: str, rows: list[dict], qlog: list[str]) -> int:
+        """One hop per input dataset of the job, with the job's column edges (kind `filter` for INDIRECT)."""
+        first = rows[0]
+        prod = first["producer"].lower()
+        ptype = "informatica" if "informatica" in prod else "spark" if self.is_spark(first) else "openlineage"
+        traced = set(i.get("columns") or [i["value_col"]]) | set(i["filters"]) | set(i.get("keycols", []))
+        made = 0
+        tx = lambda r: "pass-through" if (r["subtype"] or "").upper() == "IDENTITY" else (r["desc"] or (r["subtype"] or "pass-through").lower())  # noqa: E731
+        rule = lambda r: pipelines.rule_text(r["desc"] if (r["subtype"] or "").upper() != "IDENTITY" else None,  # noqa: E731
+                                             "filter" if r["type"] == "INDIRECT" else "value")
+        for sds in dict.fromkeys(r["dataset"] for r in rows):
+            g = [r for r in rows if r["dataset"] == sds]
+            direct = [r for r in g if r["type"] != "INDIRECT"]
+            vsrc = next((r for r in direct if r["tcol"] == i["value_col"]), (direct or g)[0])
+            order = list(dict.fromkeys([i["value_col"]] + (i.get("columns") or [])))  # the traced value column leads
+            cols = list(dict.fromkeys([r["field"] for t in order for r in direct if r["tcol"] == t] + [r["field"] for r in g]))[:12]
+            nxt = self.upstream({"dataset": sds, "namespace": g[0]["namespace"], "field": vsrc["field"]}, i)
+            nxt["columns"], nxt["value_col"] = cols, cols[0]
+            for r in direct:  # key filters / key columns copied straight through keep applying upstream
+                if (r["subtype"] or "").upper() == "IDENTITY" or r["desc"] == r["field"]:
+                    if r["tcol"] in i["filters"]:
+                        nxt["filters"][r["field"]] = i["filters"][r["tcol"]]
+                    if r["tcol"] in i.get("keycols", []):
+                        nxt.setdefault("keycols", []).append(r["field"])
+            self.enqueue(nxt, i)
+            self.add_node(nxt)
+            rules = list(dict.fromkeys(x for x in map(rule, g) if x))
+            names = list(dict.fromkeys(n.strip() for r in g for n in (r["via"] or "").split(",") if n.strip()))
+            if ptype == "informatica":
+                code = f"{first['loc']} · mapping {first['job']}" + (f" · transformations {', '.join(names)}" if names else "")
+                log = " · ".join(qlog)
+            else:
+                f = pipelines.find_job_file(first["job"], first["loc"], i["schema"] + "." + i["table"] if i.get("schema") else i["table"])
+                code = f"{f} · job {first['job']}" if f else f"OpenLineage job {first['job']}"
+                log = " · ".join([f"OpenLineage job {first['job']}"] + qlog)
+            run = self.conn.execute("SELECT run_id FROM run WHERE job_id = %s ORDER BY ended DESC NULLS LAST LIMIT 1",
+                                    (f"job:{first['job']}",)).fetchone()
+            if run:
+                log += f" · run {run[0]}"
+            vtext = tx(vsrc)
+            recon = {"kind": "openlineage", "target": ref(i), "stored": i.get("stored"), "filters": i["filters"],
+                     "source": ref(nxt), "source_col": vsrc["field"]}
+            if ptype in ("informatica", "spark"):
+                recon.update(kind="external", factor=pipelines.totals_factor(vsrc["type"], vsrc["subtype"], vsrc["desc"]))
+            label = {"informatica": "Informatica mapping", "spark": "Spark job"}.get(ptype, "ETL job")
+            h = self.add_hop(node_id(nxt), nid, "code_derived", [f"{obj(i)}.{i['value_col']}"], [f"{obj(nxt)}.{x}" for x in cols[:4]],
+                             f"Loaded by {label} {first['job']} from {sds}: {i['value_col']} = "
+                             f"{vsrc['field'] + ' (copied unchanged)' if vtext == 'pass-through' else vtext}.",
+                             obj(i), {"code": code, "log": log}, recon,
+                             [[r["field"], r["tcol"], tx(r), r["tcol"] in traced, "filter" if r["type"] == "INDIRECT" else "value", rule(r)]
+                              for r in g])
+            h["business_rules"] = h["statement_rules"] = rules or [f"Loaded by {label} {first['job']}; the transformation is only known from its lineage metadata"]
+            h["pipeline_type"] = ptype
+            made += 1
+        return made
 
     # ---------------------------------------------------------------- resume / finish
     def finish(self) -> None:

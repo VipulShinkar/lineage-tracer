@@ -42,6 +42,20 @@ def check(spec: dict, connect, tol: float) -> tuple[str, str]:
             r0 = bad or res[0]
             more = f" (+{len(res) - 1} more columns agree)" if not bad and len(res) > 1 else ""
             return ("code_derived" if bad else "proven"), f"{r0[1]} [{tgt['table']}.{'row count' if r0[2] == '*' else r0[2]}]{more}"
+        if kind == "external":  # logic cannot be re-executed: reconcile by totals when it is identity / SUM / linear
+            why = "pipeline logic not re-executable"
+            f = spec.get("factor")
+            if f is None:
+                return "code_derived", f"Not reconciled: {why} (the column logic is not an identity, SUM or linear scaling)"
+            src = spec["source"]
+            c = connect(src)
+            if c is None:
+                return "code_derived", f"Not reconciled: {why}; no connection to {src['system']}"
+            mod = postgres if src["type"] == "postgresql" else sqlite
+            r = mod.sum_value(c, src["schema"], src["table"], spec["source_col"], spec["filters"])
+            ok, msg = _cmp(None if r is None else r * f, stored, tol, f"{src['system']}.{src['table']}")
+            basis = "identity" if f == 1 else f"× {f:g}"
+            return ("proven" if ok else "code_derived"), f"{msg} · reconciled by totals ({basis}); {why}"
         if kind in ("foreign", "openlineage"):
             src = spec["source"]
             c = connect(src)

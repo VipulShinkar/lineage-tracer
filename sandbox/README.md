@@ -2,6 +2,24 @@
 
 A small, fully scripted regulatory data estate (Postgres 18 in WSL `Ubuntu-AGE`, a SQLite file, Apache Superset) that the Lineage Tracer is tested against. Two report pipelines: **C90** (FRTB sensitivities, the user's PDF) and **C 07.00** (credit risk SA, POC screens).
 
+## Demo reports and pipelines
+
+| Report | Pipeline type | Upload file (`sandbox/reports/`) | Superset chart | Expected file (`sandbox/expected/`) |
+|---|---|---|---|---|
+| COREP C 07.00 Corporates (r0010 c0200 = 1,240.5) | PL/pgSQL stored procedures + postgres_fdw (the stored-procedure example) | `corep_2026-06-30_v1.xbrl` | "C 07.00 Corporates" | `c0700_r0010_c0200.json` |
+| COREP C90 FRTB (FX/DELTA 3,867.06) | Informatica PowerCenter-style mappings (`pipelines/informatica`) | `corep_c90_2026-06-30.pdf` | "COREP C90 Report" | `c90_fx_delta.json` |
+| EFR credit risk (ENT-UK Corporates EAD 1,277.32) | PySpark + OpenLineage (`pipelines/spark`, db `fin_lake` :5433) | `efr_credit_risk_2026-06-30.pdf` | "EFR Credit Risk Summary" | `efr_ent_uk_corporates_ead.json` |
+| LCR (ENT-UK lcr_pct 150.00) | Shell scripts running psql (`pipelines/lcr`, db `lcr_mart`) | `lcr_liquidity_2026-06-30.pdf` | "LCR Liquidity Coverage" | `lcr_ent_uk_lcr_pct.json` |
+
+One-command rebuild of all four (about 10-15 min; `-SkipSuperset` to skip Superset), then verify:
+
+```powershell
+powershell -File sandbox/setup.ps1
+.\.venv\Scripts\python sandboxerify.py   # also runs the 3 pipelines' verify.py
+```
+
+Note: `build.py` / `finlake/build.py` still create the old C90 and etl procedures; `setup.ps1` then runs the Informatica and Spark setups, which drop them. Only C 07.00 keeps procedures + foreign tables.
+
 ## Rebuild
 
 ```powershell
@@ -79,3 +97,33 @@ Spec: `docs/spec/efr-lake.md`. A separate Postgres 18 cluster `finlake` (WSL, D:
 - Report: Superset database `fin_lake`, virtual dataset over `rpt.v_efr_credit_risk_summary`, table chart **"EFR Credit Risk Summary"**; PDF `sandbox/reports/efr_credit_risk_2026-06-30.pdf`.
 - Demo data point: **ENT-UK . CREDIT . Corporates . exposure_ead = 1,277.32 (USD m)** (rwa 1,095.60, EL 34.10, limit 1,840.85, utilisation 69.39%). Group total EAD 5,822.03.
 - Expected lineage: `sandbox/expected/efr_ent_uk_corporates_ead.json` (16 table hops + column edges). Exactly one code-derived hop: `raw.fx_rate -> stg.fx_rate` (GBP/INR 30-Jun rates restated in raw after the run; stg not reloaded). All others reconcile.
+
+## LCR liquidity coverage (SQL-script pipeline, db `lcr_mart` on 5432)
+
+Spec: `docs/spec/pipelines.md`. Schemas `raw` -> `stg` -> `core` -> `rpt`, **no stored procedures**: `sandbox/pipelines/lcr/run_lcr.sh` runs the numbered files (`10_stg_*`, `20_core_*`, `30_rpt_*`, `31_rpt_v_lcr_summary.sql`) with `PGAPPNAME=lcr_shell psql -v ON_ERROR_STOP=1 -h 127.0.0.1 -U etl_owner -d lcr_mart -f ...`.
+
+- Rebuild: `powershell -File sandbox/pipelines/lcr/setup.ps1 [-SkipSuperset]` (csvlog config -> drop/create db -> seed -> pipeline -> Superset -> PDF -> `verify.py`).
+- Data: 3 entities, 2,000 deposits, 300 securities, 120 cash flows, FX 30-Jun-2026. Superset chart **"LCR Liquidity Coverage"** (dataset over `rpt.v_lcr_summary`), PDF `sandbox/reports/lcr_liquidity_2026-06-30.pdf`.
+- Demo data point: **ENT-UK . lcr_pct = 150.00** (HQLA 414.60, outflows 405.51, inflows 129.11, net 276.40 USD m); ENT-IN 125.00, ENT-SG 175.00, GROUP 151.45.
+- Evidence: `pg_stat_statements` (db `lcr_mart`) and the server csvlog `/var/lib/postgresql/18/main/log/postgresql-YYYY-MM-DD_HHMMSS.csv` (`logging_collector=on`, `log_destination=csvlog`, `log_statement=mod`, daily/20MB rotation; `conf.d/lcr_log.conf` applied by `configure_log.sh`, restart only on change). `lineage_ro` has `pg_read_server_files` + `pg_monitor` and EXECUTE on `pg_read_file` in `lcr_mart`: `SELECT name FROM pg_ls_logdir()`, then `SELECT pg_read_file('log/<name>')`; csvlog column 23 is `application_name` (`lcr_shell`), column 14 `message` is `statement: INSERT INTO ...`.
+- Expected lineage: `sandbox/expected/lcr_ent_uk_lcr_pct.json` (18 table hops, all proven, pipeline type `sql_script`, code file + line ranges).
+
+## C90 as an Informatica PowerCenter pipeline (`sandbox/pipelines/informatica/`)
+
+The four C90 loads (trade_sensitivity -> stg_sensitivity -> dw_sensitivity_usd -> calc_sbm_charge -> rpt.c90_facts) are no longer PL/pgSQL procedures over postgres_fdw. Each is a PowerCenter-format export `m_C90_*.xml` (POWERMART/REPOSITORY/FOLDER/SOURCE/TARGET/MAPPING with Source Qualifier, Lookup Procedure, Filter, Expression, Aggregator, CONNECTORs, plus SESSION/WORKFLOW). `connections.xml` maps the connection names used as `DBDNAME` (`trading_db`, `staging`, `dwh`, `frtb_engine`, `reporting_db`) to host 127.0.0.1 / port 5432 / db. `pmrun.py <mapping.xml>` acts like the DTM in normal mode: plain SELECT reads, Python evaluation of expressions/lookups/aggregation, `DELETE` + `INSERT ... VALUES` (executemany) writes, `application_name='pmdtm'` - so the query log shows only unlinked reads and writes; lineage must come from the XML. The FX feed (SQLite -> `staging.ref_fx_rates`, OpenLineage) and `frtb_engine.ref_risk_weight` are unchanged. C 07.00 is untouched.
+
+```powershell
+powershell -File sandbox/pipelines/informatica/setup.ps1   # idempotent: drop C90 procs/foreign tables, run 4 mappings, verify (needs build.py to have run)
+powershell -File sandbox/pipelines/informatica/run_c90.ps1 # just the mappings (or run_c90.sh)
+```
+
+`gen_mappings.py` regenerates the XML. Reported values are identical (FX/DELTA 3,867.06, ALL 9,626.96). Expected hops with mapping files, transformations and column edges with expressions: `sandbox/expected/c90_fx_delta.json`. Note: `build.py` still creates the old C90 procedures/foreign tables, so run `pipelines/informatica/setup.ps1` after it (and `sandbox/verify.py` C90 fdw checks no longer apply).
+
+### EFR lake ETL as PySpark + OpenLineage (`sandbox/pipelines/spark/`)
+
+Replaces the fin_lake `etl.sp_load_*` procedures (dropped). `efr_job.py` reads raw/stg/core over JDBC (`ApplicationName=spark_efr`), applies the same business logic in Spark SQL and writes each of the 15 target tables back (overwrite + truncate, DDL/comments kept) - one Spark write = one OpenLineage run. Spark 3.5 + JDK 17 + OpenLineage jar live **inside WSL** (`/opt/spark-venv`, `/opt/spark-jars`; ~0.5 GB on D:), run as `local[2]`, driver 1 GB.
+
+- Run: `powershell -File sandbox/pipelines/spark/setup.ps1` (installs if missing, resets raw FX, runs job, drops procedures, restates GBP/INR 30-Jun FX x1.015 in raw without reloading stg, ingests events). Check: `.venv\Scripts\python sandbox/pipelines/spark/verify.py`. Needs fin_lake built first.
+- Events: `sandbox/openlineage/spark/efr_events.ndjson` (file transport, namespace `efr_spark`, job `efr_credit_risk.execute_save_into_data_source_command.<schema>_<table>`). Datasets: namespace `postgres://127.0.0.1:5433`, name `fin_lake.<schema>.<table>`. COMPLETE events carry `outputs[].facets.columnLineage`; `ingest_events.py` feeds them to `lineage_store.ingest_ol`.
+- Expected lineage: `sandbox/expected/efr_ent_uk_corporates_ead.json` (pipeline `spark`, code evidence with line ranges in `efr_job.py`). Demo value unchanged: ENT-UK . Corporates . exposure_ead = 1,277.32.
+- Note: rebuilding with `sandbox/finlake/build.py` recreates the procedures; rerun the Spark setup afterwards.

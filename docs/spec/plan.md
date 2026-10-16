@@ -1,7 +1,7 @@
 # Plan — Lineage Explorer (build everything in `figma/Reg Lineage – Journey & Screens.pdf`)
 
 ## Context
-The PDF specifies a regulatory lineage tool for COREP: reverse lineage from a report cell back to source systems (S01–S09) and forward impact from a source element to report cells (S10–S12), plus the data-flow/capture architecture (page 2). Goal: a **fully working** app — real Postgres, real traversal, computed waterfall, real evidence pack files, masking, audit log, what-if — seeded with example data that reproduces every number in the PDF. The built-in SQL/XML parsers serve as the design-time lineage ingester. Opus plans/reviews; Sonnet agents write the code.
+The PDF specifies a regulatory lineage tool for COREP: reverse lineage from a report cell back to source systems (S01–S09) and forward impact from a source element to report cells (S10–S12), plus the data-flow/capture architecture (page 2). Goal: a **fully working** app — real Postgres, real traversal, computed waterfall, real evidence pack files, masking, audit log, what-if — seeded with example data that reproduces every number in the PDF. The built-in SQL/XML parsers are reused as the design-time lineage ingester. Opus plans/reviews; Sonnet agents write the code.
 
 Constraints from user: everything installed on **D:**; prefer embedded Postgres.
 

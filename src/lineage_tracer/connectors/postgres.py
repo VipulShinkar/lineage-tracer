@@ -10,7 +10,7 @@ from datetime import date
 import psycopg
 from psycopg import sql
 
-from lineage_tracer import vault
+from lineage_tracer import pipelines, vault
 
 SYSTEM = ("pg_catalog", "information_schema", "pg_toast")
 NUMERIC = ("numeric", "double", "real", "integer", "bigint", "smallint", "decimal", "money")
@@ -98,19 +98,23 @@ def _version(text: str) -> str:
     return f"definition sha256 {hashlib.sha256(text.encode()).hexdigest()[:12]}… · captured {date.today().isoformat()}"
 
 
+# only statements that run something count as evidence (not COMMENT ON PROCEDURE ..., SELECT/EXPLAIN reads)
+STMT = r"^\s*(call|insert\s+into|merge\s+into|update|copy|select\s.*\sinto\s)"
+
+
 def _log(conn, schema: str, table: str, extra: str | None = None) -> str | None:
     """pg_stat_statements evidence (needs the extension and pg_read_all_stats)."""
     rx = rf"(insert\s+into|update|merge\s+into)\s+{_pat(schema, table, True)}" + (rf"|{re.escape(extra)}" if extra else "")
     try:
-        r = conn.execute("SELECT query, calls FROM pg_stat_statements WHERE query ~* %s "
+        r = conn.execute("SELECT query, calls FROM pg_stat_statements WHERE query ~* %s AND query ~* %s "
                          "AND dbid = (SELECT oid FROM pg_database WHERE datname = current_database()) "
-                         "ORDER BY calls DESC LIMIT 1", (rx,)).fetchone()
+                         "ORDER BY calls DESC LIMIT 1", (rx, STMT)).fetchone()
     except psycopg.Error:
         return None
     return f"pg_stat_statements · {r[1]} call{'s' if r[1] != 1 else ''} · {' '.join(r[0].split())[:110]}" if r else None
 
 
-def writers(conn, schema: str, table: str) -> list[dict]:
+def writers(conn, schema: str, table: str, hist=None) -> list[dict]:
     """What populates schema.table. Strategies in order: foreign table, view/matview, function, query log.
     Each: {kind, sql?, ref, version?, log?, foreign?, dialect}."""
     db = conn.execute("SELECT current_database()").fetchone()[0]
@@ -144,13 +148,47 @@ def writers(conn, schema: str, table: str) -> list[dict]:
                         "log": _log(conn, schema, table, f"{fn}(")})
     if out:
         return out
-    try:  # ad-hoc loads that only exist in the query log
-        for q, calls in conn.execute("SELECT query, calls FROM pg_stat_statements WHERE query ~* %s ORDER BY calls DESC LIMIT 3",
-                                     (rf"^\s*(insert\s+into|merge\s+into)\s+{_pat(schema, table, True)}",)):
-            out.append({"kind": "log", "dialect": "postgres", "sql": q, "ref": f"{db}: query log entry",
-                        "log": f"pg_stat_statements · {calls} calls · {' '.join(q.split())[:110]}", "version": _version(q)})
+    return _query_writers(conn, db, schema, table, hist)
+
+
+def _query_writers(conn, db: str, schema: str, table: str, hist) -> list[dict]:
+    """Ad-hoc / script loads known only from execution history: live pg_stat_statements (this database only), the
+    harvested query_history rows `hist` [(query, calls)], and the server csvlog (literal SQL, time, user, application).
+    Same statement (by fingerprint) from several sources is one writer; the log's literal SQL replaces the $n text."""
+    rx = re.compile(rf"^\s*(?:insert\s+into|merge\s+into)\s+{_pat(schema, table)}", re.I | re.S)
+    cand: dict[str, dict] = {}
+
+    def add(q: str, calls: int, src: str) -> None:
+        if rx.match(q):
+            c = cand.setdefault(pipelines.fingerprint(q), {"sql": q, "calls": 0, "src": []})
+            c["calls"], c["src"] = max(c["calls"], calls), c["src"] + [src]
+
+    try:
+        for q, calls in conn.execute(
+                "SELECT query, calls FROM pg_stat_statements WHERE query ~* %s AND "
+                "dbid = (SELECT oid FROM pg_database WHERE datname = current_database()) ORDER BY calls DESC LIMIT 20",
+                (rf"^\s*(insert\s+into|merge\s+into)\s+{_pat(schema, table, True)}",)):
+            add(q, calls, "stat")
     except psycopg.Error:
         pass
+    for q, calls in hist or []:
+        add(q, calls, "history")
+    logs: dict[str, dict] = {}
+    for e in pipelines.server_log(conn):
+        if e["db"] == db and rx.match(e["sql"]):
+            logs[pipelines.fingerprint(e["sql"])] = e  # later entries win
+            add(e["sql"], 1, "log")
+    out = []
+    for fp, c in sorted(cand.items(), key=lambda kv: -kv[1]["calls"])[:3]:
+        e = logs.get(fp)
+        sql = e["sql"] if e else c["sql"]
+        n = f"{c['calls']} call{'s' if c['calls'] != 1 else ''}"
+        log = pipelines.fmt_log(e) if e else (
+            f"pg_stat_statements · {n} · {' '.join(sql.split())[:110]}" if "stat" in c["src"] else
+            f"query history (harvested) · {n} · {' '.join(sql.split())[:110]}")
+        out.append({"kind": "log", "dialect": "postgres", "sql": sql, "ref": f"{db}: query log entry", "log": log,
+                    "code": pipelines.code_match(sql), "literal": bool(e) or not re.search(r"\$\d", sql),
+                    "version": _version(sql)})
     return out
 
 
@@ -183,7 +221,8 @@ def where(filters: dict, types: dict) -> tuple[sql.Composable, list]:
 def sum_value(conn, schema: str, table: str, col: str, filters: dict) -> float | None:
     types = dict(columns(conn, schema, table))
     w, p = where(filters, types)
-    agg = sql.SQL("count(*)") if col == "*" else sql.SQL("sum({})").format(sql.Identifier(col))  # "*" = row count
+    agg = sql.SQL("count(*)") if col == "*" else sql.SQL("sum({}{})").format(
+        sql.Identifier(col), sql.SQL("::numeric") if types.get(col, "").startswith(TEXTISH) else sql.SQL(""))  # text-typed raw amounts  # "*" = row count
     q = sql.SQL("SELECT {} FROM {}.{} WHERE {}").format(agg, sql.Identifier(schema), sql.Identifier(table), w)
     r = conn.execute(q, p).fetchone()[0]
     return None if r is None else float(r)
